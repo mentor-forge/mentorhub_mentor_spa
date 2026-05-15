@@ -7,7 +7,7 @@
         data-automation-id="nav-drawer-toggle"
         aria-label="Open navigation drawer"
       />
-      <v-app-bar-title>{{service.name | capitalize}}</v-app-bar-title>
+      <v-app-bar-title>Mentor</v-app-bar-title>
     </v-app-bar>
 
     <v-navigation-drawer
@@ -16,49 +16,97 @@
       temporary
     >
       <v-list density="compact" nav>
-        {% for item in service.data_domains.controls %}
-        <v-list-subheader>{{ item | upper }} DOMAIN</v-list-subheader>
+        
+        <v-list-subheader>RESOURCE DOMAIN</v-list-subheader>
         <v-list-item
-          to="/{{ item | lower }}s"
+          to="/resources"
           prepend-icon="mdi-view-list"
-          title="List {{ item }}s"
-          data-automation-id="nav-{{ item | lower }}s-list-link"
+          title="List Resources"
+          data-automation-id="nav-resources-list-link"
         />
         <v-list-item
-          to="/{{ item | lower }}s/new"
+          to="/resources/new"
           prepend-icon="mdi-plus"
-          title="New {{ item }}"
-          data-automation-id="nav-{{ item | lower }}s-new-link"
+          title="New Resource"
+          data-automation-id="nav-resources-new-link"
         />
 
         <v-divider class="my-2" />
-        {% endfor %}
-        {% for item in service.data_domains.creates %}
-        <v-list-subheader>{{ item | upper }} DOMAIN</v-list-subheader>
+        
+        <v-list-subheader>PATH DOMAIN</v-list-subheader>
         <v-list-item
-          to="/{{ item | lower }}s"
+          to="/paths"
           prepend-icon="mdi-view-list"
-          title="List {{ item }}s"
-          data-automation-id="nav-{{ item | lower }}s-list-link"
+          title="List Paths"
+          data-automation-id="nav-paths-list-link"
         />
         <v-list-item
-          to="/{{ item | lower }}s/new"
+          to="/paths/new"
           prepend-icon="mdi-plus"
-          title="New {{ item }}"
-          data-automation-id="nav-{{ item | lower }}s-new-link"
+          title="New Path"
+          data-automation-id="nav-paths-new-link"
         />
 
         <v-divider class="my-2" />
-        {% endfor %}
-        {% for item in service.data_domains.consumes %}
-        <v-list-subheader>{{ item | upper }} DOMAIN</v-list-subheader>
+        
+        <v-list-subheader>PLAN DOMAIN</v-list-subheader>
         <v-list-item
-          to="/{{ item | lower }}s"
+          to="/plans"
           prepend-icon="mdi-view-list"
-          title="List {{ item }}s"
-          data-automation-id="nav-{{ item | lower }}s-list-link"
+          title="List Plans"
+          data-automation-id="nav-plans-list-link"
         />
-        {% endfor %}
+        <v-list-item
+          to="/plans/new"
+          prepend-icon="mdi-plus"
+          title="New Plan"
+          data-automation-id="nav-plans-new-link"
+        />
+
+        <v-divider class="my-2" />
+        
+        <v-list-subheader>ENCOUNTER DOMAIN</v-list-subheader>
+        <v-list-item
+          to="/encounters"
+          prepend-icon="mdi-view-list"
+          title="List Encounters"
+          data-automation-id="nav-encounters-list-link"
+        />
+        <v-list-item
+          to="/encounters/new"
+          prepend-icon="mdi-plus"
+          title="New Encounter"
+          data-automation-id="nav-encounters-new-link"
+        />
+
+        <v-divider class="my-2" />
+        
+        
+        <v-list-subheader>EVENT DOMAIN</v-list-subheader>
+        <v-list-item
+          to="/events"
+          prepend-icon="mdi-view-list"
+          title="List Events"
+          data-automation-id="nav-events-list-link"
+        />
+        <v-list-item
+          to="/events/new"
+          prepend-icon="mdi-plus"
+          title="New Event"
+          data-automation-id="nav-events-new-link"
+        />
+
+        <v-divider class="my-2" />
+        
+        
+        <v-list-subheader>PROFILE DOMAIN</v-list-subheader>
+        <v-list-item
+          to="/profiles"
+          prepend-icon="mdi-view-list"
+          title="List Profiles"
+          data-automation-id="nav-profiles-list-link"
+        />
+        
       </v-list>
 
       <template v-slot:append>
