@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from './client'
+
+vi.mock('@mentor-forge/mentorhub_spa_utils', () => ({
+  redirectToIdpLogin: vi.fn(),
+}))
 
 // Mock fetch globally
 const mockFetch = vi.fn()
@@ -8,7 +13,7 @@ global.fetch = mockFetch
 describe('API Client', () => {
   beforeEach(() => {
     mockFetch.mockClear()
-    localStorage.clear()
+    vi.mocked(redirectToIdpLogin).mockClear()
   })
 
   afterEach(() => {
@@ -52,25 +57,9 @@ describe('API Client', () => {
   })
 
   describe('401 Unauthorized Handling', () => {
-    let originalLocation: Location
-    let mockLocation: Partial<Location>
-
     beforeEach(() => {
       localStorage.setItem('access_token', 'invalid-token')
       localStorage.setItem('token_expires_at', '2026-12-31T23:59:59Z')
-      originalLocation = window.location
-      mockLocation = {
-        href: '',
-        origin: 'http://localhost',
-        pathname: '/controls',
-        search: '',
-      }
-      delete (window as any).location
-      window.location = mockLocation as Location
-    })
-
-    afterEach(() => {
-      window.location = originalLocation
     })
 
     it('should clear tokens and redirect on 401 error', async () => {
@@ -89,9 +78,7 @@ describe('API Client', () => {
 
       expect(localStorage.getItem('access_token')).toBeNull()
       expect(localStorage.getItem('token_expires_at')).toBeNull()
-      expect(mockLocation.href).toBe(
-        'http://127.0.0.1:8080/login.html?return_to=http%3A%2F%2Flocalhost%2Fcontrols'
-      )
+      expect(redirectToIdpLogin).toHaveBeenCalledOnce()
     })
   })
 })

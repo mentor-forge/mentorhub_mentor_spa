@@ -3,34 +3,20 @@ FROM node:24-alpine AS build
 
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false
 
-RUN apk add --no-cache git
-
 WORKDIR /app
 
-# Copies package.json always; adds package-lock.json after the first local npm install/commit.
-# Fresh template clones have no lockfile yet — npm install runs; once lock exists, npm ci is used.
-COPY package*json ./
+COPY package*.json .npmrc ./
 
 ARG VITE_IDP_LOGIN_URI=http://127.0.0.1:8080/login.html
 ENV VITE_IDP_LOGIN_URI=$VITE_IDP_LOGIN_URI
 
-# Install spa_utils via git (not npm.pkg.github.com). For private repos, pass the same token
-# Actions uses for the workflow so git can clone the library repo (public repo needs no token).
-# npm ci when package-lock.json exists; else npm install (no lockfile yet). Without a lock,
-# git dependencies on #main track the remote branch tip and can drift — generate and commit
-# package-lock.json locally. Rewrite git@ to https so lockfiles with git+ssh URLs clone in CI.
-ARG GITHUB_TOKEN=
-# Cache mounts: avoid re-downloading registry tarballs and re-cloning git deps (spa_utils) on
-# every layer rebuild; under multi-arch/QEMU that extra I/O and CPU is especially costly.
-RUN --mount=type=cache,target=/root/.npm \
-    if [ -n "$GITHUB_TOKEN" ]; then \
-      git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"; \
-    fi && \
-    git config --global url."https://github.com/".insteadOf "git@github.com:" && \
-    if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# CodeArtifact auth via BuildKit secret (CI or scripts/docker-build.sh); no git clone of spa_utils.
+RUN --mount=type=secret,id=codeartifact_token \
+    --mount=type=cache,target=/root/.npm \
+    sh -c 'echo "//mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
+    if [ -f package-lock.json ]; then npm ci; else npm install; fi'
 
 COPY . .
-# Vite dependency pre-bundle cache (default cacheDir); reuse across CI runs per architecture.
 RUN --mount=type=cache,target=/app/node_modules/.vite \
     npm run build
 
