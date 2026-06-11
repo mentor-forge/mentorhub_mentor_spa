@@ -16,8 +16,8 @@ npm run service
 ## Developer Commands
 
 ```sh
-## install dependencies
-npm install
+## install dependencies (run `mh` first for CodeArtifact auth)
+npm ci
 
 ## install Cypress binaries
 npx cypress install
@@ -52,8 +52,8 @@ npm run service
 ## open page in the browser
 npm run open
 
-## Build SPA docker container locally
-npm run container 
+## Build SPA docker container locally (run `mh` first)
+npm run container
 ```
 
 ## Architecture Overview
