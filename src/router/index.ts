@@ -7,7 +7,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/resources'
+      redirect: '/profiles'
     },
     
     // Control domain: Resource
@@ -149,7 +149,7 @@ router.beforeEach((to, _from, next) => {
   const requiredRole = to.meta.requiresRole as string | undefined
   if (requiredRole && !hasStoredRole(requiredRole)) {
     // Redirect to default page if user doesn't have required role
-    next({ name: 'Resources' })
+    next({ name: 'Profiles' })
     return
   }
   

@@ -2,14 +2,14 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="text-h4 mb-4">Profiles</h1>
+        <h1 class="text-h4 mb-4">Dashboard</h1>
       </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
         <ListPageSearch
-          :searchable="true"
+          :searchable="false"
           :search-query="searchQuery"
           :debounced-search="debouncedSearch"
           automation-id="profile-list-search"
@@ -17,54 +17,52 @@
       </v-col>
     </v-row>
 
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      class="mb-4"
+    />
+
     <v-row>
-      <v-col>
-        <v-card>
-          <v-data-table
-            :headers="headers"
-            :items="(profiles ?? []) as unknown as Profile[]"
-            :loading="isLoading as unknown as boolean"
-            @click:row="navigateToProfile"
-            hover
-            :items-per-page="-1"
-            hide-default-footer
-          >
-            <template v-slot:header.name>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('name')">
-                Name
-                <v-icon v-if="sortByValue === 'name'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.status>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('status')">
-                Status
-                <v-icon v-if="sortByValue === 'status'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:item.status="{ item }">
-              <v-chip size="small">
-                {{ item.status || 'N/A' }}
-              </v-chip>
-            </template>
-          </v-data-table>
-          
-          <!-- Load more button -->
-          <v-card-actions v-if="hasMoreValue">
-            <v-btn
-              @click="loadMore"
-              :loading="isFetchingNextPageValue"
-              color="primary"
-              block
-              data-automation-id="profile-list-load-more"
-            >
-              {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
-            </v-btn>
-          </v-card-actions>
+      <v-col
+        v-for="profile in profiles ?? []"
+        :key="profile._id"
+        cols="12"
+        sm="6"
+        md="4"
+      >
+        <v-card
+          hover
+          class="h-100"
+          @click="navigateToProfile($event, { item: profile })"
+        >
+          <v-card-title>
+            {{ profile.name || 'Unnamed Profile' }}
+          </v-card-title>
+
+          <v-card-text>
+            <p class="mb-2">
+              {{ profile.description || 'No description' }}
+            </p>
+
+            <v-chip size="small">
+              {{ profile.status || 'N/A' }}
+            </v-chip>
+          </v-card-text>
         </v-card>
+      </v-col>
+
+      <v-col cols="12" v-if="hasMoreValue">
+        <v-btn
+          @click="loadMore"
+          :loading="isFetchingNextPageValue"
+          color="primary"
+          block
+          data-automation-id="profile-list-load-more"
+        >
+          {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
+        </v-btn>
       </v-col>
     </v-row>
 
@@ -75,12 +73,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Profiles List Page - Showcase of mentorhub_spa_utils simplicity
- * 
- * Building a list page with infinite scroll, search, and sorting
- * is as simple as calling useInfiniteScroll with your API function.
- */
 import { computed } from 'vue'
 import { api } from '@/api/client'
 import { ListPageSearch, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
@@ -89,7 +81,6 @@ import type { Profile } from '@/api/types'
 
 const router = useRouter()
 
-// 🎯 All list functionality in one composable call
 const {
   items: profiles,
   isLoading,
@@ -100,10 +91,6 @@ const {
   errorMessage,
   searchQuery,
   debouncedSearch,
-  sortBy,
-  order,
-  setSortBy,
-  setOrder,
 } = useInfiniteScroll<Profile>({
   queryKey: ['profiles'],
   queryFn: (params) => api.getProfiles(params),
@@ -115,27 +102,6 @@ function navigateToProfile(_event: unknown, { item }: { item: Profile }) {
   router.push(`/profiles/${item._id}`)
 }
 
-// Create computed properties for template use (TypeScript-friendly)
-const sortByValue = computed(() => sortBy.value)
-const orderValue = computed(() => order.value)
 const hasMoreValue = computed(() => hasMore.value)
 const isFetchingNextPageValue = computed(() => isFetchingNextPage.value)
-
-function handleSort(field: string) {
-  if (sortBy.value === field) {
-    // Toggle order if same field
-    setOrder(order.value === 'asc' ? 'desc' : 'asc')
-  } else {
-    // New field, default to ascending
-    setSortBy(field)
-    setOrder('asc')
-  }
-}
-
-const headers = [
-  { title: 'Name', key: 'name', sortable: false },
-  { title: 'Description', key: 'description', sortable: false },
-  { title: 'Status', key: 'status', sortable: false },
-]
-
 </script>
