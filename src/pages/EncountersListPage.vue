@@ -39,13 +39,11 @@
             :items-per-page="-1"
             hide-default-footer
           >
-            <template v-slot:header.name>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('name')">
-                Name
-                <v-icon v-if="sortByValue === 'name'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
+            <template v-slot:header.tldr>
+              <span>TLDR</span>
+            </template>
+            <template v-slot:header.summary>
+              <span>Summary</span>
             </template>
             <template v-slot:header.status>
               <span style="cursor: pointer; user-select: none;" @click="handleSort('status')">
@@ -159,6 +157,7 @@ const {
   queryFn: (params) => api.getEncounters(params),
   getItemId: (item) => item._id,
   limit: 20,
+  sort_by: 'created.at_time',
 })
 
 // Simple navigation handler
@@ -186,8 +185,8 @@ function handleSort(field: string) {
 }
 
 const headers = [
-  { title: 'Name', key: 'name', sortable: false },
-  { title: 'Description', key: 'description', sortable: false },
+  { title: 'TLDR', key: 'tldr', sortable: false },
+  { title: 'Summary', key: 'summary', sortable: false },
   { title: 'Status', key: 'status', sortable: false },
   { title: 'Created', key: 'created.at_time', sortable: false },
   { title: 'Last Saved', key: 'saved.at_time', sortable: false },

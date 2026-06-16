@@ -1,4 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+
+vi.mock('@mentor-forge/mentorhub_spa_utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@mentor-forge/mentorhub_spa_utils')>()
+  return {
+    ...actual,
+    redirectToIdpLogin(returnTo?: string, idpLoginUri?: string) {
+      if (typeof window === 'undefined') {
+        return
+      }
+      const base = idpLoginUri ?? 'http://127.0.0.1:8080/login.html'
+      const url = new URL(base)
+      const defaultReturnTo =
+        window.location.origin + window.location.pathname + window.location.search
+      url.searchParams.set('return_to', returnTo ?? defaultReturnTo)
+      window.location.href = url.toString()
+    },
+  }
+})
+
 import { api } from './client'
 
 // Mock fetch globally

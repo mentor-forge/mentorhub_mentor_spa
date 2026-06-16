@@ -18,50 +18,39 @@ describe('Event Domain', () => {
 
   it('should create a new event document', () => {
     cy.visit('/events/new')
-    
-    const timestamp = Date.now()
-    const itemName = `test-event-${timestamp}`
-    
-    cy.get('[data-automation-id="event-new-name-input"]').type(itemName)
+
+    // Event.name is an API enum (arrived | completed | fail | login | logout)
+    const eventName = 'login'
+
+    cy.get('[data-automation-id="event-new-name-input"]').type(eventName)
     cy.get('[data-automation-id="event-new-description-input"]').type('Test description for Cypress')
-    cy.get('[data-automation-id="event-new-status-input"]').type('active')
     cy.get('[data-automation-id="event-new-submit-button"]').click()
-    
-    // Should redirect to view page after creation
+
     cy.url().should('include', '/events/')
     cy.url().should('not.include', '/events/new')
-    
-    // Verify the event name is displayed on view page (in a text field, not h1)
-    cy.get('input[readonly]').first().should('have.value', itemName)
+
+    cy.get('input[readonly]').first().should('have.value', eventName)
   })
 
   it('should search for events', () => {
-    // First create a event with a unique name
+    const eventName = 'arrived'
+    const uniqueDescription = `cypress-search-${Date.now()}`
+
     cy.visit('/events/new')
-    const timestamp = Date.now()
-    const itemName = `search-test-event-${timestamp}`
-    
-    cy.get('[data-automation-id="event-new-name-input"]').type(itemName)
-    cy.get('[data-automation-id="event-new-description-input"]').type('Search test description')
-    cy.get('[data-automation-id="event-new-status-input"]').type('active')
+    cy.get('[data-automation-id="event-new-name-input"]').type(eventName)
+    cy.get('[data-automation-id="event-new-description-input"]').type(uniqueDescription)
     cy.get('[data-automation-id="event-new-submit-button"]').click()
-    cy.url().should('include', '/events/')
-    
-    // Navigate to list page
+    cy.url().should('not.include', '/events/new')
+
     cy.visit('/events')
-    
-    // Wait for initial load
     cy.get('table').should('exist')
-    
-    // Search for the event
-    cy.get('[data-automation-id="event-list-search"]').find('input').type(itemName)
-    // Wait for debounce (300ms) plus API call
+
+    cy.get('[data-automation-id="event-list-search"]').find('input').type(eventName)
     cy.wait(800)
-    
-    // Verify the search results contain the event
-    cy.get('table tbody').should('contain', itemName)
-    
-    // Clear search and verify all events are shown again
+
+    cy.get('table tbody').should('contain', eventName)
+    cy.get('table tbody').should('contain', uniqueDescription)
+
     cy.get('[data-automation-id="event-list-search"]').find('input').clear()
     cy.wait(800)
     cy.get('table').should('exist')

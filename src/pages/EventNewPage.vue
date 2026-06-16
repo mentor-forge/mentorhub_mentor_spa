@@ -111,7 +111,11 @@ const { mutate: createEvent, isPending } = useMutation<{ _id: string }, Error, E
 async function handleSubmit() {
   const { valid } = await formRef.value.validate()
   if (valid) {
-    createEvent(form.value)
+    const payload: EventInput = { name: form.value.name }
+    if (form.value.description?.trim()) {
+      payload.description = form.value.description.trim()
+    }
+    createEvent(payload)
   }
 }
 </script>

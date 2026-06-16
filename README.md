@@ -9,24 +9,41 @@ This repository contains a Vue 3 single-page application (SPA) for the mentor se
 ## Quick Start
 
 ```sh
-## Just run the service
-npm run service 
+## Containerized stack (db + api + spa)
+npm run service
+
+## Local Vite dev (API + welcome/login on :8080 must be running)
+npm run api
+npm run dev
 ```
+
+| Service | Port | URL |
+|---------|------|-----|
+| Developer Edition login (IdP) | **8080** | `http://127.0.0.1:8080/login.html` |
+| Mentor SPA (Vite dev or container) | **8392** | `http://localhost:8392` |
+| Mentor API | **8391** | proxied via SPA at `/api` |
 
 ## Developer Commands
 
 ```sh
-## install dependencies
+## install dependencies (Node >= 24)
 npm install
 
-## install Cypress binaries
+## reproducible install including devDependencies
+npm ci --include=dev
+
+## install Cypress binaries (after npm install when cypress version changes)
 npx cypress install
 
 ## package code for deployment
-npm run build 
+npm run build
 
-## run dev server, assumes api is running - captures command line
-npm run dev 
+## preview production build locally
+npm run preview
+
+## run Vite dev server on http://localhost:8392 (requires mentor-api profile)
+npm run api
+npm run dev
 
 ## run unit tests
 npm run test
@@ -34,27 +51,39 @@ npm run test
 ## run unit tests with coverage
 npm run test:coverage
 
-## run unit tests with UI
+## run unit tests with Vitest UI
 npm run test:ui
 
-## run Cypress E2E tests
+## open Cypress E2E test runner (interactive)
 npm run cypress
 
-## run Cypress E2E tests headlessly
+## run all Cypress E2E tests headlessly
 npm run cypress:run
 
-## de down and start db + api containers
-npm run api 
+## run one Cypress spec headlessly
+npm run cypress:run:spec -- cypress/e2e/profile.cy.ts
 
-## de down and start db + api + spa containers and open 
-npm run service 
+## Developer Edition: stop stack, then start db + mentor-api only
+npm run api
 
-## open page in the browser
+## Developer Edition: stop stack, start db + api + spa container, open browser
+npm run service
+
+## open SPA in browser (http://localhost:8392)
 npm run open
 
-## Build SPA docker container locally
-npm run container 
+## build SPA docker container locally
+npm run container
 ```
+
+### Typical local development workflow
+
+1. Start the API stack: `npm run api`
+2. Start the Vite dev server: `npm run dev`
+3. Sign in via Developer Edition login (`http://127.0.0.1:8080/login.html`) when prompted
+4. Default landing page is the **Mentor Dashboard** at `/profiles`
+
+For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
 ## Architecture Overview
 
@@ -117,8 +146,11 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 
 ### E2E Tests
 - Uses Cypress for end-to-end testing
-- Tests cover main user flows: login, CRUD operations for each domain
-- Run tests: `npm run cypress` (interactive) or `npm run cypress:run` (headless)
+- Tests cover main user flows: authentication, CRUD operations per domain, and the **Mentor Dashboard**
+- Dashboard specs use `cy.loginAsMentor()` (seeded mentor user `marti`) to exercise `GET /api/profile`
+- Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
+- Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
+- Requires dev server (`npm run dev`) and API stack (`npm run api`) to be running
 
 ## Adding New Features
 
@@ -145,5 +177,5 @@ All interactive elements in this SPA include `data-automation-id` attributes fol
 ## Configuration
 - Runtime configuration available at `/api/config` endpoint
 - Use enumerator values from config, not hardcoded in OpenAPI spec
-- Docker container uses `API_HOST` and `API_PORT` environment variables for API proxy configuration
-- Container listens on port 80 internally; map host port to container port 80 (e.g., `8185:80` in docker-compose)
+- **Dev server**: `.env.development` sets `VITE_IDP_LOGIN_URI` for login/logout redirects (matches Dockerfile default: `http://127.0.0.1:8080/login.html`)
+- **Container**: `API_HOST` and `API_PORT` environment variables configure the NGINX API proxy; listens on port 80 internally (map host port to container port 80, e.g. `8392:80` in docker-compose)

@@ -102,8 +102,8 @@
         <v-list-subheader>PROFILE DOMAIN</v-list-subheader>
         <v-list-item
           to="/profiles"
-          prepend-icon="mdi-view-list"
-          title="List Profiles"
+          prepend-icon="mdi-view-dashboard"
+          title="Dashboard"
           data-automation-id="nav-profiles-list-link"
         />
         

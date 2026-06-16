@@ -18,103 +18,59 @@ describe('Encounter Domain', () => {
 
   it('should create a new encounter', () => {
     cy.visit('/encounters/new')
-    
-    const timestamp = Date.now()
-    const itemName = `test-encounter-${timestamp}`
-    
-    // Use automation IDs for reliable element selection
-    cy.get('[data-automation-id="encounter-new-name-input"]').type(itemName)
-    cy.get('[data-automation-id="encounter-new-description-input"]').type('Test description for Cypress')
+
+    const tldr = `Cypress encounter ${Date.now()}`
+
+    cy.get('[data-automation-id="encounter-new-tldr-input"]').type(tldr)
+    cy.get('[data-automation-id="encounter-new-summary-input"]').type('Test summary for Cypress')
     cy.get('[data-automation-id="encounter-new-submit-button"]').click()
-    
-    // Should redirect to edit page after creation
+
     cy.url().should('include', '/encounters/')
     cy.url().should('not.include', '/encounters/new')
-    
-    // Verify the encounter name is displayed on edit page
-    cy.get('[data-automation-id="encounter-edit-name-input"]').find('input').should('have.value', itemName)
+
+    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').should('have.value', tldr)
   })
 
-  it('should update a encounter', () => {
-    // First create a encounter
+  it('should update an encounter', () => {
+    const tldr = `Cypress update ${Date.now()}`
+    const updatedTldr = `Updated ${tldr}`
+
     cy.visit('/encounters/new')
-    const timestamp = Date.now()
-    const itemName = `test-encounter-update-${timestamp}`
-    const updatedName = `updated-encounter-${timestamp}`
-    
-    cy.get('[data-automation-id="encounter-new-name-input"]').type(itemName)
-    cy.get('[data-automation-id="encounter-new-description-input"]').type('Original description')
+    cy.get('[data-automation-id="encounter-new-tldr-input"]').type(tldr)
+    cy.get('[data-automation-id="encounter-new-summary-input"]').type('Original summary')
     cy.get('[data-automation-id="encounter-new-submit-button"]').click()
-    
-    // Wait for redirect to edit page
-    cy.url().should('include', '/encounters/')
-    
-    // Update the name field (auto-save on blur)
-    cy.get('[data-automation-id="encounter-edit-name-input"]').find('input').clear().type(updatedName)
-    cy.get('[data-automation-id="encounter-edit-name-input"]').find('input').blur()
-    
-    // Wait for save to complete
+    cy.url().should('not.include', '/encounters/new')
+
+    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').clear().type(updatedTldr)
+    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').blur()
     cy.wait(1000)
-    
-    // Verify the update was saved
-    cy.get('[data-automation-id="encounter-edit-name-input"]').find('input').should('have.value', updatedName)
-    
-    // Update description
-    cy.get('[data-automation-id="encounter-edit-description-input"]').find('textarea').clear().type('Updated description')
-    cy.get('[data-automation-id="encounter-edit-description-input"]').find('textarea').blur()
+    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').should('have.value', updatedTldr)
+
+    cy.get('[data-automation-id="encounter-edit-summary-input"]').find('textarea').clear().type('Updated summary')
+    cy.get('[data-automation-id="encounter-edit-summary-input"]').find('textarea').blur()
     cy.wait(1000)
-    
-    // Update status
+
     cy.get('[data-automation-id="encounter-edit-status-select"]').click()
     cy.get('.v-list-item').contains('archived').click()
     cy.wait(1000)
-    
-    // Navigate back to list and verify the encounter appears with updated name
+
     cy.get('[data-automation-id="encounter-edit-back-button"]').click()
     cy.url().should('include', '/encounters')
-    
-    // Search for the updated encounter
-    cy.get('[data-automation-id="encounter-list-search"]').find('input').type(updatedName)
-    // Wait for debounce (300ms) plus API call
-    cy.wait(800)
-    
-    // Verify the encounter appears in the search results
-    cy.get('table').should('contain', updatedName)
-    
-    // Clear search and verify all encounters are shown again
-    cy.get('[data-automation-id="encounter-list-search"]').find('input').clear()
-    cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('table tbody', { timeout: 10000 }).should('contain', updatedTldr)
   })
 
-  it('should search for encounters', () => {
-    // First create a encounter with a unique name
+  it('should show a created encounter in the list', () => {
+    const tldr = `Cypress list ${Date.now()}`
+
     cy.visit('/encounters/new')
-    const timestamp = Date.now()
-    const itemName = `search-test-${timestamp}`
-    
-    cy.get('[data-automation-id="encounter-new-name-input"]').type(itemName)
-    cy.get('[data-automation-id="encounter-new-description-input"]').type('Search test description')
+    cy.get('[data-automation-id="encounter-new-tldr-input"]').type(tldr)
+    cy.get('[data-automation-id="encounter-new-summary-input"]').type('List visibility test summary')
     cy.get('[data-automation-id="encounter-new-submit-button"]').click()
-    cy.url().should('include', '/encounters/')
-    
-    // Navigate to list page
+    cy.url().should('not.include', '/encounters/new')
+
     cy.visit('/encounters')
-    
-    // Wait for initial load
     cy.get('table').should('exist')
-    
-    // Search for the encounter
-    cy.get('[data-automation-id="encounter-list-search"]').find('input').type(itemName)
-    // Wait for debounce (300ms) plus API call
-    cy.wait(800)
-    
-    // Verify the search results contain the encounter
-    cy.get('table tbody').should('contain', itemName)
-    
-    // Clear search and verify all encounters are shown again
-    cy.get('[data-automation-id="encounter-list-search"]').find('input').clear()
-    cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('table tbody', { timeout: 10000 }).should('contain', tldr)
+    cy.get('table tbody').should('contain', 'List visibility test summary')
   })
 })

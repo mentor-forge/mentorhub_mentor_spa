@@ -12,24 +12,23 @@
           <v-card-text>
             <v-form ref="formRef" @submit.prevent="handleSubmit">
               <v-text-field
-                v-model="form.name"
-                label="Name *"
-                :rules="[rules.required, rules.namePattern]"
-                hint="No whitespace, max 40 characters"
+                v-model="form.tldr"
+                label="TLDR *"
+                :rules="[rules.required, rules.descriptionPattern]"
+                hint="One-sentence summary, max 255 characters"
                 persistent-hint
                 required
-                data-automation-id="encounter-new-name-input"
+                data-automation-id="encounter-new-tldr-input"
               />
 
               <v-textarea
-                v-model="form.description"
-                label="Description"
-                :rules="[rules.descriptionPattern]"
-                hint="Max 255 characters, no tabs or newlines"
+                v-model="form.summary"
+                label="Summary"
+                hint="Brief summary of the encounter"
                 persistent-hint
                 rows="3"
                 class="mt-4"
-                data-automation-id="encounter-new-description-input"
+                data-automation-id="encounter-new-summary-input"
               />
 
               <v-select
@@ -86,8 +85,8 @@ const errorRef = ref<Error | null>(null)
 const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
 const form = ref<EncounterInput>({
-  name: '',
-  description: '',
+  tldr: '',
+  summary: '',
   status: 'active',
 })
 
@@ -95,7 +94,6 @@ const statusOptions = ['active', 'archived']
 
 const rules = {
   required: validationRules.required,
-  namePattern: validationRules.namePattern,
   descriptionPattern: validationRules.descriptionPattern,
 }
 
@@ -114,7 +112,14 @@ const { mutate: createEncounter, isPending } = useMutation<{ _id: string }, Erro
 async function handleSubmit() {
   const { valid } = await formRef.value.validate()
   if (valid) {
-    createEncounter(form.value)
+    const payload: EncounterInput = {
+      status: form.value.status ?? 'active',
+      tldr: form.value.tldr?.trim(),
+    }
+    if (form.value.summary?.trim()) {
+      payload.summary = form.value.summary.trim()
+    }
+    createEncounter(payload)
   }
 }
 </script>

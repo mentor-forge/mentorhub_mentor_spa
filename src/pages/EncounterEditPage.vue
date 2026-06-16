@@ -17,24 +17,22 @@
         <v-card>
           <v-card-text>
             <AutoSaveField
-              :model-value="encounter.name"
-              label="Name *"
-              :rules="[rules.required, rules.namePattern]"
-              hint="No whitespace, max 40 characters"
-              :on-save="(value: string | number) => updateField('name', String(value))"
-              automation-id="encounter-edit-name-input"
+              :model-value="encounter.tldr || ''"
+              label="TLDR *"
+              :rules="[rules.required, rules.descriptionPattern]"
+              hint="One-sentence summary, max 255 characters"
+              :on-save="(value: string | number) => updateField('tldr', String(value))"
+              automation-id="encounter-edit-tldr-input"
             />
 
             <AutoSaveField
-              :model-value="encounter.description || ''"
-              label="Description"
-              :rules="[rules.descriptionPattern]"
-              hint="Max 255 characters, no tabs or newlines"
-              :on-save="(value: string | number) => updateField('description', String(value))"
+              :model-value="encounter.summary || ''"
+              label="Summary"
+              :on-save="(value: string | number) => updateField('summary', String(value))"
               class="mt-4"
               textarea
               :rows="3"
-              automation-id="encounter-edit-description-input"
+              automation-id="encounter-edit-summary-input"
             />
 
             <AutoSaveSelect
@@ -106,23 +104,10 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Encounter Edit Page - Showcase of spa_utils AutoSave components
- * 
- * This page demonstrates how easy it is to build an edit page with:
- * - Auto-save on blur (no save button needed!)
- * - Built-in validation rules
- * - Loading/saving/error states
- * - Date formatting utilities
- * - Error handling
- * 
- * All from spa_utils components and utilities!
- */
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
-// 🎯 All these utilities come from spa_utils - ready to use!
 import { AutoSaveField, AutoSaveSelect, validationRules, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import type { EncounterUpdate } from '@/api/types'
 
@@ -146,10 +131,8 @@ const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
 const statusOptions = ['active', 'archived']
 
-// 🎯 Use validation rules from spa_utils - no need to write your own!
 const rules = {
   required: validationRules.required,
-  namePattern: validationRules.namePattern,
   descriptionPattern: validationRules.descriptionPattern,
 }
 

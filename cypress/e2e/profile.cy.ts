@@ -1,85 +1,48 @@
-describe('Profile Domain', () => {
+describe('Mentor Dashboard', () => {
   beforeEach(() => {
-    cy.login()
+    cy.loginAsMentor('/profiles')
   })
 
-  it('should display profiles list page', () => {
-    cy.visit('/profiles')
-    cy.get('h1').contains('Profiles').should('be.visible')
+  it('should display the dashboard heading', () => {
+    cy.get('[data-automation-id="profile-dashboard-heading"]')
+      .should('be.visible')
+      .and('contain', 'Dashboard')
   })
 
-  it('should search for profiles using existing test data', () => {
-    cy.visit('/profiles')
-    
-    // Wait for initial load
-    cy.get('table').should('exist')
-    // Wait a bit for data to load
-    cy.wait(1000)
-    
-    // Check if table has data, if so get first profile name to search for
-    cy.get('body').then(($body) => {
-      const hasRows = $body.find('table tbody tr').length > 0
-      
-      if (hasRows) {
-        // Get the first profile name from the table to search for
-        cy.get('table tbody tr').first().find('td').first().invoke('text').then((firstItemName) => {
-          const trimmedName = firstItemName.trim()
-          if (trimmedName.length > 0) {
-            const searchTerm = trimmedName.substring(0, Math.min(5, trimmedName.length)) // Use first 5 chars for partial match
-            
-            // Search for profiles using partial name
-            cy.get('[data-automation-id="profile-list-search"]').find('input').type(searchTerm)
-            // Wait for debounce (300ms) plus API call
-            cy.wait(800)
-            
-            // Verify the search results contain the profile (should find at least the one we searched for)
-            cy.get('table tbody').should('contain', trimmedName)
-            
-            // Clear search and verify all profiles are shown again
-            cy.get('[data-automation-id="profile-list-search"]').find('input').clear()
-            cy.wait(800)
-            cy.get('table').should('exist')
-          }
-        })
-      } else {
-        // If no data, just verify search input exists and can be used
-        cy.get('[data-automation-id="profile-list-search"]').find('input').should('exist')
-        cy.get('[data-automation-id="profile-list-search"]').find('input').type('test')
-        cy.wait(800)
-        cy.get('[data-automation-id="profile-list-search"]').find('input').clear()
-      }
+  it('should show mentee cards from GET /api/profile', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .should('have.length.at.least', 1)
+
+    cy.get('[data-automation-id="profile-dashboard-card"]').first().within(() => {
+      cy.get('.v-card-title').should('not.be.empty')
+      cy.contains('.v-chip', 'Library:').should('be.visible')
+      cy.contains('.v-chip', 'Now:').should('be.visible')
+      cy.contains('.v-chip', 'Next:').should('be.visible')
     })
   })
 
-  it('should search for profiles and filter results', () => {
-    cy.visit('/profiles')
-    
-    // Wait for initial load
-    cy.get('table').should('exist')
-    
-    // Count initial rows
-    cy.get('table tbody tr').then(($rows) => {
-      const initialCount = $rows.length
-      
-      // Search for a term that might not exist (should show fewer or no results)
-      cy.get('[data-automation-id="profile-list-search"]').find('input').type('nonexistent-search-term-xyz')
-      // Wait for debounce (300ms) plus API call
-      cy.wait(800)
-      
-      // Verify search was performed (table should still exist, but may have fewer/no results)
-      cy.get('table').should('exist')
-      
-      // Clear search and verify all profiles are shown again
-      cy.get('[data-automation-id="profile-list-search"]').find('input').clear()
-      cy.wait(800)
-      
-      // Should have same or more results after clearing
-      cy.get('table tbody tr').should('have.length.at.least', initialCount)
-    })
+  it('should navigate to a mentee profile when a card is clicked', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    cy.url().should('match', /\/profiles\/[0-9a-fA-F]{24}$/)
+    cy.get('h1').contains('View Profile').should('be.visible')
   })
 
   it('should not have a new profile button (read-only)', () => {
-    cy.visit('/profiles')
     cy.get('button').contains('New Profile').should('not.exist')
+  })
+})
+
+describe('Mentor Dashboard (unassigned mentor)', () => {
+  it('should show empty state when the mentor has no mentees', () => {
+    cy.login(['admin'])
+    cy.visit('/profiles')
+
+    cy.get('[data-automation-id="profile-dashboard-heading"]').should('be.visible')
+    cy.get('[data-automation-id="profile-dashboard-empty"]', { timeout: 10000 })
+      .should('be.visible')
+      .and('contain', 'No mentees are assigned to you yet.')
   })
 })

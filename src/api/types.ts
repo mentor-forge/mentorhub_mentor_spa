@@ -81,23 +81,38 @@ export interface PlanUpdate {
 // Encounter Domain
 export interface Encounter {
   _id: string
-  name: string
-  description?: string
+  mentor_id?: string
+  mentee_id?: string
+  plan_id?: string
+  date?: string
   status?: 'active' | 'archived'
+  tldr?: string
+  summary?: string
+  transcript?: string
   created: Breadcrumb
   saved: Breadcrumb
 }
 
 export interface EncounterInput {
-  name: string
-  description?: string
+  mentor_id?: string
+  mentee_id?: string
+  plan_id?: string
+  date?: string
   status?: 'active' | 'archived'
+  tldr?: string
+  summary?: string
+  transcript?: string
 }
 
 export interface EncounterUpdate {
-  name?: string
-  description?: string
+  mentor_id?: string
+  mentee_id?: string
+  plan_id?: string
+  date?: string
   status?: 'active' | 'archived'
+  tldr?: string
+  summary?: string
+  transcript?: string
 }
 
 
@@ -123,6 +138,28 @@ export interface Profile {
   name: string
   description?: string
   status?: string
+}
+
+export interface JourneyProgress {
+  library: number
+  now: number
+  next: number
+}
+
+export interface RecentEncounterSummary {
+  _id: string
+  date?: string
+  tldr?: string
+  summary?: string
+}
+
+/** Mentee card on the Mentor Dashboard (GET /api/Profile). */
+export interface MentorDashboardProfile {
+  _id: string
+  name: string
+  description?: string
+  progress: JourneyProgress
+  last_encounter?: RecentEncounterSummary | null
 }
 
 

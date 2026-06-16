@@ -19,6 +19,7 @@ import type {
   EventInput,
 
   Profile,
+  MentorDashboardProfile,
 
   ConfigResponse,
   Error,
@@ -254,16 +255,9 @@ export const api = {
 
   // Consume endpoints
 
-  async getProfiles(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Profile>> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-    
-    const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Profile>>(`/profile${query ? `?${query}` : ''}`)
+  /** Mentor Dashboard — assigned mentee cards for the current user (GET /api/Profile). */
+  async getProfiles(): Promise<MentorDashboardProfile[]> {
+    return request<MentorDashboardProfile[]>('/profile')
   },
 
   async getProfile(profileId: string): Promise<Profile> {

@@ -14,6 +14,7 @@
     "test:ui": "vitest --ui",
     "cypress": "cypress open",
     "cypress:run": "cypress run",
+    "cypress:run:spec": "cypress run --spec",
     "api": "mh down && mh up mentor-api",
     "service": "mh down && mh up mentor && npm run open",
     "container": "docker build --build-arg GITHUB_TOKEN=\"${GITHUB_TOKEN:-${NODE_AUTH_TOKEN}}\" -t ghcr.io/mentor-forge/mentorhub_mentor_spa:latest .",
