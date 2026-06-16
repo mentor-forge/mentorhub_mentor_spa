@@ -17,7 +17,7 @@
     "cypress:run:spec": "cypress run --spec",
     "api": "mh down && mh up mentor-api",
     "service": "mh down && mh up mentor && npm run open",
-    "container": "docker build --build-arg GITHUB_TOKEN=\"${GITHUB_TOKEN:-${NODE_AUTH_TOKEN}}\" -t ghcr.io/mentor-forge/mentorhub_mentor_spa:latest .",
+    "container": "sh scripts/docker-build.sh",
     "push": "docker push ghcr.io/mentor-forge/mentorhub_mentor_spa:latest",
     "open": "open -a 'Google Chrome' 'http://localhost:8392' || google-chrome 'http://localhost:8392' || exg-open 'localhost:8392'",
     "build-publish": "npm install --include=dev && npm run container && npm run push",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "@mentor-forge/mentorhub_spa_utils": "github:mentor-forge/mentorhub_spa_utils#main",
+    "@mentor-forge/mentorhub_spa_utils": "0.2.2",
     "@tanstack/vue-query": "^5.59.0",
     "pinia": "^2.2.6",
     "vue": "^3.5.13",
