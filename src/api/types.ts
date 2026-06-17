@@ -133,11 +133,91 @@ export interface EventInput {
 
 
 // Profile Domain
+export interface ProfileSchedule {
+  repeats?: number
+  starting?: string
+}
+
+export interface ProfileExperienceRole {
+  title?: string
+  description?: string
+  start?: string
+  end?: string
+  technologies?: string[]
+}
+
+export interface ProfileExperience {
+  company?: string
+  roles?: ProfileExperienceRole[]
+}
+
 export interface Profile {
   _id: string
   name: string
   description?: string
-  status?: string
+  email?: string
+  email_verified?: boolean
+  mentor_id?: string
+  status?: 'active' | 'archived' | 'suspended' | string
+  interests?: string[]
+  goals?: string[]
+  schedule?: ProfileSchedule
+  experience?: ProfileExperience[]
+  location?: string
+  phone?: string
+}
+
+export interface StatusSummary {
+  profile_status?: string | null
+  journey_status?: string | null
+  library_count: number
+  now_count: number
+  next_count: number
+  encounters_count: number
+  resources_engaged: number
+  last_activity_at?: string | null
+}
+
+export interface SiteAndLink {
+  resource_id: string
+  name: string
+  url?: string
+  scope: 'library' | 'now' | 'next'
+  used?: number
+  started?: string
+  completed?: string
+}
+
+export interface MentorHistoryEntry {
+  mentor_id: string
+  mentor_name?: string | null
+  encounter_count: number
+  first_date?: string
+  last_date?: string
+}
+
+export interface ResourceUsageEntry {
+  resource_id: string
+  name: string
+  times_used: number
+  status: 'completed' | 'in_progress' | 'queued'
+}
+
+export interface CelebrationEntry {
+  resource_id: string
+  name: string
+  completed_at: string
+}
+
+export interface ProfilePropertiesResponse {
+  profile: Profile
+  status_summary: StatusSummary
+  sites_and_links: SiteAndLink[]
+  mentor_history: MentorHistoryEntry[]
+  journey: Record<string, unknown> | null
+  path: { name?: string; description?: string } | null
+  resource_usage: ResourceUsageEntry[]
+  celebrations: CelebrationEntry[]
 }
 
 export interface JourneyProgress {

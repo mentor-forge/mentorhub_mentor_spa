@@ -121,9 +121,20 @@ const router = createRouter({
     },
     {
       path: '/profiles/:id',
-      name: 'ProfileView',
-      component: () => import('@/pages/ProfileViewPage.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('@/pages/ProfileWorkspacePage.vue'),
+      meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'MenteeSection',
+          component: () => import('@/pages/ProfileMenteeSectionPage.vue'),
+        },
+        {
+          path: 'properties',
+          name: 'ProfileProperties',
+          component: () => import('@/pages/ProfilePropertiesPage.vue'),
+        },
+      ],
     },
     
     // Admin route
