@@ -154,9 +154,57 @@
       <v-row class="mt-4">
         <v-col cols="12">
           <v-card data-automation-id="profile-edit-encounters-section">
-            <v-card-title>Encounters</v-card-title>
+            <v-card-title class="d-flex align-center">
+              <span>Encounters</span>
+              <v-spacer />
+              <v-btn
+                color="primary"
+                :to="newEncounterRoute"
+                data-automation-id="profile-edit-new-encounter-button"
+              >
+                <v-icon start>mdi-plus</v-icon>
+                New Encounter
+              </v-btn>
+            </v-card-title>
             <v-card-text>
-              <p class="text-medium-emphasis">Section content in R109.</p>
+              <p
+                v-if="firstEncounterDate"
+                class="text-body-2 text-medium-emphasis mb-4"
+                data-automation-id="profile-edit-first-encounter-date"
+              >
+                First encounter: {{ firstEncounterDate }}
+              </p>
+
+              <v-alert
+                v-if="sortedEncounters.length === 0"
+                type="info"
+                variant="tonal"
+                data-automation-id="profile-edit-encounters-empty"
+              >
+                No encounters recorded for this mentee yet.
+              </v-alert>
+
+              <v-list v-else lines="two" data-automation-id="profile-edit-encounters-list">
+                <v-list-item
+                  v-for="encounter in sortedEncounters"
+                  :key="encounter._id"
+                  :to="`/encounters/${encounter._id}`"
+                  data-automation-id="profile-edit-encounter-item"
+                >
+                  <v-list-item-title>
+                    {{ encounter.tldr || 'Encounter' }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    {{ encounterDateDisplay(encounter.date) }}
+                    <span v-if="encounter.status"> · {{ encounter.status }}</span>
+                  </v-list-item-subtitle>
+                  <template v-if="encounter.summary" #append>
+                    <span class="text-caption text-medium-emphasis d-none d-md-inline">
+                      {{ encounter.summary }}
+                    </span>
+                  </template>
+                </v-list-item>
+              </v-list>
             </v-card-text>
           </v-card>
         </v-col>
@@ -187,7 +235,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
-import type { MenteeUpdate, ProfileExperience } from '@/api/types'
+import type { Encounter, MenteeUpdate, ProfileExperience } from '@/api/types'
 
 const routeLocation = useRoute()
 const router = useRouter()
@@ -224,6 +272,34 @@ const startDateDisplay = computed(() => {
 
   return '—'
 })
+
+const newEncounterRoute = computed(() => ({
+  path: '/encounters/new',
+  query: { menteeId: profileId.value },
+}))
+
+const sortedEncounters = computed((): Encounter[] => {
+  const encounters = profileDetail.value?.encounters ?? []
+  return [...encounters].sort((a, b) => {
+    const aTime = a.date || a.created.at_time
+    const bTime = b.date || b.created.at_time
+    return new Date(bTime).getTime() - new Date(aTime).getTime()
+  })
+})
+
+const firstEncounterDate = computed(() => {
+  if (sortedEncounters.value.length === 0) return null
+  const oldest = [...sortedEncounters.value].sort((a, b) => {
+    const aTime = a.date || a.created.at_time
+    const bTime = b.date || b.created.at_time
+    return new Date(aTime).getTime() - new Date(bTime).getTime()
+  })[0]
+  return encounterDateDisplay(oldest.date || oldest.created.at_time)
+})
+
+function encounterDateDisplay(date?: string) {
+  return date ? formatDate(date) : '—'
+}
 
 const errorRef = ref<Error | null>(null)
 watch(queryError, (err) => {

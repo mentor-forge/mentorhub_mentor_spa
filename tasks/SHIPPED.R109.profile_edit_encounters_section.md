@@ -1,6 +1,6 @@
 # R109 – Encounters section and New Encounter button
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R108  
 **Description**: Add the read-only **Encounters** section to `ProfileEditPage` and a **New Encounter** button that navigates to `EncounterNewPage` with mentee context. Encounter list comes from `ProfileDetail.encounters` (no separate encounter fetch).
@@ -49,4 +49,7 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Encounters section lists composite `profileDetail.encounters` read-only with links to edit page.
+- Shows first encounter date summary and empty state when none exist.
+- New Encounter button navigates to `/encounters/new?menteeId={profileId}`.
+- `npm run test`: 80/80 passed.
