@@ -85,34 +85,6 @@ npm run container
 
 For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
-## Mentor Dashboard and Mentee Workspace
-
-### Routes
-
-| Route | Page | Description |
-|-------|------|-------------|
-| `/profiles` | `ProfilesListPage.vue` | Dashboard — mentee cards (unchanged) |
-| `/profiles/:id` | `ProfileMenteeSectionPage.vue` | Mentee section — contact, encounter, notes |
-| `/profiles/:id/properties` | `ProfilePropertiesPage.vue` | Properties hub — journey activity across domains |
-
-The **Properties** button appears only on the mentee section (`/profiles/:id`), not on the dashboard.
-
-### API client methods (`src/api/client.ts`)
-
-| Method | Endpoint | Used by |
-|--------|----------|---------|
-| `api.getProfiles()` | `GET /api/profile` | Dashboard cards |
-| `api.getProfile(id)` | `GET /api/profile/:id` | Mentee section |
-| `api.getProfileProperties(id)` | `GET /api/profile/:id/properties` | Properties hub |
-| `api.getEncounters()` | `GET /api/encounter` | Mentee section (filter by `mentee_id`) |
-| `api.updateEncounter(id, data)` | `PATCH /api/encounter/:id` | Mentor notes on latest encounter |
-
-Types for the Properties response live in `src/api/types.ts` (`ProfilePropertiesResponse`).
-
-### Developer task reference
-
-See [mentorhub Tasks/R106](../mentorhub/Tasks/SHIPPED.R106.mentee_section_properties.md) for endpoint contract, testing, and rollback notes.
-
 ## Architecture Overview
 
 ```
@@ -174,9 +146,8 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 
 ### E2E Tests
 - Uses Cypress for end-to-end testing
-- Tests cover main user flows: authentication, CRUD operations per domain, the **Mentor Dashboard**, **Mentee section**, and **Properties hub**
+- Tests cover main user flows: authentication, CRUD operations per domain, and the **Mentor Dashboard**
 - Dashboard specs use `cy.loginAsMentor()` (seeded mentor user `marti`) to exercise `GET /api/profile`
-- Mentee flow: card click → `/profiles/:id` → Properties button → `/profiles/:id/properties`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
 - Requires dev server (`npm run dev`) and API stack (`npm run api`) to be running

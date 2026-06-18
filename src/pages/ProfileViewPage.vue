@@ -12,19 +12,19 @@
       </v-col>
     </v-row>
 
-    <v-row v-else-if="detail">
+    <v-row v-else-if="profile">
       <v-col cols="12" md="8">
         <v-card>
           <v-card-text>
             <v-text-field
-              :model-value="detail.profile.name"
+              :model-value="profile.name"
               label="Name"
               readonly
               variant="outlined"
             />
 
             <v-textarea
-              :model-value="detail.profile.description || 'N/A'"
+              :model-value="profile.description || 'N/A'"
               label="Description"
               readonly
               variant="outlined"
@@ -33,7 +33,7 @@
             />
 
             <v-text-field
-              :model-value="detail.profile.status || 'N/A'"
+              :model-value="profile.status || 'N/A'"
               label="Status"
               readonly
               variant="outlined"
@@ -68,7 +68,7 @@ const router = useRouter()
 
 const profileId = computed(() => routeLocation.params.id as string)
 
-const { data: detail, isLoading, error: queryError } = useQuery({
+const { data: profile, isLoading, error: queryError } = useQuery({
   queryKey: ['profile', profileId],
   queryFn: () => api.getProfile(profileId.value),
 })

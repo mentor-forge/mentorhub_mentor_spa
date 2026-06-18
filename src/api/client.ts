@@ -18,11 +18,8 @@ import type {
   Event,
   EventInput,
 
-  ProfileDetail,
-  Mentee,
-  MenteeUpdate,
+  Profile,
   MentorDashboardProfile,
-  ProfilePropertiesResponse,
 
   ConfigResponse,
   Error,
@@ -263,19 +260,8 @@ export const api = {
     return request<MentorDashboardProfile[]>('/profile')
   },
 
-  async getProfile(profileId: string): Promise<ProfileDetail> {
-    return request<ProfileDetail>(`/profile/${profileId}`)
-  },
-
-  async getProfileProperties(profileId: string): Promise<ProfilePropertiesResponse> {
-    return request<ProfilePropertiesResponse>(`/profile/${profileId}/properties`)
-  },
-
-  async updateMentee(menteeId: string, data: MenteeUpdate): Promise<Mentee> {
-    return request<Mentee>(`/mentee/${menteeId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    })
+  async getProfile(profileId: string): Promise<Profile> {
+    return request<Profile>(`/profile/${profileId}`)
   },
 
 

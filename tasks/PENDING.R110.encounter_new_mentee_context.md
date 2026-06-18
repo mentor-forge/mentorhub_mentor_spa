@@ -1,6 +1,6 @@
 # R110 – Encounter create with mentee context
 
-**Status**: Shipped  
+**Status**: Pending  
 **Type**: Feature  
 **Depends On**: R108  
 **Description**: When a mentor starts a new encounter from the mentee section, pre-fill `mentee_id` from the route query so the encounter is linked to the correct mentee.
@@ -48,5 +48,3 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 _Reserved for the task execution agent._
-
-Implemented and verified: aligned with mentor API ProfileDetail composite and restored properties endpoint.

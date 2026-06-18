@@ -1,6 +1,6 @@
 # R111 – Mentee workspace tests and documentation
 
-**Status**: Shipped  
+**Status**: Pending  
 **Type**: Feature  
 **Depends On**: R108, R109, R110  
 **Description**: Update unit tests, Cypress E2E, and README for the mentee section and Properties hub workflow. Final verification task for the feature.
@@ -57,5 +57,3 @@ The agent must not update files outside this list unless a prior task left `Prof
 ## Execution Notes
 
 _Reserved for the task execution agent._
-
-Implemented and verified: aligned with mentor API ProfileDetail composite and restored properties endpoint.

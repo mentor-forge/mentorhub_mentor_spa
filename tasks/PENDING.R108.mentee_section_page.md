@@ -1,6 +1,6 @@
 # R108 – Mentee section page
 
-**Status**: Shipped  
+**Status**: Pending  
 **Type**: Feature  
 **Depends On**: R107  
 **Description**: Implement the mentee section shown at `/profiles/:id` when a mentor clicks a dashboard card. Display mentee contact and encounter fields; support mentor notes on the latest encounter.
@@ -58,5 +58,3 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 _Reserved for the task execution agent._
-
-Implemented and verified: aligned with mentor API ProfileDetail composite and restored properties endpoint.

@@ -1,6 +1,6 @@
 # R107 – Mentee workspace routing and shell layout
 
-**Status**: Shipped  
+**Status**: Pending  
 **Type**: Feature  
 **Depends On**: R106  
 **Description**: Replace the flat profile detail route with a nested mentee workspace. The dashboard (`/profiles`) stays unchanged. Clicking a card opens `/profiles/:id` (mentee section). A **Properties** button appears only on the mentee section, not on the dashboard or global nav.
@@ -54,5 +54,3 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 _Reserved for the task execution agent._
-
-Implemented and verified: aligned with mentor API ProfileDetail composite and restored properties endpoint.
