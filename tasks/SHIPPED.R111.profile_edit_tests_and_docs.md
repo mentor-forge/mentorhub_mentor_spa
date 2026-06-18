@@ -1,6 +1,6 @@
 # R111 – ProfileEditPage tests and documentation
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R108, R109, R110  
 **Description**: Update unit tests, Cypress E2E, and README for the ProfileEditPage workflow (Profile, Notes, Encounters). Final verification task for the feature.
@@ -61,4 +61,7 @@ The agent must not update files outside this list unless a prior task left `Prof
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Updated `cypress/e2e/profile.cy.ts` for ProfileEditPage sections, New Encounter navigation, and no Properties button.
+- README documents Mentor Dashboard and ProfileEditPage routes/API client methods.
+- Fixed orphaned `ProfileViewPage.vue` to use composite `ProfileDetail` (required for `npm run build` / container).
+- `npm run test`: 80/80 passed; `npm run build` and `npm run container` succeeded.
