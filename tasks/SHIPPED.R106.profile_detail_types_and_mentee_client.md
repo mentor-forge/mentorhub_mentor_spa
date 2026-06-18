@@ -1,6 +1,6 @@
 # R106 – ProfileDetail types and Mentee API client
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Align SPA types and API client with the updated mentor API OpenAPI for composite profile detail and mentee notes PATCH. SPA-only; requires mentor API on `main` (L010–L040) with `GET /api/profile/{id}` returning `ProfileDetail` and `PATCH /api/mentee/{mentee_id}`.
@@ -55,4 +55,7 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Expanded `Profile` with OpenAPI detail fields; added `Mentee`, `MenteeUpdate`, `ProfileDetail`.
+- `getProfile` returns composite `ProfileDetail`; added `updateMentee` PATCH client.
+- Updated `Profile.client.test.ts` with composite get and mentee PATCH tests.
+- `npm run test`: 80/80 passed.

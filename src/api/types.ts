@@ -133,11 +133,73 @@ export interface EventInput {
 
 
 // Profile Domain
+export interface ProfileExperienceRole {
+  title?: string
+  description?: string
+  start?: string
+  end?: string
+  technologies?: string[]
+}
+
+export interface ProfileExperience {
+  company?: string
+  roles?: ProfileExperienceRole[]
+}
+
 export interface Profile {
   _id: string
   name: string
+  full_name?: string
   description?: string
-  status?: string
+  email?: string
+  email_verified?: boolean
+  mentor_id?: string
+  status?: 'active' | 'archived' | 'suspended'
+  location?: string
+  phone?: string
+  interests?: string[]
+  goals?: string[]
+  experience?: ProfileExperience[]
+  created?: Breadcrumb
+  saved?: Breadcrumb
+}
+
+export interface MenteeSchedule {
+  repeats?: number
+  starting?: string
+}
+
+export interface Mentee {
+  _id: string
+  name?: string
+  profile_id?: string
+  status?: 'active' | 'archived'
+  description?: string
+  focus?: string
+  homework?: string
+  notes?: string
+  next_appointment?: string
+  schedule?: MenteeSchedule
+  created: Breadcrumb
+  saved: Breadcrumb
+}
+
+export interface MenteeUpdate {
+  name?: string
+  profile_id?: string
+  status?: 'active' | 'archived'
+  description?: string
+  focus?: string
+  homework?: string
+  notes?: string
+  next_appointment?: string
+  schedule?: MenteeSchedule
+}
+
+export interface ProfileDetail {
+  profile: Profile
+  mentee: Mentee
+  encounters: Encounter[]
 }
 
 export interface JourneyProgress {

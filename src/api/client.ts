@@ -18,7 +18,9 @@ import type {
   Event,
   EventInput,
 
-  Profile,
+  ProfileDetail,
+  Mentee,
+  MenteeUpdate,
   MentorDashboardProfile,
 
   ConfigResponse,
@@ -260,8 +262,15 @@ export const api = {
     return request<MentorDashboardProfile[]>('/profile')
   },
 
-  async getProfile(profileId: string): Promise<Profile> {
-    return request<Profile>(`/profile/${profileId}`)
+  async getProfile(profileId: string): Promise<ProfileDetail> {
+    return request<ProfileDetail>(`/profile/${profileId}`)
+  },
+
+  async updateMentee(menteeId: string, data: MenteeUpdate): Promise<Mentee> {
+    return request<Mentee>(`/mentee/${menteeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
   },
 
 
