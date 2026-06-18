@@ -1,6 +1,6 @@
 # R108 – Profile and Notes sections on ProfileEditPage
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R107  
 **Description**: Implement the read-only **Profile** section and editable **Notes** section on `ProfileEditPage`. Profile data comes from `ProfileDetail.profile`; notes come from `ProfileDetail.mentee` and save via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`.
@@ -57,4 +57,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Profile section: read-only fields for name, status, start date, location, employer, job title, email, phone.
+- Notes section: AutoSaveField blur-to-save for description, focus, homework, notes via PATCH /api/mentee/{mentee._id}.
+- `npm run test`: 80/80 passed.
