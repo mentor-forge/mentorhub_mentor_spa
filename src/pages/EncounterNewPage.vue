@@ -71,13 +71,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import { validationRules, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import type { EncounterInput } from '@/api/types'
 
+const routeLocation = useRoute()
 const router = useRouter()
 const queryClient = useQueryClient()
 const formRef = ref()
@@ -88,6 +89,13 @@ const form = ref<EncounterInput>({
   tldr: '',
   summary: '',
   status: 'active',
+})
+
+onMounted(() => {
+  const menteeId = routeLocation.query.menteeId
+  if (typeof menteeId === 'string' && menteeId) {
+    form.value.mentee_id = menteeId
+  }
 })
 
 const statusOptions = ['active', 'archived']
@@ -101,6 +109,9 @@ const { mutate: createEncounter, isPending } = useMutation<{ _id: string }, Erro
   mutationFn: (data: EncounterInput) => api.createEncounter(data),
   onSuccess: (response: { _id: string }) => {
     queryClient.invalidateQueries({ queryKey: ['encounters'] })
+    if (form.value.mentee_id) {
+      queryClient.invalidateQueries({ queryKey: ['profile', form.value.mentee_id] })
+    }
     router.push(`/encounters/${response._id}`)
     errorRef.value = null
   },
@@ -118,6 +129,9 @@ async function handleSubmit() {
     }
     if (form.value.summary?.trim()) {
       payload.summary = form.value.summary.trim()
+    }
+    if (form.value.mentee_id) {
+      payload.mentee_id = form.value.mentee_id
     }
     createEncounter(payload)
   }

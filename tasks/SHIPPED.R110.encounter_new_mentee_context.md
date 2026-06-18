@@ -1,6 +1,6 @@
 # R110 – Encounter create with mentee context
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R109  
 **Description**: When a mentor starts a new encounter from ProfileEditPage, pre-fill `mentee_id` from the route query so the encounter is linked to the correct mentee.
@@ -47,4 +47,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- `EncounterNewPage` reads `menteeId` query param on mount and sets `form.mentee_id`.
+- Create payload includes `mentee_id` when present; invalidates profile query on success.
+- `npm run test`: 80/80 passed.
