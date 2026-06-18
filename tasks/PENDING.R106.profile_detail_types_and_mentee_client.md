@@ -11,14 +11,15 @@ Always read these files before implementation:
 
 - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
 - `README.md`
-- `../mentorhub_mentor_api/docs/openapi.yaml` — `ProfileDetail`, `Profile`, `Mentee`, `MenteeUpdate`
 - `src/api/types.ts`
 - `src/api/client.ts`
 - `src/api/Profile.client.test.ts`
 
-**Out of scope for this feature**
+External Inputs
+- after running ``npm run api`` to start the backing services, use ``curl localhost:8391/docs/openapi.yaml`` to get the latest api specifications, review schemas for — `ProfileDetail`, `Profile`, `Mentee`, `MenteeUpdate`
 
-- `GET /api/profile/{id}/properties` and any Properties hub UI (deferred to a future section).
+**Out of scope for this feature**
+- `GET /api/profile/{id}/properties` and any Properties hub UI 
 
 ## Goals
 
