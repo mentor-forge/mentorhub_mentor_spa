@@ -121,8 +121,8 @@ const router = createRouter({
     },
     {
       path: '/profiles/:id',
-      name: 'ProfileView',
-      component: () => import('@/pages/ProfileViewPage.vue'),
+      name: 'ProfileEdit',
+      component: () => import('@/pages/ProfileEditPage.vue'),
       meta: { requiresAuth: true }
     },
     

@@ -1,6 +1,6 @@
 # R107 – ProfileEditPage route and page shell
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R106  
 **Description**: Replace the flat `ProfileViewPage` route with a new `ProfileEditPage` at `/profiles/:id`. The dashboard (`/profiles`) stays unchanged. This task wires routing and the page shell; section content is completed in R108 and R109.
@@ -56,4 +56,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Added `ProfileEditPage.vue` shell with loading, error handling, heading, back button, section placeholders.
+- Router `/profiles/:id` now uses `ProfileEdit` route and `ProfileEditPage.vue`.
+- `npm run test`: 80/80 passed.
