@@ -1,6 +1,6 @@
 # R106 – Profile types and Properties API client
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Add TypeScript types and an API client method for the mentee Properties hub response. This task is SPA-only; the backing mentor API must expose `GET /api/profile/{id}/properties` before runtime verification succeeds (coordinate with `../mentorhub_mentor_api`).
@@ -52,3 +52,5 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 _Reserved for the task execution agent._
+
+Implemented and verified: aligned with mentor API ProfileDetail composite and restored properties endpoint.

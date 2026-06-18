@@ -1,6 +1,6 @@
 # R109 – Properties hub page
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R106, R107  
 **Description**: Implement the Properties hub at `/profiles/:id/properties`. Consumes `GET /api/profile/:id/properties` and displays aggregated mentee activity (status, sites/links, mentor history, resource usage, celebrations).
@@ -62,3 +62,5 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 _Reserved for the task execution agent._
+
+Implemented and verified: aligned with mentor API ProfileDetail composite and restored properties endpoint.

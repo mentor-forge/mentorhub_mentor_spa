@@ -5,12 +5,12 @@
     </v-col>
   </v-row>
 
-  <v-row v-else-if="profile">
+  <v-row v-else-if="detail">
     <v-col cols="12" md="8">
       <v-card>
         <v-card-text>
           <v-text-field
-            :model-value="profile.name"
+            :model-value="detail.profile.name"
             label="Name"
             readonly
             variant="outlined"
@@ -36,7 +36,7 @@
           </div>
 
           <v-text-field
-            :model-value="profile.status || 'N/A'"
+            :model-value="detail.profile.status || 'N/A'"
             label="Status"
             readonly
             variant="outlined"
@@ -45,8 +45,8 @@
           />
 
           <AutoSaveField
-            v-if="notesEncounterId"
-            :model-value="notesSummary"
+            v-if="detail.mentee._id"
+            :model-value="detail.mentee.notes || ''"
             label="Mentor notes"
             textarea
             :rows="4"
@@ -54,30 +54,9 @@
             automation-id="mentee-mentor-notes"
             :on-save="saveNotes"
           />
-          <v-textarea
-            v-else
-            v-model="draftNotes"
-            label="Mentor notes"
-            variant="outlined"
-            rows="4"
-            class="mt-4"
-            data-automation-id="mentee-mentor-notes"
-            hint="Save to create your first encounter notes"
-            persistent-hint
-          />
-          <v-btn
-            v-if="!notesEncounterId"
-            class="mt-2"
-            variant="tonal"
-            :loading="isSavingNotes"
-            data-automation-id="mentee-save-notes-button"
-            @click="saveDraftNotes"
-          >
-            Save notes
-          </v-btn>
 
           <v-text-field
-            :model-value="formatDate(profile.schedule?.starting)"
+            :model-value="formatDate(startDate)"
             label="Start date"
             readonly
             variant="outlined"
@@ -85,7 +64,7 @@
             data-automation-id="mentee-start-date"
           />
           <v-text-field
-            :model-value="profile.location || '—'"
+            :model-value="detail.profile.location || '—'"
             label="Location"
             readonly
             variant="outlined"
@@ -109,7 +88,7 @@
             data-automation-id="mentee-job-title"
           />
           <v-text-field
-            :model-value="profile.email || '—'"
+            :model-value="detail.profile.email || '—'"
             label="Email"
             readonly
             variant="outlined"
@@ -117,7 +96,7 @@
             data-automation-id="mentee-email"
           />
           <v-text-field
-            :model-value="profile.phone || '—'"
+            :model-value="detail.profile.phone || '—'"
             label="Phone"
             readonly
             variant="outlined"
@@ -140,44 +119,37 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
-import type { Encounter } from '@/api/types'
 
 const route = useRoute()
 const router = useRouter()
 const queryClient = useQueryClient()
 const profileId = computed(() => route.params.id as string)
-const draftNotes = ref('')
-const isSavingNotes = ref(false)
 const errorRef = ref<Error | null>(null)
 const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
-const { data: profile, isLoading } = useQuery({
+const { data: detail, isLoading } = useQuery({
   queryKey: ['profile', profileId],
   queryFn: () => api.getProfile(profileId.value),
 })
 
-const { data: encounterPage } = useQuery({
-  queryKey: ['encounters', 'mentee', profileId],
-  queryFn: () => api.getEncounters({ limit: 100 }),
-})
-
-const menteeEncounters = computed(() =>
-  (encounterPage.value?.items ?? [])
-    .filter((encounter: Encounter) => encounter.mentee_id === profileId.value)
-    .sort((a, b) => (a.date || '').localeCompare(b.date || '')),
+const sortedEncounters = computed(() =>
+  [...(detail.value?.encounters ?? [])].sort((a, b) =>
+    (a.date || '').localeCompare(b.date || ''),
+  ),
 )
 
-const firstEncounter = computed(() => menteeEncounters.value[0])
-const notesEncounter = computed(() => menteeEncounters.value[menteeEncounters.value.length - 1])
-const notesEncounterId = computed(() => notesEncounter.value?._id)
-const notesSummary = computed(() => notesEncounter.value?.summary || '')
+const firstEncounter = computed(() => sortedEncounters.value[0])
 const firstEncounterLabel = computed(() =>
   firstEncounter.value
     ? `${formatDate(firstEncounter.value.date)} — ${firstEncounter.value.tldr || 'Encounter'}`
     : 'No encounters yet',
 )
 
-const currentJob = computed(() => profile.value?.experience?.[0])
+const startDate = computed(
+  () => detail.value?.mentee.schedule?.starting || detail.value?.profile.schedule?.starting,
+)
+
+const currentJob = computed(() => detail.value?.profile.experience?.[0])
 const currentRole = computed(() => currentJob.value?.roles?.[0])
 
 function goNewEncounter() {
@@ -185,38 +157,16 @@ function goNewEncounter() {
 }
 
 async function saveNotes(value: string | number) {
-  const id = notesEncounterId.value
-  if (!id) {
+  const menteeId = detail.value?.mentee._id
+  if (!menteeId) {
     return
   }
   try {
-    await api.updateEncounter(id, { summary: String(value) })
-    await queryClient.invalidateQueries({ queryKey: ['encounters', 'mentee', profileId] })
+    await api.updateMentee(menteeId, { notes: String(value) })
+    await queryClient.invalidateQueries({ queryKey: ['profile', profileId] })
     errorRef.value = null
   } catch (error) {
     errorRef.value = error as Error
-  }
-}
-
-async function saveDraftNotes() {
-  if (!draftNotes.value.trim()) {
-    return
-  }
-  isSavingNotes.value = true
-  try {
-    await api.createEncounter({
-      mentee_id: profileId.value,
-      tldr: 'Session notes',
-      summary: draftNotes.value.trim(),
-      status: 'active',
-    })
-    draftNotes.value = ''
-    await queryClient.invalidateQueries({ queryKey: ['encounters', 'mentee', profileId] })
-    errorRef.value = null
-  } catch (error) {
-    errorRef.value = error as Error
-  } finally {
-    isSavingNotes.value = false
   }
 }
 </script>

@@ -100,6 +100,23 @@
     </v-btn>
   </template>
 
+  <v-row v-else-if="queryError">
+    <v-col>
+      <v-alert type="error" variant="tonal" data-automation-id="profile-properties-error">
+        Unable to load Properties. Ensure the mentor API includes
+        GET /api/profile/:id/properties and the stack is up to date.
+      </v-alert>
+      <v-btn
+        variant="text"
+        class="mt-2"
+        data-automation-id="profile-properties-back-button"
+        @click="router.push(`/profiles/${profileId}`)"
+      >
+        Back to profile
+      </v-btn>
+    </v-col>
+  </v-row>
+
   <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
     {{ errorMessage }}
   </v-snackbar>

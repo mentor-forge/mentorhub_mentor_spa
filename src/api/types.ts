@@ -167,6 +167,40 @@ export interface Profile {
   phone?: string
 }
 
+export interface MenteeSchedule {
+  repeats?: number
+  starting?: string
+}
+
+export interface Mentee {
+  _id: string
+  name?: string
+  profile_id?: string
+  status?: 'active' | 'archived' | string
+  description?: string
+  focus?: string
+  homework?: string
+  notes?: string
+  next_appointment?: string
+  schedule?: MenteeSchedule
+}
+
+export interface MenteeUpdate {
+  focus?: string
+  homework?: string
+  notes?: string
+  next_appointment?: string
+  schedule?: MenteeSchedule
+  status?: 'active' | 'archived' | string
+  description?: string
+}
+
+export interface ProfileDetail {
+  profile: Profile
+  mentee: Mentee
+  encounters: Encounter[]
+}
+
 export interface StatusSummary {
   profile_status?: string | null
   journey_status?: string | null

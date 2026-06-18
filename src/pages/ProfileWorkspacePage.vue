@@ -4,7 +4,7 @@
       <v-col>
         <div class="d-flex align-center justify-space-between flex-wrap ga-2">
           <h1 class="text-h4" data-automation-id="mentee-section-heading">
-            {{ profile?.name || 'Mentee' }}
+            {{ profileName || 'Mentee' }}
           </h1>
           <div class="d-flex ga-2">
             <v-btn
@@ -43,8 +43,10 @@ const router = useRouter()
 const profileId = computed(() => route.params.id as string)
 const showPropertiesButton = computed(() => route.name === 'MenteeSection')
 
-const { data: profile } = useQuery({
+const { data: detail } = useQuery({
   queryKey: ['profile', profileId],
   queryFn: () => api.getProfile(profileId.value),
 })
+
+const profileName = computed(() => detail.value?.profile?.name)
 </script>

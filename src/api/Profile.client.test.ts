@@ -40,22 +40,30 @@ describe('API Client - Profile Endpoints', () => {
     expect(mockFetch).toHaveBeenCalledWith('/api/profile', expect.any(Object))
   })
 
-  it('should get a single profile', async () => {
-    const mockProfile = {
-      _id: '507f1f77bcf86cd799439011',
-      name: 'test-profile',
+  it('should get a single profile detail', async () => {
+    const mockDetail = {
+      profile: {
+        _id: '507f1f77bcf86cd799439011',
+        name: 'test-profile',
+      },
+      mentee: {
+        _id: '507f1f77bcf86cd7994390bb',
+        profile_id: '507f1f77bcf86cd799439011',
+        notes: 'mentor notes',
+      },
+      encounters: [],
     }
 
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockProfile,
+      json: async () => mockDetail,
     })
 
     const result = await api.getProfile('507f1f77bcf86cd799439011')
 
-    expect(result).toEqual(mockProfile)
+    expect(result).toEqual(mockDetail)
     expect(mockFetch).toHaveBeenCalledWith(
       '/api/profile/507f1f77bcf86cd799439011',
       expect.any(Object),
