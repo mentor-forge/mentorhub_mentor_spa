@@ -27,7 +27,18 @@ describe('Mentor Dashboard', () => {
       .click()
 
     cy.url().should('match', /\/profiles\/[0-9a-fA-F]{24}$/)
-    cy.get('h1').contains('View Profile').should('be.visible')
+    cy.get('[data-automation-id="mentee-section-heading"]').should('be.visible')
+    cy.get('[data-automation-id="mentee-properties-button"]').should('be.visible')
+  })
+
+  it('should open properties from the mentee section only', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    cy.get('[data-automation-id="mentee-properties-button"]').click()
+    cy.url().should('match', /\/profiles\/[0-9a-fA-F]{24}\/properties$/)
+    cy.get('[data-automation-id="profile-properties-summary"]').should('be.visible')
   })
 
   it('should not have a new profile button (read-only)', () => {

@@ -20,6 +20,7 @@ import type {
 
   Profile,
   MentorDashboardProfile,
+  ProfilePropertiesResponse,
 
   ConfigResponse,
   Error,
@@ -262,6 +263,10 @@ export const api = {
 
   async getProfile(profileId: string): Promise<Profile> {
     return request<Profile>(`/profile/${profileId}`)
+  },
+
+  async getProfileProperties(profileId: string): Promise<ProfilePropertiesResponse> {
+    return request<ProfilePropertiesResponse>(`/profile/${profileId}/properties`)
   },
 
 

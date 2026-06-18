@@ -71,13 +71,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import { validationRules, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import type { EncounterInput } from '@/api/types'
 
+const route = useRoute()
 const router = useRouter()
 const queryClient = useQueryClient()
 const formRef = ref()
@@ -88,6 +89,14 @@ const form = ref<EncounterInput>({
   tldr: '',
   summary: '',
   status: 'active',
+  mentee_id: undefined,
+})
+
+onMounted(() => {
+  const menteeId = route.query.menteeId as string | undefined
+  if (menteeId) {
+    form.value.mentee_id = menteeId
+  }
 })
 
 const statusOptions = ['active', 'archived']
@@ -115,6 +124,9 @@ async function handleSubmit() {
     const payload: EncounterInput = {
       status: form.value.status ?? 'active',
       tldr: form.value.tldr?.trim(),
+    }
+    if (form.value.mentee_id) {
+      payload.mentee_id = form.value.mentee_id
     }
     if (form.value.summary?.trim()) {
       payload.summary = form.value.summary.trim()
