@@ -1,0 +1,24 @@
+/**
+ * App background: 3-stop gradient (blue → purple → pink), bottom-left to top-right.
+ */
+html,
+body,
+#app,
+.v-application,
+.v-application__wrap {
+  min-height: 100%;
+}
+
+.v-application {
+  background: linear-gradient(
+    to top right,
+    #2563eb 0%,
+    #7c3aed 50%,
+    #db2777 100%
+  ) !important;
+  background-attachment: fixed;
+}
+
+.v-main {
+  background: transparent !important;
+}

@@ -83,6 +83,23 @@ npm run container
 3. Sign in via Developer Edition login (`http://127.0.0.1:8080/login.html`) when prompted
 4. Default landing page is the **Mentor Dashboard** at `/profiles`
 
+## Mentor Dashboard and Profile Edit
+
+| Route | Page | API |
+|-------|------|-----|
+| `/profiles` | `ProfilesListPage` — mentee cards for the logged-in mentor | `GET /api/profile` |
+| `/profiles/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
+
+**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
+
+- **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
+- **Notes** — editable mentee notes via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`
+- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** links to `/encounters/new?menteeId={profileId}`
+
+API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.updateMentee(menteeId, data)`.
+
+E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
+
 For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
 ## Architecture Overview

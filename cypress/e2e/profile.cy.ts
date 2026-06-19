@@ -21,17 +21,53 @@ describe('Mentor Dashboard', () => {
     })
   })
 
-  it('should navigate to a mentee profile when a card is clicked', () => {
+  it('should navigate to ProfileEditPage when a card is clicked', () => {
     cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
       .first()
       .click()
 
     cy.url().should('match', /\/profiles\/[0-9a-fA-F]{24}$/)
-    cy.get('h1').contains('View Profile').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-heading"]').should('be.visible')
+    cy.contains('h1', 'View Profile').should('not.exist')
+  })
+
+  it('should show Profile, Notes, and Encounters sections on ProfileEditPage', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    cy.get('[data-automation-id="profile-edit-profile-section"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-notes-section"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-encounters-section"]').should('be.visible')
+  })
+
+  it('should navigate to new encounter with menteeId from ProfileEditPage', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    cy.url().then((profileUrl) => {
+      const profileId = profileUrl.match(/\/profiles\/([0-9a-fA-F]{24})$/)?.[1]
+      expect(profileId).to.match(/^[0-9a-fA-F]{24}$/)
+
+      cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
+      cy.url().should('include', '/encounters/new')
+      cy.url().should('include', `menteeId=${profileId}`)
+    })
   })
 
   it('should not have a new profile button (read-only)', () => {
     cy.get('button').contains('New Profile').should('not.exist')
+  })
+
+  it('should not show a Properties button on dashboard or ProfileEditPage', () => {
+    cy.get('button').contains('Properties').should('not.exist')
+
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    cy.get('button').contains('Properties').should('not.exist')
   })
 })
 
