@@ -1,0 +1,69 @@
+/**
+ * Global Vuetify input styling: pronounced 3px border + inset shadow.
+ */
+.v-input:not(.v-input--disabled) .v-field {
+  --v-field-border-width: 3px;
+  --v-field-border-opacity: 0.72;
+}
+
+.v-input:not(.v-input--disabled) .v-field.v-field--variant-outlined .v-field__outline {
+  color: rgba(var(--v-border-color), 0.85);
+}
+
+.v-input:not(.v-input--disabled) .v-field__field {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.82) 0%,
+    rgba(255, 255, 255, 0.25) 45%,
+    rgba(0, 0, 0, 0.06) 100%
+  );
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 1),
+    inset 0 8px 18px rgba(0, 0, 0, 0.34);
+}
+
+.v-input:not(.v-input--disabled) .v-field:not(.v-field--variant-outlined) {
+  border: 3px solid rgba(var(--v-border-color), 0.85);
+}
+
+.v-input:not(.v-input--disabled) .v-field.v-field--focused {
+  --v-field-border-opacity: 1;
+}
+
+.v-input:not(.v-input--disabled) .v-field.v-field--focused .v-field__field {
+  box-shadow:
+    inset 0 2px 5px rgba(255, 255, 255, 1),
+    inset 0 10px 22px rgba(0, 0, 0, 0.4);
+}
+
+.v-input:not(.v-input--disabled) .v-field.v-field--focused.v-field--variant-outlined .v-field__outline {
+  color: rgb(var(--v-theme-primary));
+}
+
+/* Raise field labels (Name, Status, etc.) one step: larger type + higher position */
+.v-input:not(.v-input--disabled) .v-label.v-field-label {
+  font-size: 1rem;
+  top: calc(var(--v-input-padding-top) - 6px);
+}
+
+.v-input--density-compact:not(.v-input--disabled) .v-label.v-field-label {
+  font-size: 0.9375rem;
+}
+
+.v-input--density-comfortable:not(.v-input--disabled) .v-label.v-field-label {
+  font-size: 1.0625rem;
+}
+
+.v-input:not(.v-input--disabled) .v-label.v-field-label--floating {
+  --v-field-label-scale: 0.875em;
+}
+
+.v-input:not(.v-input--disabled) .v-field--variant-outlined .v-label.v-field-label--floating {
+  transform: translateY(calc(-50% - 8px));
+}
+
+.v-input:not(.v-input--disabled) .v-field--variant-filled .v-label.v-field-label--floating,
+.v-input:not(.v-input--disabled) .v-field--variant-solo .v-label.v-field-label--floating,
+.v-input:not(.v-input--disabled) .v-field--variant-solo-filled .v-label.v-field-label--floating {
+  top: calc(var(--v-field-padding-top, 4px) - 4px);
+}

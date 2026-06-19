@@ -18,9 +18,20 @@
       <v-row>
         <v-col cols="12">
           <v-card data-automation-id="profile-edit-profile-section">
-            <v-card-title>Profile</v-card-title>
-            <v-card-text>
-              <v-row>
+            <v-card-title
+              class="d-flex align-center cursor-pointer"
+              data-automation-id="profile-edit-profile-toggle"
+              @click="profileExpanded = !profileExpanded"
+            >
+              <v-icon
+                :icon="profileExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                class="mr-2"
+              />
+              <h2 class="text-h4 mb-0 font-italic">Profile</h2>
+            </v-card-title>
+            <v-expand-transition>
+              <v-card-text v-show="profileExpanded">
+                <v-row>
                 <v-col cols="12" md="6">
                   <v-text-field
                     :model-value="displayName"
@@ -102,7 +113,8 @@
                   />
                 </v-col>
               </v-row>
-            </v-card-text>
+              </v-card-text>
+            </v-expand-transition>
           </v-card>
         </v-col>
       </v-row>
@@ -110,8 +122,19 @@
       <v-row class="mt-4">
         <v-col cols="12">
           <v-card data-automation-id="profile-edit-notes-section">
-            <v-card-title>Notes</v-card-title>
-            <v-card-text>
+            <v-card-title
+              class="d-flex align-center cursor-pointer"
+              data-automation-id="profile-edit-notes-toggle"
+              @click="notesExpanded = !notesExpanded"
+            >
+              <v-icon
+                :icon="notesExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                class="mr-2"
+              />
+              <h2 class="text-h4 mb-0 font-italic">Notes</h2>
+            </v-card-title>
+            <v-expand-transition>
+              <v-card-text v-show="notesExpanded">
               <AutoSaveField
                 :model-value="profileDetail.mentee.description || ''"
                 label="Relationship Summary"
@@ -146,7 +169,8 @@
                 :rows="4"
                 automation-id="profile-edit-notes-input"
               />
-            </v-card-text>
+              </v-card-text>
+            </v-expand-transition>
           </v-card>
         </v-col>
       </v-row>
@@ -155,18 +179,29 @@
         <v-col cols="12">
           <v-card data-automation-id="profile-edit-encounters-section">
             <v-card-title class="d-flex align-center">
-              <span>Encounters</span>
-              <v-spacer />
+              <div
+                class="d-flex align-center flex-grow-1 cursor-pointer"
+                data-automation-id="profile-edit-encounters-toggle"
+                @click="encountersExpanded = !encountersExpanded"
+              >
+                <v-icon
+                  :icon="encountersExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
+                  class="mr-2"
+                />
+                <h2 class="text-h4 mb-0 font-italic">Encounters</h2>
+              </div>
               <v-btn
                 color="primary"
                 :to="newEncounterRoute"
                 data-automation-id="profile-edit-new-encounter-button"
+                @click.stop
               >
                 <v-icon start>mdi-plus</v-icon>
                 New Encounter
               </v-btn>
             </v-card-title>
-            <v-card-text>
+            <v-expand-transition>
+              <v-card-text v-show="encountersExpanded">
               <p
                 v-if="firstEncounterDate"
                 class="text-body-2 text-medium-emphasis mb-4"
@@ -205,7 +240,8 @@
                   </template>
                 </v-list-item>
               </v-list>
-            </v-card-text>
+              </v-card-text>
+            </v-expand-transition>
           </v-card>
         </v-col>
       </v-row>
@@ -242,6 +278,10 @@ const router = useRouter()
 const queryClient = useQueryClient()
 
 const profileId = computed(() => routeLocation.params.id as string)
+
+const profileExpanded = ref(true)
+const notesExpanded = ref(true)
+const encountersExpanded = ref(true)
 
 const { data: profileDetail, isLoading, error: queryError } = useQuery({
   queryKey: ['profile', profileId],
@@ -329,3 +369,9 @@ async function updateMenteeField(field: keyof MenteeUpdate, value: string) {
   await updateMentee({ [field]: value })
 }
 </script>
+
+<style scoped>
+.cursor-pointer {
+  cursor: pointer;
+}
+</style>
