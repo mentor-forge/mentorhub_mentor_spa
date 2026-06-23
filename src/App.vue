@@ -16,97 +16,30 @@
       temporary
     >
       <v-list density="compact" nav>
-        
-        <v-list-subheader>RESOURCE DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/resources"
-          prepend-icon="mdi-view-list"
-          title="List Resources"
-          data-automation-id="nav-resources-list-link"
-        />
-        <v-list-item
-          to="/resources/new"
-          prepend-icon="mdi-plus"
-          title="New Resource"
-          data-automation-id="nav-resources-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        <v-list-subheader>PATH DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/paths"
-          prepend-icon="mdi-view-list"
-          title="List Paths"
-          data-automation-id="nav-paths-list-link"
-        />
-        <v-list-item
-          to="/paths/new"
-          prepend-icon="mdi-plus"
-          title="New Path"
-          data-automation-id="nav-paths-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        <v-list-subheader>PLAN DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/plans"
-          prepend-icon="mdi-view-list"
-          title="List Plans"
-          data-automation-id="nav-plans-list-link"
-        />
-        <v-list-item
-          to="/plans/new"
-          prepend-icon="mdi-plus"
-          title="New Plan"
-          data-automation-id="nav-plans-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        <v-list-subheader>ENCOUNTER DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/encounters"
-          prepend-icon="mdi-view-list"
-          title="List Encounters"
-          data-automation-id="nav-encounters-list-link"
-        />
-        <v-list-item
-          to="/encounters/new"
-          prepend-icon="mdi-plus"
-          title="New Encounter"
-          data-automation-id="nav-encounters-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        
-        <v-list-subheader>EVENT DOMAIN</v-list-subheader>
-        <v-list-item
-          to="/events"
-          prepend-icon="mdi-view-list"
-          title="List Events"
-          data-automation-id="nav-events-list-link"
-        />
-        <v-list-item
-          to="/events/new"
-          prepend-icon="mdi-plus"
-          title="New Event"
-          data-automation-id="nav-events-new-link"
-        />
-
-        <v-divider class="my-2" />
-        
-        
-        <v-list-subheader>PROFILE DOMAIN</v-list-subheader>
         <v-list-item
           to="/profiles"
           prepend-icon="mdi-view-dashboard"
           title="Dashboard"
-          data-automation-id="nav-profiles-list-link"
+          data-automation-id="nav-dashboard-link"
         />
-        
+        <v-list-item
+          to="/resources"
+          prepend-icon="mdi-book-open-page-variant"
+          title="Resources"
+          data-automation-id="nav-resources-link"
+        />
+        <v-list-item
+          to="/paths"
+          prepend-icon="mdi-map-marker-path"
+          title="Learning Paths"
+          data-automation-id="nav-learning-paths-link"
+        />
+        <v-list-item
+          to="/plans"
+          prepend-icon="mdi-clipboard-list-outline"
+          title="Encounter Plans"
+          data-automation-id="nav-encounter-plans-link"
+        />
       </v-list>
 
       <template v-slot:append>
