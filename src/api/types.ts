@@ -61,6 +61,7 @@ export interface Plan {
   _id: string
   name: string
   description?: string
+  steps?: string[]
   status?: 'active' | 'archived'
   created: Breadcrumb
   saved: Breadcrumb
@@ -69,12 +70,14 @@ export interface Plan {
 export interface PlanInput {
   name: string
   description?: string
+  steps?: string[]
   status?: 'active' | 'archived'
 }
 
 export interface PlanUpdate {
   name?: string
   description?: string
+  steps?: string[]
   status?: 'active' | 'archived'
 }
 

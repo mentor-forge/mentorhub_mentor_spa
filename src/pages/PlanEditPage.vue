@@ -48,6 +48,52 @@
 
             <v-divider class="my-6" />
 
+            <h2 class="text-h6 mb-3">Steps</h2>
+            <p v-if="localSteps.length === 0" class="text-medium-emphasis mb-3">
+              No steps yet. Add the first step below.
+            </p>
+            <v-list v-else data-automation-id="plan-edit-step-list" class="mb-3">
+              <v-list-item
+                v-for="(step, index) in localSteps"
+                :key="`${index}-${step}`"
+                data-automation-id="plan-edit-step-item"
+              >
+                <v-text-field
+                  :model-value="step"
+                  :label="`Step ${index + 1}`"
+                  variant="outlined"
+                  density="compact"
+                  hide-details
+                  class="mr-2"
+                  :data-automation-id="`plan-edit-step-input-${index}`"
+                  @update:model-value="(value: string) => updateStepText(index, value)"
+                  @blur="saveSteps"
+                />
+                <template #append>
+                  <v-btn
+                    icon="mdi-delete"
+                    variant="text"
+                    color="error"
+                    data-automation-id="plan-edit-delete-step-button"
+                    @click="removeStep(index)"
+                  />
+                </template>
+              </v-list-item>
+            </v-list>
+
+            <v-btn
+              color="primary"
+              variant="tonal"
+              prepend-icon="mdi-plus"
+              :loading="isSavingSteps"
+              data-automation-id="plan-edit-add-step-button"
+              @click="addStep"
+            >
+              Add Step
+            </v-btn>
+
+            <v-divider class="my-6" />
+
             <v-row>
               <v-col cols="12" md="6">
                 <v-text-field
@@ -131,11 +177,16 @@ const router = useRouter()
 const queryClient = useQueryClient()
 
 const planId = computed(() => routeLocation.params.id as string)
+const localSteps = ref<string[]>([])
 
 const { data: plan, isLoading, error: queryError } = useQuery({
   queryKey: ['plan', planId],
   queryFn: () => api.getPlan(planId.value),
 })
+
+watch(plan, (value) => {
+  localSteps.value = [...(value?.steps ?? [])]
+}, { immediate: true })
 
 const errorRef = ref<Error | null>(null)
 watch(queryError, (err) => {
@@ -165,11 +216,36 @@ const { mutateAsync: updatePlan } = useMutation({
   },
 })
 
+const isSavingSteps = ref(false)
+
 async function updateField(field: keyof PlanUpdate, value: string) {
   try {
     await updatePlan({ [field]: value })
   } catch (error) {
     throw error
   }
+}
+
+function updateStepText(index: number, value: string) {
+  localSteps.value[index] = value
+}
+
+async function saveSteps() {
+  isSavingSteps.value = true
+  try {
+    await updatePlan({ steps: [...localSteps.value] })
+  } finally {
+    isSavingSteps.value = false
+  }
+}
+
+async function addStep() {
+  localSteps.value.push('')
+  await saveSteps()
+}
+
+async function removeStep(index: number) {
+  localSteps.value.splice(index, 1)
+  await saveSteps()
 }
 </script>

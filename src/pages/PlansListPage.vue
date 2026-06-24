@@ -16,10 +16,10 @@
         />
       </v-col>
       <v-col cols="12" md="6" class="d-flex justify-end align-center">
-        <v-btn 
-          color="primary" 
-          to="/plans/new"
+        <v-btn
+          color="primary"
           data-automation-id="plan-list-new-button"
+          @click="showNewDialog = true"
         >
           <v-icon left>mdi-plus</v-icon>
           New Plan
@@ -27,119 +27,138 @@
       </v-col>
     </v-row>
 
+    <v-progress-linear
+      v-if="isLoading"
+      indeterminate
+      color="primary"
+      class="mb-4"
+    />
+
+    <v-row v-if="!isLoading && (plans ?? []).length === 0">
+      <v-col cols="12">
+        <v-alert type="info" variant="tonal" data-automation-id="plan-list-empty">
+          No plans found.
+        </v-alert>
+      </v-col>
+    </v-row>
+
     <v-row>
-      <v-col>
-        <v-card>
-          <v-data-table
-            :headers="headers"
-            :items="(plans ?? []) as unknown as Plan[]"
-            :loading="isLoading as unknown as boolean"
-            @click:row="navigateToPlan"
-            hover
-            :items-per-page="-1"
-            hide-default-footer
-          >
-            <template v-slot:header.name>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('name')">
-                Name
-                <v-icon v-if="sortByValue === 'name'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.status>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('status')">
-                Status
-                <v-icon v-if="sortByValue === 'status'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.created.at_time>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('created.at_time')">
-                Created
-                <v-icon v-if="sortByValue === 'created.at_time'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.saved.at_time>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('saved.at_time')">
-                Last Saved
-                <v-icon v-if="sortByValue === 'saved.at_time'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:item.status="{ item }">
-              <v-chip
-                :color="item.status === 'active' ? 'success' : 'grey'"
-                size="small"
-              >
-                {{ item.status || 'N/A' }}
-              </v-chip>
-            </template>
-            <template v-slot:item.created.at_time="{ item }">
-              {{ formatDate(item.created.at_time) }}
-            </template>
-            <template v-slot:item.saved.at_time="{ item }">
-              {{ formatDate(item.saved.at_time) }}
-            </template>
-          </v-data-table>
-          
-          <!-- Load more button -->
-          <v-card-actions v-if="hasMoreValue">
-            <v-btn
-              @click="loadMore"
-              :loading="isFetchingNextPageValue"
+      <v-col
+        v-for="plan in (plans ?? [])"
+        :key="plan._id"
+        cols="12"
+        sm="6"
+        md="4"
+      >
+        <v-card
+          hover
+          class="h-100"
+          data-automation-id="plan-list-card"
+          @click="navigateToPlan(plan)"
+        >
+          <v-card-title>{{ plan.name }}</v-card-title>
+          <v-card-text>
+            <p class="mb-3 text-medium-emphasis">
+              {{ plan.description || 'No description' }}
+            </p>
+            <v-chip
+              size="small"
               color="primary"
-              block
-              data-automation-id="plan-list-load-more"
+              variant="tonal"
+              data-automation-id="plan-list-card-step-count"
             >
-              {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
-            </v-btn>
-          </v-card-actions>
+              {{ stepCount(plan) }} {{ stepCount(plan) === 1 ? 'step' : 'steps' }}
+            </v-chip>
+          </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
+    <v-row v-if="hasMoreValue">
+      <v-col>
+        <v-btn
+          @click="loadMore"
+          :loading="isFetchingNextPageValue"
+          color="primary"
+          block
+          data-automation-id="plan-list-load-more"
+        >
+          {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <v-dialog
+      v-model="showNewDialog"
+      max-width="480"
+      data-automation-id="plan-list-new-dialog"
+    >
+      <v-card>
+        <v-card-title>New Plan</v-card-title>
+        <v-card-text>
+          <v-form ref="newPlanFormRef" @submit.prevent="handleCreatePlan">
+            <v-text-field
+              v-model="newPlanName"
+              label="Plan name *"
+              :rules="[rules.required, rules.namePattern]"
+              hint="No whitespace, max 40 characters"
+              persistent-hint
+              autofocus
+              data-automation-id="plan-list-new-name-input"
+            />
+          </v-form>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            variant="text"
+            data-automation-id="plan-list-new-cancel-button"
+            @click="closeNewDialog"
+          >
+            Cancel
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            :loading="isCreating"
+            data-automation-id="plan-list-new-submit-button"
+            @click="handleCreatePlan"
+          >
+            Create
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
       Failed to load plans: {{ errorMessage }}
+    </v-snackbar>
+
+    <v-snackbar :model-value="showCreateError as unknown as boolean" color="error" :timeout="5000">
+      Failed to create plan: {{ createErrorMessage }}
     </v-snackbar>
   </v-container>
 </template>
 
 <script setup lang="ts">
-/**
- * Plans List Page - Showcase of mentorhub_spa_utils ease of use
- * 
- * This page demonstrates how easy it is to build a feature-rich list page with:
- * - Infinite scroll pagination
- * - Server-side sorting
- * - Debounced search
- * - Loading states
- * - Error handling
- * 
- * All of this functionality comes from a single composable: useInfiniteScroll
- * from @mentor-forge/mentorhub_spa_utils. Just provide your API call and you're done!
- */
-import { computed } from 'vue'
-import { api } from '@/api/client'
-import { formatDate, ListPageSearch, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import type { Plan } from '@/api/types'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { api } from '@/api/client'
+import { ListPageSearch, useInfiniteScroll, useErrorHandler, validationRules } from '@mentor-forge/mentorhub_spa_utils'
+import type { Plan, PlanInput } from '@/api/types'
 
 const router = useRouter()
+const queryClient = useQueryClient()
 
-// 🎯 One composable call gives you everything you need for infinite scroll:
-// - items: The flattened list of all loaded items
-// - isLoading: Loading state for initial load
-// - isFetchingNextPage: Loading state for "load more"
-// - hasMore: Whether there are more pages to load
-// - loadMore: Function to load the next page
-// - showError/errorMessage: Error handling
-// - searchQuery/debouncedSearch: Search with automatic 300ms debouncing
-// - sortBy/order/setSortBy/setOrder: Server-side sorting
+const showNewDialog = ref(false)
+const newPlanName = ref('')
+const newPlanFormRef = ref()
+
+const rules = {
+  required: validationRules.required,
+  namePattern: validationRules.namePattern,
+}
+
 const {
   items: plans,
   isLoading,
@@ -150,10 +169,6 @@ const {
   errorMessage,
   searchQuery,
   debouncedSearch,
-  sortBy,
-  order,
-  setSortBy,
-  setOrder,
 } = useInfiniteScroll<Plan>({
   queryKey: ['plans'],
   queryFn: (params) => api.getPlans(params),
@@ -161,36 +176,43 @@ const {
   limit: 20,
 })
 
-// Simple navigation handler
-function navigateToPlan(_event: unknown, { item }: { item: Plan }) {
-  router.push(`/plans/${item._id}`)
-}
-
-// Create computed properties for template use (TypeScript-friendly)
-const sortByValue = computed(() => sortBy.value)
-const orderValue = computed(() => order.value)
 const hasMoreValue = computed(() => hasMore.value)
 const isFetchingNextPageValue = computed(() => isFetchingNextPage.value)
 
-// 🎯 Sorting is simple: just toggle order or set new field
-// useInfiniteScroll automatically refetches when sort changes
-function handleSort(field: string) {
-  if (sortBy.value === field) {
-    // Toggle order if same field
-    setOrder(order.value === 'asc' ? 'desc' : 'asc')
-  } else {
-    // New field, default to ascending
-    setSortBy(field)
-    setOrder('asc')
-  }
+const createErrorRef = ref<Error | null>(null)
+const { showError: showCreateError, errorMessage: createErrorMessage } = useErrorHandler(createErrorRef as any)
+
+const { mutate: createPlan, isPending: isCreating } = useMutation<{ _id: string }, Error, PlanInput>({
+  mutationFn: (data: PlanInput) => api.createPlan(data),
+  onSuccess: (response) => {
+    queryClient.invalidateQueries({ queryKey: ['plans'] })
+    createErrorRef.value = null
+    closeNewDialog()
+    router.push(`/plans/${response._id}`)
+  },
+  onError: (error: Error) => {
+    createErrorRef.value = error
+  },
+})
+
+function stepCount(plan: Plan): number {
+  return plan.steps?.length ?? 0
 }
 
-const headers = [
-  { title: 'Name', key: 'name', sortable: false },
-  { title: 'Description', key: 'description', sortable: false },
-  { title: 'Status', key: 'status', sortable: false },
-  { title: 'Created', key: 'created.at_time', sortable: false },
-  { title: 'Last Saved', key: 'saved.at_time', sortable: false },
-]
+function navigateToPlan(plan: Plan) {
+  router.push(`/plans/${plan._id}`)
+}
 
+function closeNewDialog() {
+  showNewDialog.value = false
+  newPlanName.value = ''
+  newPlanFormRef.value?.resetValidation()
+}
+
+async function handleCreatePlan() {
+  const { valid } = await newPlanFormRef.value.validate()
+  if (valid) {
+    createPlan({ name: newPlanName.value.trim(), status: 'active' })
+  }
+}
 </script>
