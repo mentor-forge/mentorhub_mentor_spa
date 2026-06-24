@@ -19,6 +19,7 @@ describe('API Client - Plan Endpoints', () => {
         _id: '507f1f77bcf86cd799439011',
         name: 'test-plan',
         description: 'Test description',
+        steps: ['Review goals', 'Discuss progress'],
         status: 'active' as const,
         created: {
           from_ip: '127.0.0.1',
@@ -82,6 +83,7 @@ describe('API Client - Plan Endpoints', () => {
     const mockPlan = {
       _id: '507f1f77bcf86cd799439011',
       name: 'test-plan',
+      steps: ['Step one'],
       status: 'active' as const,
       created: {
         from_ip: '127.0.0.1',
@@ -138,11 +140,12 @@ describe('API Client - Plan Endpoints', () => {
   })
 
   it('should update a plan', async () => {
-    const update: PlanUpdate = { name: 'updated-name' }
+    const update: PlanUpdate = { name: 'updated-name', steps: ['Updated step'] }
 
     const mockPlan = {
       _id: '507f1f77bcf86cd799439011',
       name: 'updated-name',
+      steps: ['Updated step'],
       status: 'active' as const,
       created: {
         from_ip: '127.0.0.1',

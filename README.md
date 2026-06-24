@@ -100,6 +100,29 @@ API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.updat
 
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
 
+## Encounter Plans (Plan List and Plan Detail)
+
+| Route | Page | API |
+|-------|------|-----|
+| `/plans` | `PlansListPage` — plan cards with name, description, and step count | `GET /api/plan` |
+| `/plans/new` | `PlanNewPage` — legacy full-form create (optional; list dialog is primary) | `POST /api/plan` |
+| `/plans/:id` | `PlanEditPage` — plan metadata plus editable steps checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
+
+**PlansListPage** features:
+
+- Card grid with search and load-more (`useInfiniteScroll`)
+- **New Plan** dialog prompts for name only, creates the plan, and opens Plan Detail
+- Step count chip on each card (`plan.steps?.length ?? 0`)
+
+**PlanEditPage** features:
+
+- Auto-save name, description, and status (`AutoSaveField` / `AutoSaveSelect`)
+- **Steps** section — add step, edit text on blur, delete step; persisted as `steps: string[]` via PATCH
+
+API client methods: `api.getPlans()`, `api.createPlan(data)`, `api.getPlan(planId)`, `api.updatePlan(planId, data)`.
+
+E2E coverage: `cypress/e2e/plan.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/plan.cy.ts` while `npm run api` and `npm run dev` are running).
+
 For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
 ## Architecture Overview

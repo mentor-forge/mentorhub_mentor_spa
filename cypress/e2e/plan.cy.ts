@@ -25,6 +25,60 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', itemName)
   })
 
+  it('should display step count on plan cards', () => {
+    cy.visit('/plans/new')
+    const timestamp = Date.now()
+    const itemName = `step-count-${timestamp}`
+
+    cy.get('[data-automation-id="plan-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="plan-new-submit-button"]').click()
+    cy.url().should('include', '/plans/')
+
+    cy.get('[data-automation-id="plan-edit-add-step-button"]').click()
+    cy.wait(1000)
+    cy.get('[data-automation-id="plan-edit-step-input-0"]').type('Only step')
+    cy.get('[data-automation-id="plan-edit-step-input-0"]').blur()
+    cy.wait(1000)
+
+    cy.get('[data-automation-id="plan-edit-back-button"]').click()
+    cy.get('[data-automation-id="plan-list-search"]').find('input').type(itemName)
+    cy.wait(800)
+    cy.get('[data-automation-id="plan-list-card"]').contains(itemName).within(() => {
+      cy.get('[data-automation-id="plan-list-card-step-count"]').should('contain', '1 step')
+    })
+  })
+
+  it('should navigate to plan detail when a card is clicked', () => {
+    cy.visit('/plans')
+    cy.get('[data-automation-id="plan-list-new-button"]').click()
+
+    const timestamp = Date.now()
+    const itemName = `card-nav-${timestamp}`
+
+    cy.get('[data-automation-id="plan-list-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="plan-list-new-submit-button"]').click()
+    cy.url().should('include', '/plans/')
+
+    cy.get('[data-automation-id="plan-edit-back-button"]').click()
+    cy.get('[data-automation-id="plan-list-search"]').find('input').type(itemName)
+    cy.wait(800)
+
+    cy.get('[data-automation-id="plan-list-card"]').contains(itemName).click()
+    cy.url().should('match', /\/plans\/[a-f0-9]+$/)
+    cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', itemName)
+  })
+
+  it('should cancel new plan dialog without creating a plan', () => {
+    cy.visit('/plans')
+    cy.get('[data-automation-id="plan-list-new-button"]').click()
+    cy.get('[data-automation-id="plan-list-new-dialog"]').should('be.visible')
+    cy.get('[data-automation-id="plan-list-new-name-input"]').type('should-not-be-created')
+    cy.get('[data-automation-id="plan-list-new-cancel-button"]').click()
+    cy.get('[data-automation-id="plan-list-new-dialog"]').should('not.exist')
+    cy.url().should('include', '/plans')
+    cy.url().should('not.match', /\/plans\/[a-f0-9]+$/)
+  })
+
   it('should still create a plan from the legacy new page route', () => {
     cy.visit('/plans/new')
 
