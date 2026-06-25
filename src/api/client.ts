@@ -15,7 +15,6 @@ import type {
   EncounterInput,
   EncounterUpdate,
 
-  Event,
   EventInput,
 
   ProfileDetail,
@@ -228,23 +227,7 @@ export const api = {
 
 
 
-  // Create endpoints
-
-  async getEvents(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Event>> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-    
-    const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Event>>(`/event${query ? `?${query}` : ''}`)
-  },
-
-  async getEvent(eventId: string): Promise<Event> {
-    return request<Event>(`/event/${eventId}`)
-  },
+  // Create endpoints — POST only (no Event UI pages; retained for future use)
 
   async createEvent(data: EventInput): Promise<{ _id: string }> {
     return request<{ _id: string }>('/event', {

@@ -90,28 +90,6 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     
-    
-    // Create domain: Event
-    {
-      path: '/events',
-      name: 'Events',
-      component: () => import('@/pages/EventsListPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events/new',
-      name: 'EventNew',
-      component: () => import('@/pages/EventNewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events/:id',
-      name: 'EventView',
-      component: () => import('@/pages/EventViewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    
-    
     // Consume domain: Profile
     {
       path: '/profiles',
