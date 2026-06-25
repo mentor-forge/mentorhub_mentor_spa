@@ -196,7 +196,8 @@ const { mutate: createPlan, isPending: isCreating } = useMutation<{ _id: string 
 })
 
 function stepCount(plan: Plan): number {
-  return plan.steps?.length ?? 0
+  const checklist = (plan as Plan & { checklist?: string[] }).checklist
+  return plan.steps?.length ?? checklist?.length ?? 0
 }
 
 function navigateToPlan(plan: Plan) {

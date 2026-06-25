@@ -175,9 +175,42 @@ describe('API Client - Plan Endpoints', () => {
       '/api/plan/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
-        body: JSON.stringify(update)
+        body: JSON.stringify({ name: 'updated-name', checklist: ['Updated step'] })
       })
     )
+  })
+
+  it('should map checklist to steps when getting a plan', async () => {
+    const mockPlan = {
+      _id: '507f1f77bcf86cd799439011',
+      name: 'test-plan',
+      checklist: ['Step one'],
+      status: 'active' as const,
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'user1',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'corr-123'
+      },
+      saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'user1',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'corr-123'
+      }
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
+      json: async () => mockPlan
+    })
+
+    const result = await api.getPlan('507f1f77bcf86cd799439011')
+
+    expect(result.steps).toEqual(['Step one'])
+    expect((result as { checklist?: string[] }).checklist).toBeUndefined()
   })
 
   it('should handle 404 errors', async () => {

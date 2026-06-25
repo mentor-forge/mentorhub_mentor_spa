@@ -17,5 +17,14 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  preview: {
+    port: 8394,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8391',
+        changeOrigin: true
+      }
+    }
   }
 })

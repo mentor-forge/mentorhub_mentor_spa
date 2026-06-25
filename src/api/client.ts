@@ -92,6 +92,36 @@ async function request<T>(
   return response.json()
 }
 
+type PlanRaw = Plan & { checklist?: string[] }
+
+/** Mongo stores `checklist`; SPA uses `steps`. Normalize on read. */
+function normalizePlan(raw: PlanRaw): Plan {
+  const steps = raw.steps?.length ? raw.steps : raw.checklist
+  const { checklist: _checklist, ...rest } = raw
+  return steps ? { ...rest, steps } : rest
+}
+
+function normalizePlansResponse(raw: PlanRaw[] | InfiniteScrollResponse<PlanRaw>): InfiniteScrollResponse<Plan> {
+  if (Array.isArray(raw)) {
+    const items = raw.map(normalizePlan)
+    return { items, limit: items.length, has_more: false, next_cursor: null }
+  }
+  return {
+    ...raw,
+    items: raw.items.map(normalizePlan),
+  }
+}
+
+/** Persist list field as `checklist` until mentor-api L070 mapping ships. */
+function planBodyForApi(data: PlanInput | PlanUpdate): Record<string, unknown> {
+  const payload: Record<string, unknown> = { ...data }
+  if (payload.steps !== undefined) {
+    payload.checklist = payload.steps
+    delete payload.steps
+  }
+  return payload
+}
+
 export const api = {
   // Config
   async getConfig(): Promise<ConfigResponse> {
@@ -173,25 +203,28 @@ export const api = {
     if (params?.order) queryParams.append('order', params.order)
     
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Plan>>(`/plan${query ? `?${query}` : ''}`)
+    const raw = await request<PlanRaw[] | InfiniteScrollResponse<PlanRaw>>(`/plan${query ? `?${query}` : ''}`)
+    return normalizePlansResponse(raw)
   },
 
   async getPlan(planId: string): Promise<Plan> {
-    return request<Plan>(`/plan/${planId}`)
+    const raw = await request<PlanRaw>(`/plan/${planId}`)
+    return normalizePlan(raw)
   },
 
   async createPlan(data: PlanInput): Promise<{ _id: string }> {
     return request<{ _id: string }>('/plan', {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify(planBodyForApi(data)),
     })
   },
 
   async updatePlan(planId: string, data: PlanUpdate): Promise<Plan> {
-    return request<Plan>(`/plan/${planId}`, {
+    const raw = await request<PlanRaw>(`/plan/${planId}`, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body: JSON.stringify(planBodyForApi(data)),
     })
+    return normalizePlan(raw)
   },
 
 

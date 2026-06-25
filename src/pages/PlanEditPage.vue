@@ -233,7 +233,8 @@ function updateStepText(index: number, value: string) {
 async function saveSteps() {
   isSavingSteps.value = true
   try {
-    await updatePlan({ steps: [...localSteps.value] })
+    const steps = localSteps.value.map((s) => s.trim()).filter(Boolean)
+    await updatePlan({ steps })
   } finally {
     isSavingSteps.value = false
   }
@@ -241,7 +242,6 @@ async function saveSteps() {
 
 async function addStep() {
   localSteps.value.push('')
-  await saveSteps()
 }
 
 async function removeStep(index: number) {
