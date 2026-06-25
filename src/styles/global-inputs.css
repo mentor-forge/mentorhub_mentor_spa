@@ -22,8 +22,15 @@
     inset 0 8px 18px rgba(0, 0, 0, 0.34);
 }
 
+/* Filled/default variant: border on inner field so it aligns with the input area */
 .v-input:not(.v-input--disabled) .v-field:not(.v-field--variant-outlined) {
+  border: none;
+}
+
+.v-input:not(.v-input--disabled) .v-field:not(.v-field--variant-outlined) .v-field__field {
   border: 3px solid rgba(var(--v-border-color), 0.85);
+  border-radius: var(--v-field-border-radius, 4px);
+  box-sizing: border-box;
 }
 
 .v-input:not(.v-input--disabled) .v-field.v-field--focused {
@@ -34,6 +41,10 @@
   box-shadow:
     inset 0 2px 5px rgba(255, 255, 255, 1),
     inset 0 10px 22px rgba(0, 0, 0, 0.4);
+}
+
+.v-input:not(.v-input--disabled) .v-field.v-field--focused:not(.v-field--variant-outlined) .v-field__field {
+  border-color: rgb(var(--v-theme-primary));
 }
 
 .v-input:not(.v-input--disabled) .v-field.v-field--focused.v-field--variant-outlined .v-field__outline {
