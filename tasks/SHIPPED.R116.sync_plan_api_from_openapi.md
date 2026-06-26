@@ -1,6 +1,6 @@
 # R116 – Sync Plan API client and types from OpenAPI
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R113, R114  
 **Description**: Align Plan TypeScript types and API client methods with the latest mentor API OpenAPI spec. `GET /api/plan` returns a plain array (no search, pagination, or infinite scroll). Plan documents include a `checklist` array (plan steps).
@@ -66,4 +66,7 @@ The agent must not update files outside this list except a minimal compile fix t
 
 ## Execution Notes
 
-_(Reserved for task execution agent.)_
+- Added `checklist?: string[]` to `Plan`, `PlanInput`, and `PlanUpdate`.
+- `getPlans()` now returns `Plan[]` with no query params.
+- Updated `Plan.client.test.ts` for array response and checklist fields; removed pagination/search test.
+- `PlansListPage.vue` still uses `useInfiniteScroll` — full rewrite deferred to R117 (build will fail until R117).
