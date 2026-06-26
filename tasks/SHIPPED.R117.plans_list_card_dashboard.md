@@ -1,6 +1,6 @@
 # R117 – Plans list card dashboard with create dialog
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R115, R116  
 **Description**: Replace the Plans table/list/search page with a card dashboard matching the mentor profile dashboard pattern. Add a “New Plan” dialog (name only) that creates a plan and navigates to `PlanEditPage`. Remove `PlanNewPage` and the `/plans/new` route.
@@ -82,4 +82,10 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_(Reserved for task execution agent.)_
+- Rewrote `PlansListPage` with shared dashboard components, step count chip, and `NamePromptDialog` create flow.
+- Removed `PlanNewPage.vue` and `/plans/new` route.
+- Updated `cypress/e2e/plan.cy.ts` for card dashboard and dialog create/update flows.
+- Added Encounter Plans section to `README.md`.
+- Fixed R115 dashboard styles: renamed `dashboard.scss` → `dashboard.css` (plain CSS; avoids sass dependency).
+- `npm run test`: 79/79 passed; `npm run build` and `npm run container` succeeded.
+- `npm run cypress:run` not executed — Cypress binary fails to start in this WSL environment (`bad option: --no-sandbox`).

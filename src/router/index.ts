@@ -58,12 +58,6 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/plans/new',
-      name: 'PlanNew',
-      component: () => import('@/pages/PlanNewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/plans/:id',
       name: 'PlanEdit',
       component: () => import('@/pages/PlanEditPage.vue'),
