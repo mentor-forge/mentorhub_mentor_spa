@@ -1,6 +1,6 @@
 # R114 – Remove orphaned ProfileViewPage
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Housekeeping — remove `ProfileViewPage.vue`, which was replaced by `ProfileEditPage` at `/profiles/:id` in R107 but left on disk. Confirm it is not registered in the router or referenced by tests/docs.
@@ -54,4 +54,6 @@ The agent must not update files outside this list except to fix build-breaking r
 
 ## Execution Notes
 
-_(Reserved for task execution agent.)_
+- Confirmed `ProfileViewPage.vue` was not registered in router or imported elsewhere.
+- Deleted orphaned file; `/profiles/:id` continues to use `ProfileEditPage`.
+- `npm run test`: 80/80 passed; `npm run build` succeeded without ProfileView.
