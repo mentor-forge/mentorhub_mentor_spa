@@ -8,6 +8,7 @@ import router from './router'
 import vuetify from './plugins/vuetify'
 import './styles/global-inputs.css'
 import './styles/global-background.css'
+import './styles/dashboard.css'
 
 const app = createApp(App)
 const pinia = createPinia()

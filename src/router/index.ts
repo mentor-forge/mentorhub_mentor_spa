@@ -58,12 +58,6 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/plans/new',
-      name: 'PlanNew',
-      component: () => import('@/pages/PlanNewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/plans/:id',
       name: 'PlanEdit',
       component: () => import('@/pages/PlanEditPage.vue'),
@@ -87,27 +81,6 @@ const router = createRouter({
       path: '/encounters/:id',
       name: 'EncounterEdit',
       component: () => import('@/pages/EncounterEditPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    
-    
-    // Create domain: Event
-    {
-      path: '/events',
-      name: 'Events',
-      component: () => import('@/pages/EventsListPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events/new',
-      name: 'EventNew',
-      component: () => import('@/pages/EventNewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
-      path: '/events/:id',
-      name: 'EventView',
-      component: () => import('@/pages/EventViewPage.vue'),
       meta: { requiresAuth: true }
     },
     

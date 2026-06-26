@@ -20,6 +20,7 @@ describe('API Client - Plan Endpoints', () => {
         name: 'test-plan',
         description: 'Test description',
         status: 'active' as const,
+        checklist: ['Review homework', 'Set goals'],
         created: {
           from_ip: '127.0.0.1',
           by_user: 'user1',
@@ -35,47 +36,17 @@ describe('API Client - Plan Endpoints', () => {
       }
     ]
 
-    const mockResponse = {
-      items: mockPlans,
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
+      json: async () => mockPlans
     })
 
     const result = await api.getPlans()
 
-    expect(result).toEqual(mockResponse)
+    expect(result).toEqual(mockPlans)
     expect(mockFetch).toHaveBeenCalledWith('/api/plan', expect.any(Object))
-  })
-
-  it('should get plans with name query', async () => {
-    const mockResponse = {
-      items: [],
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
-    })
-
-    await api.getPlans({ name: 'test' })
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan?name=test',
-      expect.any(Object)
-    )
   })
 
   it('should get a single plan', async () => {
@@ -83,6 +54,7 @@ describe('API Client - Plan Endpoints', () => {
       _id: '507f1f77bcf86cd799439011',
       name: 'test-plan',
       status: 'active' as const,
+      checklist: ['Step one'],
       created: {
         from_ip: '127.0.0.1',
         by_user: 'user1',
@@ -113,7 +85,8 @@ describe('API Client - Plan Endpoints', () => {
     const input: PlanInput = {
       name: 'new-plan',
       description: 'New description',
-      status: 'active'
+      status: 'active',
+      checklist: ['First step']
     }
 
     const mockResponse = { _id: '507f1f77bcf86cd799439011' }
@@ -138,12 +111,13 @@ describe('API Client - Plan Endpoints', () => {
   })
 
   it('should update a plan', async () => {
-    const update: PlanUpdate = { name: 'updated-name' }
+    const update: PlanUpdate = { name: 'updated-name', checklist: ['Updated step'] }
 
     const mockPlan = {
       _id: '507f1f77bcf86cd799439011',
       name: 'updated-name',
       status: 'active' as const,
+      checklist: ['Updated step'],
       created: {
         from_ip: '127.0.0.1',
         by_user: 'user1',

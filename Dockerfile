@@ -6,15 +6,16 @@ ENV CYPRESS_INSTALL_BINARY=0
 
 WORKDIR /app
 
-COPY package*.json .npmrc ./
+COPY package*.json ./
 
 ARG VITE_IDP_LOGIN_URI=http://127.0.0.1:8080/login.html
 ENV VITE_IDP_LOGIN_URI=$VITE_IDP_LOGIN_URI
 
-# CodeArtifact auth via BuildKit secret (CI or scripts/docker-build.sh); no git clone of spa_utils.
+# CodeArtifact registry + auth via BuildKit secret (CI or scripts/docker-build.sh); no committed .npmrc.
 RUN --mount=type=secret,id=codeartifact_token \
     --mount=type=cache,target=/root/.npm \
-    sh -c 'echo "//mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
+    sh -c 'echo "@mentor-forge:registry=https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/" > .npmrc && \
+    echo "//mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
     if [ -f package-lock.json ]; then npm ci; else npm install; fi'
 
 COPY . .

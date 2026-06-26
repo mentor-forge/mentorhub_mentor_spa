@@ -62,6 +62,7 @@ export interface Plan {
   name: string
   description?: string
   status?: 'active' | 'archived'
+  checklist?: string[]
   created: Breadcrumb
   saved: Breadcrumb
 }
@@ -70,12 +71,14 @@ export interface PlanInput {
   name: string
   description?: string
   status?: 'active' | 'archived'
+  checklist?: string[]
 }
 
 export interface PlanUpdate {
   name?: string
   description?: string
   status?: 'active' | 'archived'
+  checklist?: string[]
 }
 
 // Encounter Domain

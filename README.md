@@ -102,6 +102,19 @@ E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec --
 
 For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
+## Encounter Plans Dashboard
+
+| Route | Page | API |
+|-------|------|-----|
+| `/plans` | `PlansListPage` — encounter plan cards with name, description, and step count | `GET /api/plan` |
+| `/plans/:id` | `PlanEditPage` — plan detail editor | `GET /api/plan/{id}` |
+
+**PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
+
+API client methods: `api.getPlans()`, `api.getPlan(planId)`, `api.createPlan(data)`, `api.updatePlan(planId, data)`.
+
+E2E coverage: `cypress/e2e/plan.cy.ts`.
+
 ## Architecture Overview
 
 ```
