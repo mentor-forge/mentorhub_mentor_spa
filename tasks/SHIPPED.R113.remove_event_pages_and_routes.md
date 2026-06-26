@@ -1,6 +1,6 @@
 # R113 – Remove Event pages and routes
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Housekeeping — remove all Event UI pages, routes, and Cypress coverage from the mentor SPA. Retain Event API client methods, types, and unit tests for future backend-driven event recording.
@@ -61,4 +61,7 @@ The agent must not update files outside this list except to fix build-breaking r
 
 ## Execution Notes
 
-_(Reserved for task execution agent.)_
+- Deleted three Event page components and `cypress/e2e/event.cy.ts`.
+- Removed Event route block from `src/router/index.ts`; Event API client/types/tests retained.
+- No other SPA references to Event pages found.
+- `npm run test`: 80/80 passed.
