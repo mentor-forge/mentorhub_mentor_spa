@@ -1,6 +1,6 @@
 # R115 – Shared dashboard and card components
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R113, R114  
 **Description**: Extract reusable dashboard layout, card grid, and create-dialog patterns from `ProfilesListPage` so list/dashboard pages share one implementation. Establish local shared styling hooks so future visual changes apply everywhere from a single place.
@@ -65,4 +65,9 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_(Reserved for task execution agent.)_
+- Created `DashboardPageLayout`, `DashboardCardGrid`, `DashboardCard`, and `NamePromptDialog` under `src/components/dashboard/`.
+- Added `src/styles/dashboard.scss` for card spacing/chip layout; imported from `main.ts`.
+- Refactored `ProfilesListPage` to use shared components; preserved all automation IDs.
+- **Future spa_utils candidates:** dashboard layout/card grid, name prompt dialog, list-table pages (Resources/Paths/Encounters still use `useInfiniteScroll` + data tables).
+- **Future local candidates:** edit-page section shells, markdown/textarea editors beyond `AutoSaveField`.
+- `npm run test`: 79/79 passed (after R116 test count change).
