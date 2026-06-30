@@ -110,6 +110,90 @@ describe('API Client - Plan Endpoints', () => {
     )
   })
 
+  it('should update a plan with ordered checklist array', async () => {
+    const update: PlanUpdate = {
+      checklist: ['First step', 'Second step', 'Third step'],
+    }
+
+    const mockPlan = {
+      _id: '507f1f77bcf86cd799439011',
+      name: 'test-plan',
+      status: 'active' as const,
+      checklist: ['First step', 'Second step', 'Third step'],
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'user1',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'corr-123',
+      },
+      saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'user1',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'corr-123',
+      },
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => (name === 'content-length' ? '100' : null) },
+      json: async () => mockPlan,
+    })
+
+    const result = await api.updatePlan('507f1f77bcf86cd799439011', update)
+
+    expect(result.checklist).toEqual(['First step', 'Second step', 'Third step'])
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/plan/507f1f77bcf86cd799439011',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify(update),
+      })
+    )
+  })
+
+  it('should update a plan with empty checklist array', async () => {
+    const update: PlanUpdate = { checklist: [] }
+
+    const mockPlan = {
+      _id: '507f1f77bcf86cd799439011',
+      name: 'test-plan',
+      status: 'active' as const,
+      checklist: [] as string[],
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'user1',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'corr-123',
+      },
+      saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'user1',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'corr-123',
+      },
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => (name === 'content-length' ? '100' : null) },
+      json: async () => mockPlan,
+    })
+
+    const result = await api.updatePlan('507f1f77bcf86cd799439011', update)
+
+    expect(result.checklist).toEqual([])
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/plan/507f1f77bcf86cd799439011',
+      expect.objectContaining({
+        method: 'PATCH',
+        body: JSON.stringify({ checklist: [] }),
+      })
+    )
+  })
+
   it('should update a plan', async () => {
     const update: PlanUpdate = { name: 'updated-name', checklist: ['Updated step'] }
 
