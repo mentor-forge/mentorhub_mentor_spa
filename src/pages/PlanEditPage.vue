@@ -48,6 +48,13 @@
 
             <v-divider class="my-6" />
 
+            <PlanChecklistEditor
+              :checklist="plan.checklist ?? []"
+              :on-save="updateChecklist"
+            />
+
+            <v-divider class="my-6" />
+
             <v-row>
               <v-col cols="12" md="6">
                 <v-text-field
@@ -125,6 +132,7 @@ import { api } from '@/api/client'
 // 🎯 All these utilities come from spa_utils - ready to use!
 import { AutoSaveField, AutoSaveSelect, validationRules, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import type { PlanUpdate } from '@/api/types'
+import PlanChecklistEditor from '@/components/PlanChecklistEditor.vue'
 
 const routeLocation = useRoute()
 const router = useRouter()
@@ -171,5 +179,9 @@ async function updateField(field: keyof PlanUpdate, value: string) {
   } catch (error) {
     throw error
   }
+}
+
+async function updateChecklist(checklist: string[]) {
+  await updatePlan({ checklist })
 }
 </script>

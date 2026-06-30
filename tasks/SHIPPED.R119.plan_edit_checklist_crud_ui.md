@@ -1,6 +1,6 @@
 # R119 – Plan edit checklist CRUD UI (add, inline edit, delete)
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R118  
 **Description**: Add a focused **Steps** section to `PlanEditPage` for sequential checklist management. Provide rapid-input append, per-step inline text editing, and per-step delete. All checklist mutations persist via `PATCH /api/plan/{PlanId}` with the full `checklist: string[]` array.
@@ -67,4 +67,7 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Added `PlanChecklistEditor.vue` with rapid add, inline blur-to-save edit (`AutoSaveField`), and per-step delete; all mutations PATCH full `checklist` array.
+- Integrated Steps section into `PlanEditPage.vue` via `updateChecklist`.
+- Unit tests for checklist helper functions in `PlanChecklistEditor.test.ts`.
+- `npm run test`: 85/85 passed; `npm run build` succeeded.
