@@ -1,6 +1,6 @@
 # R120 – Plan edit checklist step reordering
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R119  
 **Description**: Add interactive controls on `PlanEditPage` to change the sequence order of checklist steps. Reordering updates local state reactively and persists the new order via `PATCH /api/plan/{PlanId}` with the reordered `checklist: string[]`.
@@ -63,4 +63,7 @@ The agent must not update files outside this list unless `PlanEditPage.vue` need
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Added drag-handle reordering per step with drop-target highlighting.
+- `reorderChecklistItem` helper PATCHes full reordered array via existing `persistChecklist`.
+- Extended `PlanChecklistEditor.test.ts` with reorder and bounds tests.
+- `npm run test`: 90/90 passed.

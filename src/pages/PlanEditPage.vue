@@ -1,21 +1,17 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col>
-        <h1 class="text-h4 mb-4">Edit Plan</h1>
-      </v-col>
-    </v-row>
-
-    <v-row v-if="isLoading">
-      <v-col class="text-center">
+    <v-row v-if="isLoading" justify="center">
+      <v-col cols="12" class="plan-edit-layout text-center">
         <v-progress-circular indeterminate color="primary" />
       </v-col>
     </v-row>
 
-    <v-row v-else-if="plan">
-      <v-col cols="12" md="8">
-        <v-card>
-          <v-card-text>
+    <v-row v-else-if="plan" justify="center">
+      <v-col cols="12" class="plan-edit-layout">
+        <h1 class="text-h4 mb-6 text-center">Edit Plan</h1>
+
+        <v-card class="plan-edit-card">
+          <v-card-text class="plan-edit-form">
             <AutoSaveField
               :model-value="plan.name"
               label="Name *"
@@ -31,7 +27,6 @@
               :rules="[rules.descriptionPattern]"
               hint="Max 255 characters, no tabs or newlines"
               :on-save="(value: string | number) => updateField('description', String(value))"
-              class="mt-4"
               textarea
               :rows="3"
               automation-id="plan-edit-description-input"
@@ -42,57 +37,54 @@
               label="Status"
               :items="statusOptions"
               :on-save="(value: string) => updateField('status', value)"
-              class="mt-4"
               automation-id="plan-edit-status-select"
             />
 
-            <v-divider class="my-6" />
+            <v-divider class="my-2" />
 
             <PlanChecklistEditor
               :checklist="plan.checklist ?? []"
               :on-save="updateChecklist"
             />
 
-            <v-divider class="my-6" />
+            <v-divider v-if="hasAdminRole" class="my-2" />
 
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  :model-value="formatDate(plan.created.at_time)"
-                  label="Created"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                />
-                <v-text-field
-                  :model-value="plan.created.by_user"
-                  label="Created By"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                  class="mt-2"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  :model-value="formatDate(plan.saved.at_time)"
-                  label="Last Saved"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                />
-                <v-text-field
-                  :model-value="plan.saved.by_user"
-                  label="Last Saved By"
-                  readonly
-                  variant="outlined"
-                  density="compact"
-                  class="mt-2"
-                />
-              </v-col>
-            </v-row>
+            <div v-if="hasAdminRole" class="plan-edit-metadata" data-automation-id="plan-edit-metadata-section">
+              <v-text-field
+                :model-value="formatDate(plan.created.at_time)"
+                label="Created"
+                readonly
+                variant="outlined"
+                density="comfortable"
+                hide-details
+              />
+              <v-text-field
+                :model-value="formatDate(plan.saved.at_time)"
+                label="Last Saved"
+                readonly
+                variant="outlined"
+                density="comfortable"
+                hide-details
+              />
+              <v-text-field
+                :model-value="plan.created.by_user"
+                label="Created By"
+                readonly
+                variant="outlined"
+                density="comfortable"
+                hide-details
+              />
+              <v-text-field
+                :model-value="plan.saved.by_user"
+                label="Last Saved By"
+                readonly
+                variant="outlined"
+                density="comfortable"
+                hide-details
+              />
+            </div>
 
-            <v-card-actions class="px-0 mt-4">
+            <v-card-actions class="px-0 justify-center">
               <v-btn 
                 @click="router.push('/plans')" 
                 variant="text"
@@ -133,10 +125,13 @@ import { api } from '@/api/client'
 import { AutoSaveField, AutoSaveSelect, validationRules, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import type { PlanUpdate } from '@/api/types'
 import PlanChecklistEditor from '@/components/PlanChecklistEditor.vue'
+import { useRoles } from '@/composables/useRoles'
 
 const routeLocation = useRoute()
 const router = useRouter()
 const queryClient = useQueryClient()
+const { hasRole } = useRoles()
+const hasAdminRole = hasRole('admin')
 
 const planId = computed(() => routeLocation.params.id as string)
 
@@ -185,3 +180,37 @@ async function updateChecklist(checklist: string[]) {
   await updatePlan({ checklist })
 }
 </script>
+
+<style scoped>
+.plan-edit-layout {
+  flex: 0 0 76% !important;
+  max-width: 76% !important;
+}
+
+.plan-edit-card :deep(.v-card-text) {
+  padding-top: calc(16px + 10px);
+}
+
+.plan-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.plan-edit-form :deep(.v-input) {
+  margin-bottom: 0;
+}
+
+.plan-edit-metadata {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 960px) {
+  .plan-edit-metadata {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+</style>

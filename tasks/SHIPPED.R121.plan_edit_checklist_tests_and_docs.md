@@ -1,6 +1,6 @@
 # R121 – PlanEditPage checklist tests and documentation
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R119, R120  
 **Description**: Final verification for the Plan Detail/Editor checklist feature. Update Cypress E2E, unit tests as needed, and README for step management on `PlanEditPage`.
@@ -61,4 +61,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Extended `cypress/e2e/plan.cy.ts` with checklist add, edit, reorder, delete, and reload persistence.
+- README documents PlanEditPage Steps/checklist management and `checklist` on Plan/PlanUpdate.
+- `npm run test`: 88/88 passed.
