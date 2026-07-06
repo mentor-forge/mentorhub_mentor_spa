@@ -10,46 +10,22 @@
       <v-col cols="12" class="plan-edit-layout">
         <h1 class="text-h4 mb-6 text-center">Edit Plan</h1>
 
-        <v-card class="plan-edit-card">
-          <v-card-text class="plan-edit-form">
-            <AutoSaveField
-              :model-value="plan.name"
-              label="Name *"
-              :rules="[rules.required, rules.namePattern]"
-              hint="No whitespace, max 40 characters"
-              :on-save="(value: string | number) => updateField('name', String(value))"
-              automation-id="plan-edit-name-input"
+        <div class="plan-edit-columns">
+          <div class="plan-edit-column">
+            <SchemaFieldsCard
+              title="An encounter plan"
+              :values="fieldValues"
+              :status-options="statusOptions"
+              :field-defs="fieldDefs"
+              :on-save-field="updateField"
+              automation-id="plan-edit-fields-section"
             />
 
-            <AutoSaveField
-              :model-value="plan.description || ''"
-              label="Description"
-              :rules="[rules.descriptionPattern]"
-              hint="Max 255 characters, no tabs or newlines"
-              :on-save="(value: string | number) => updateField('description', String(value))"
-              textarea
-              :rows="3"
-              automation-id="plan-edit-description-input"
-            />
-
-            <AutoSaveSelect
-              :model-value="plan.status || 'active'"
-              label="Status"
-              :items="statusOptions"
-              :on-save="(value: string) => updateField('status', value)"
-              automation-id="plan-edit-status-select"
-            />
-
-            <v-divider class="my-2" />
-
-            <PlanChecklistEditor
-              :checklist="plan.checklist ?? []"
-              :on-save="updateChecklist"
-            />
-
-            <v-divider v-if="hasAdminRole" class="my-2" />
-
-            <div v-if="hasAdminRole" class="plan-edit-metadata" data-automation-id="plan-edit-metadata-section">
+            <div
+              v-if="hasAdminRole"
+              class="plan-edit-metadata"
+              data-automation-id="plan-edit-metadata-section"
+            >
               <v-text-field
                 :model-value="formatDate(plan.created.at_time)"
                 label="Created"
@@ -84,17 +60,34 @@
               />
             </div>
 
-            <v-card-actions class="px-0 justify-center">
-              <v-btn 
-                @click="router.push('/plans')" 
+            <div class="plan-edit-column-actions">
+              <v-btn
+                @click="router.push('/plans')"
                 variant="text"
                 data-automation-id="plan-edit-back-button"
               >
                 Back to List
               </v-btn>
-            </v-card-actions>
-          </v-card-text>
-        </v-card>
+            </div>
+          </div>
+
+          <div class="plan-edit-column">
+            <PlanChecklistEditor
+              :checklist="plan.checklist ?? []"
+              :on-save="updateChecklist"
+            />
+
+            <div class="plan-edit-column-actions">
+              <v-btn
+                @click="router.push('/plans')"
+                variant="text"
+                data-automation-id="plan-edit-checklist-back-button"
+              >
+                Back to List
+              </v-btn>
+            </div>
+          </div>
+        </div>
       </v-col>
     </v-row>
 
@@ -105,25 +98,17 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Plan Edit Page - Showcase of spa_utils AutoSave components
- * 
- * This page demonstrates how easy it is to build an edit page with:
- * - Auto-save on blur (no save button needed!)
- * - Built-in validation rules
- * - Loading/saving/error states
- * - Date formatting utilities
- * - Error handling
- * 
- * All from spa_utils components and utilities!
- */
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
-// 🎯 All these utilities come from spa_utils - ready to use!
-import { AutoSaveField, AutoSaveSelect, validationRules, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import {
+  validationRules,
+  formatDate,
+  useErrorHandler,
+} from '@mentor-forge/mentorhub_spa_utils'
 import type { PlanUpdate } from '@/api/types'
+import SchemaFieldsCard, { type SchemaFieldKey } from '@/components/SchemaFieldsCard.vue'
 import PlanChecklistEditor from '@/components/PlanChecklistEditor.vue'
 import { useRoles } from '@/composables/useRoles'
 
@@ -149,16 +134,43 @@ const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
 const statusOptions = ['active', 'archived']
 
-// 🎯 Use validation rules from spa_utils - no need to write your own!
 const rules = {
   required: validationRules.required,
   namePattern: validationRules.namePattern,
   descriptionPattern: validationRules.descriptionPattern,
 }
 
+const fieldDefs = {
+  name: {
+    name: 'name',
+    hint: 'No whitespace, max 40 characters',
+    rules: [rules.required, rules.namePattern],
+    automationId: 'plan-edit-name-input',
+  },
+  description: {
+    name: 'description',
+    hint: 'Max 255 characters, no tabs or newlines',
+    rules: [rules.descriptionPattern],
+    textarea: true,
+    rows: 3,
+    automationId: 'plan-edit-description-input',
+  },
+  status: {
+    name: 'status',
+    automationId: 'plan-edit-status-select',
+  },
+} as const
+
+const fieldValues = computed(() => ({
+  name: plan.value?.name ?? '',
+  description: plan.value?.description ?? '',
+  status: plan.value?.status || 'active',
+}))
+
 const { mutateAsync: updatePlan } = useMutation({
   mutationFn: (data: PlanUpdate) => api.updatePlan(planId.value, data),
-  onSuccess: () => {
+  onSuccess: (updatedPlan) => {
+    queryClient.setQueryData(['plan', planId.value], updatedPlan)
     queryClient.invalidateQueries({ queryKey: ['plan', planId.value] })
     queryClient.invalidateQueries({ queryKey: ['plans'] })
     errorRef.value = null
@@ -168,12 +180,8 @@ const { mutateAsync: updatePlan } = useMutation({
   },
 })
 
-async function updateField(field: keyof PlanUpdate, value: string) {
-  try {
-    await updatePlan({ [field]: value })
-  } catch (error) {
-    throw error
-  }
+async function updateField(field: SchemaFieldKey, value: string) {
+  await updatePlan({ [field]: value })
 }
 
 async function updateChecklist(checklist: string[]) {
@@ -183,34 +191,48 @@ async function updateChecklist(checklist: string[]) {
 
 <style scoped>
 .plan-edit-layout {
-  flex: 0 0 76% !important;
-  max-width: 76% !important;
+  flex: 0 0 100% !important;
+  max-width: 100% !important;
+  padding-inline: 1rem;
 }
 
-.plan-edit-card :deep(.v-card-text) {
-  padding-top: calc(16px + 10px);
+.plan-edit-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
 }
 
-.plan-edit-form {
+.plan-edit-column {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
+  min-width: 0;
 }
 
-.plan-edit-form :deep(.v-input) {
-  margin-bottom: 0;
+.plan-edit-column-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 1rem;
 }
 
 .plan-edit-metadata {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 1rem;
   width: 100%;
 }
 
 @media (min-width: 960px) {
   .plan-edit-metadata {
     grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 959px) {
+  .plan-edit-columns {
+    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -66,6 +66,7 @@ describe('Plan Domain', () => {
 
     cy.get('[data-automation-id="plan-list-card"]').first().click()
     cy.url().should('match', /\/plans\/[a-f0-9]{24}$/)
+    cy.get('[data-automation-id="plan-edit-fields-section"]').should('be.visible')
     cy.get('[data-automation-id="plan-edit-name-input"]').should('be.visible')
   })
 
@@ -103,7 +104,7 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-edit-checklist-step-2-drag-handle"]')
       .trigger('dragstart', { dataTransfer })
     cy.get('[data-automation-id="plan-edit-checklist-step-1-drag-handle"]')
-      .parents('.plan-checklist-step-row')
+      .parents('.plan-checklist-todo-row')
       .first()
       .trigger('dragover', { dataTransfer })
       .trigger('drop', { dataTransfer })

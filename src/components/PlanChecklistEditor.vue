@@ -1,74 +1,77 @@
 <template>
-  <div data-automation-id="plan-edit-checklist-section">
-    <h2 class="text-h6 mb-4">Steps</h2>
+  <div class="schema-fields-card plan-checklist-editor" data-automation-id="plan-edit-checklist-section">
+    <div class="schema-fields-card__header">
+      <div class="schema-fields-card__title">Checklist</div>
+    </div>
 
-    <div class="plan-checklist-step-row plan-checklist-add-row d-flex ga-2 mb-6">
-      <v-text-field
-        v-model="newStepText"
-        label="Add Step"
-        variant="outlined"
-        density="comfortable"
-        :error-messages="addError"
-        :disabled="saving"
-        class="plan-checklist-step-input flex-grow-1"
-        data-automation-id="plan-edit-checklist-add-input"
-        @keyup.enter="addStep"
-      />
+    <div class="schema-fields-card__body">
+      <div class="plan-checklist-add-row">
+        <v-text-field
+          ref="addInputRef"
+          v-model="newStepText"
+          placeholder="Add Todo"
+          variant="outlined"
+          density="comfortable"
+          :error-messages="addError"
+          :disabled="saving"
+          class="plan-checklist-add-input"
+          data-automation-id="plan-edit-checklist-add-input"
+          hide-details="auto"
+          @keyup.enter="addStep"
+        />
 
-      <div class="plan-checklist-step-actions d-flex flex-shrink-0 align-center">
         <v-btn
           icon="mdi-plus"
           color="primary"
           variant="flat"
-          class="plan-checklist-add-button"
           :disabled="saving"
           data-automation-id="plan-edit-checklist-add-button"
           @click="addStep"
         />
       </div>
-    </div>
 
-    <p v-if="!checklist.length" class="text-medium-emphasis text-body-2 mb-2">
-      No steps yet. Add your first step above.
-    </p>
-
-    <div
-      v-if="checklist.length"
-      class="plan-checklist-steps"
-      data-automation-id="plan-edit-checklist-step-list"
-    >
       <div
-        v-for="(step, index) in checklist"
-        :key="stepKeys[index]"
-        class="plan-checklist-step-row d-flex ga-2 align-center"
-        :class="{
-          'plan-checklist-step-row--drag-over': dragOverIndex === index && draggedIndex !== index,
-        }"
-        @dragover.prevent="onDragOver(index)"
-        @drop.prevent="onDrop(index)"
+        v-if="localChecklist.length"
+        class="plan-checklist-todos"
+        data-automation-id="plan-edit-checklist-step-list"
       >
-        <v-btn
-          icon="mdi-drag-vertical"
-          variant="text"
-          size="small"
-          class="plan-checklist-drag-handle flex-shrink-0"
-          :disabled="saving"
-          :data-automation-id="`plan-edit-checklist-step-${index + 1}-drag-handle`"
-          draggable="true"
-          @dragstart.stop="onDragStart(index, $event)"
-          @dragend="onDragEnd"
-        />
+        <div
+          v-for="(todo, index) in localChecklist"
+          :key="stepKeys[index]"
+          class="plan-checklist-todo-row"
+          :class="{
+            'plan-checklist-todo-row--drag-over': dragOverIndex === index && draggedIndex !== index,
+          }"
+          @dragover.prevent="onDragOver(index)"
+          @drop.prevent="onDrop(index)"
+        >
+          <v-btn
+            icon="mdi-drag-vertical"
+            variant="text"
+            size="small"
+            class="plan-checklist-drag-handle"
+            :disabled="saving"
+            :data-automation-id="`plan-edit-checklist-step-${index + 1}-drag-handle`"
+            draggable="true"
+            @dragstart.stop="onDragStart(index, $event)"
+            @dragend="onDragEnd"
+          />
 
-        <AutoSaveField
-          :model-value="step"
-          :label="`Step ${index + 1}`"
-          :rules="[stepTextRule]"
-          :on-save="(value: string | number) => updateStep(index, String(value))"
-          :automation-id="`plan-edit-checklist-step-${index + 1}-input`"
-          class="plan-checklist-step-input flex-grow-1"
-        />
+          <v-text-field
+            :ref="(el) => setTodoInputRef(index, el)"
+            :model-value="draftTodos[index] ?? todo"
+            placeholder="Todo item"
+            variant="outlined"
+            density="comfortable"
+            hide-details="auto"
+            :disabled="saving"
+            :error-messages="editErrors[index]"
+            class="plan-checklist-todo-input"
+            :data-automation-id="`plan-edit-checklist-step-${index + 1}-input`"
+            @update:model-value="(value) => setDraftTodo(index, value)"
+            @blur="() => saveTodo(index)"
+          />
 
-        <div class="plan-checklist-step-actions d-flex flex-shrink-0">
           <v-btn
             icon="mdi-delete"
             variant="text"
@@ -135,8 +138,7 @@ export function reorderChecklistItem(checklist: string[], fromIndex: number, toI
 </script>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { AutoSaveField } from '@mentor-forge/mentorhub_spa_utils'
+import { nextTick, ref, watch } from 'vue'
 
 const props = defineProps<{
   checklist: string[]
@@ -145,25 +147,62 @@ const props = defineProps<{
 
 const newStepText = ref('')
 const addError = ref<string | null>(null)
+const editErrors = ref<Record<number, string>>({})
+const localChecklist = ref<string[]>([])
+const draftTodos = ref<string[]>([])
 const saving = ref(false)
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
+const addInputRef = ref<{ focus: () => void } | null>(null)
+const todoInputRefs = ref<Record<number, { focus: () => void } | null>>({})
 
 let nextStepKey = 0
 const stepKeys = ref<string[]>([])
 
+function syncStepKeys(length: number) {
+  while (stepKeys.value.length < length) {
+    stepKeys.value.push(`step-${nextStepKey++}`)
+  }
+  if (stepKeys.value.length > length) {
+    stepKeys.value = stepKeys.value.slice(0, length)
+  }
+}
+
 watch(
-  () => props.checklist.length,
-  (length) => {
-    while (stepKeys.value.length < length) {
-      stepKeys.value.push(`step-${nextStepKey++}`)
+  () => props.checklist,
+  (checklist) => {
+    if (saving.value) {
+      return
     }
-    if (stepKeys.value.length > length) {
-      stepKeys.value = stepKeys.value.slice(0, length)
+
+    if (localChecklist.value.length > checklist.length) {
+      const extra = localChecklist.value.slice(checklist.length)
+      localChecklist.value = [...checklist, ...extra]
+      draftTodos.value = [...localChecklist.value]
+      syncStepKeys(localChecklist.value.length)
+      return
     }
+
+    localChecklist.value = [...checklist]
+    draftTodos.value = [...checklist]
+    syncStepKeys(checklist.length)
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
+
+function setDraftTodo(index: number, value: string) {
+  draftTodos.value[index] = value
+  delete editErrors.value[index]
+}
+
+function setTodoInputRef(index: number, el: unknown) {
+  todoInputRefs.value[index] = (el as { focus?: () => void } | null) ?? null
+}
+
+async function focusAddInput() {
+  await nextTick()
+  addInputRef.value?.focus()
+}
 
 function reorderStepKeys(fromIndex: number, toIndex: number) {
   const nextKeys = [...stepKeys.value]
@@ -173,33 +212,99 @@ function reorderStepKeys(fromIndex: number, toIndex: number) {
 }
 
 async function persistChecklist(next: string[]) {
+  const previous = [...localChecklist.value]
+  applyLocalChecklist(next)
   saving.value = true
   try {
-    await props.onSave(next)
+    const persisted = next.filter((item) => item.trim())
+    await props.onSave(persisted)
+    addError.value = null
+  } catch (error) {
+    localChecklist.value = previous
+    draftTodos.value = [...previous]
+    syncStepKeys(previous.length)
+    addError.value = error instanceof Error ? error.message : 'Failed to save checklist'
+    throw error
   } finally {
     saving.value = false
   }
 }
 
+function applyLocalChecklist(next: string[]) {
+  localChecklist.value = [...next]
+  draftTodos.value = [...next]
+  syncStepKeys(next.length)
+}
+
 async function addStep() {
-  const validation = stepTextRule(newStepText.value)
+  addError.value = null
+  const text = newStepText.value.trim()
+  const validation = stepTextRule(text)
   if (validation !== true) {
     addError.value = validation
     return
   }
 
-  addError.value = null
-  const text = newStepText.value.trim()
-  await persistChecklist(appendChecklistItem(props.checklist, text))
+  const next = appendChecklistItem(localChecklist.value, text)
   newStepText.value = ''
+
+  if (!text) {
+    applyLocalChecklist(next)
+    await focusAddInput()
+    return
+  }
+
+  try {
+    await persistChecklist(next)
+    await focusAddInput()
+  } catch {
+    // Error message shown via addError in persistChecklist
+  }
 }
 
-async function updateStep(index: number, value: string) {
-  await persistChecklist(updateChecklistItem(props.checklist, index, value))
+async function saveTodo(index: number) {
+  const value = draftTodos.value[index] ?? localChecklist.value[index]
+  if (value === localChecklist.value[index]) {
+    return
+  }
+
+  const validation = stepTextRule(value)
+  if (validation !== true) {
+    editErrors.value[index] = validation
+    return
+  }
+
+  delete editErrors.value[index]
+  const next = updateChecklistItem(localChecklist.value, index, value)
+
+  if (!value.trim()) {
+    applyLocalChecklist(next)
+    return
+  }
+
+  try {
+    await persistChecklist(next)
+  } catch {
+    draftTodos.value[index] = localChecklist.value[index]
+  }
 }
 
 async function deleteStep(index: number) {
-  await persistChecklist(removeChecklistItem(props.checklist, index))
+  delete editErrors.value[index]
+  const next = removeChecklistItem(localChecklist.value, index)
+  const hasPersistedItems = next.some((item) => item.trim())
+
+  if (!hasPersistedItems) {
+    applyLocalChecklist(next)
+    try {
+      await props.onSave([])
+    } catch {
+      addError.value = 'Failed to save checklist'
+    }
+    return
+  }
+
+  await persistChecklist(next)
 }
 
 function onDragStart(index: number, event: DragEvent) {
@@ -228,8 +333,8 @@ async function onDrop(index: number) {
     return
   }
 
-  const next = reorderChecklistItem(props.checklist, fromIndex, index)
-  if (next === props.checklist) {
+  const next = reorderChecklistItem(localChecklist.value, fromIndex, index)
+  if (next === localChecklist.value) {
     return
   }
 
@@ -243,48 +348,3 @@ function onDragEnd() {
   dragOverIndex.value = null
 }
 </script>
-
-<style scoped>
-.plan-checklist-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.plan-checklist-step-row {
-  width: 100%;
-}
-
-.plan-checklist-step-row--drag-over {
-  border-radius: 4px;
-  outline: 2px dashed rgb(var(--v-theme-primary));
-  outline-offset: 4px;
-}
-
-.plan-checklist-drag-handle {
-  cursor: grab;
-}
-
-.plan-checklist-drag-handle:active {
-  cursor: grabbing;
-}
-
-.plan-checklist-step-input :deep(.v-input) {
-  margin-bottom: 0;
-}
-
-.plan-checklist-add-row {
-  align-items: flex-start;
-}
-
-.plan-checklist-add-row .plan-checklist-step-actions {
-  display: flex;
-  align-items: center;
-  align-self: flex-start;
-  height: var(--v-field-control-height, 56px);
-}
-
-.plan-checklist-add-button {
-  transform: scale(0.9);
-}
-</style>
