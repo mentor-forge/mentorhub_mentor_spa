@@ -107,9 +107,17 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 | Route | Page | API |
 |-------|------|-----|
 | `/plans` | `PlansListPage` — encounter plan cards with name, description, and step count | `GET /api/plan` |
-| `/plans/:id` | `PlanEditPage` — plan detail editor | `GET /api/plan/{id}` |
+| `/plans/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}` |
 
 **PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
+
+**PlanEditPage** loads plan metadata (`name`, `description`, `status`) with blur-to-save (`AutoSaveField` / `AutoSaveSelect`) and a **Steps** section for the ordered `checklist` array:
+
+- **Add** — rapid-input field or **+** button appends a step (empty steps allowed) and PATCHes the full `checklist`
+- **Edit** — inline blur-to-save per step text
+- **Delete** — removes a step and PATCHes the remaining array
+- **Reorder** — drag handle per step persists the new sequence via `PATCH /api/plan/{id}` with `{ checklist: string[] }`
+- **Audit metadata** — Created / Created By / Last Saved / Last Saved By fields are visible only to users with the `admin` role
 
 API client methods: `api.getPlans()`, `api.getPlan(planId)`, `api.createPlan(data)`, `api.updatePlan(planId, data)`.
 

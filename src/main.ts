@@ -9,6 +9,7 @@ import vuetify from './plugins/vuetify'
 import './styles/global-inputs.css'
 import './styles/global-background.css'
 import './styles/dashboard.css'
+import './styles/schema-fields.css'
 
 const app = createApp(App)
 const pinia = createPinia()
