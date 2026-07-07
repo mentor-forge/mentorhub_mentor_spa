@@ -78,7 +78,7 @@ interface SchemaFieldDef {
   automationId: string
 }
 
-const props = defineProps<{
+defineProps<{
   title: string
   values: SchemaFieldValues
   statusOptions: string[]

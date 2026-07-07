@@ -58,7 +58,6 @@
           />
 
           <v-text-field
-            :ref="(el) => setTodoInputRef(index, el)"
             :model-value="draftTodos[index] ?? todo"
             placeholder="Todo item"
             variant="outlined"
@@ -154,7 +153,6 @@ const saving = ref(false)
 const draggedIndex = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
 const addInputRef = ref<{ focus: () => void } | null>(null)
-const todoInputRefs = ref<Record<number, { focus: () => void } | null>>({})
 
 let nextStepKey = 0
 const stepKeys = ref<string[]>([])
@@ -193,10 +191,6 @@ watch(
 function setDraftTodo(index: number, value: string) {
   draftTodos.value[index] = value
   delete editErrors.value[index]
-}
-
-function setTodoInputRef(index: number, el: unknown) {
-  todoInputRefs.value[index] = (el as { focus?: () => void } | null) ?? null
 }
 
 async function focusAddInput() {

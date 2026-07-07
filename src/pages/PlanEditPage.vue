@@ -159,7 +159,7 @@ const fieldDefs = {
     name: 'status',
     automationId: 'plan-edit-status-select',
   },
-} as const
+}
 
 const fieldValues = computed(() => ({
   name: plan.value?.name ?? '',
