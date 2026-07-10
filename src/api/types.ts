@@ -82,11 +82,17 @@ export interface PlanUpdate {
 }
 
 // Encounter Domain
+export interface EncounterAgendaItem {
+  checked?: boolean
+  step?: string
+}
+
 export interface Encounter {
   _id: string
   mentor_id?: string
   mentee_id?: string
   plan_id?: string
+  agenda?: EncounterAgendaItem[]
   date?: string
   status?: 'active' | 'archived'
   tldr?: string
@@ -97,9 +103,9 @@ export interface Encounter {
 }
 
 export interface EncounterInput {
-  mentor_id?: string
-  mentee_id?: string
-  plan_id?: string
+  mentor_id: string
+  mentee_id: string
+  plan_id: string
   date?: string
   status?: 'active' | 'archived'
   tldr?: string
@@ -111,6 +117,7 @@ export interface EncounterUpdate {
   mentor_id?: string
   mentee_id?: string
   plan_id?: string
+  agenda?: EncounterAgendaItem[]
   date?: string
   status?: 'active' | 'archived'
   tldr?: string
@@ -225,6 +232,60 @@ export interface MentorDashboardProfile {
   description?: string
   progress: JourneyProgress
   last_encounter?: RecentEncounterSummary | null
+}
+
+export interface StatusSummary {
+  profile_status?: string
+  journey_status?: string
+  library_count: number
+  now_count: number
+  next_count: number
+  encounters_count: number
+  resources_engaged: number
+  last_activity_at?: string | null
+}
+
+export interface SiteAndLink {
+  resource_id: string
+  name: string
+  url?: string
+  scope: 'library' | 'now' | 'next'
+  used?: number
+  started?: string
+  completed?: string
+}
+
+export interface MentorHistoryEntry {
+  mentor_id: string
+  mentor_name?: string
+  encounter_count: number
+  first_date?: string
+  last_date?: string
+}
+
+export interface ResourceUsageEntry {
+  resource_id: string
+  name: string
+  times_used: number
+  status: 'completed' | 'in_progress' | 'queued'
+}
+
+export interface CelebrationEntry {
+  resource_id: string
+  name: string
+  completed_at: string
+}
+
+/** Aggregated mentee activity (GET /api/profile/{ProfileId}/properties). */
+export interface ProfilePropertiesResponse {
+  profile: Profile
+  status_summary: StatusSummary
+  sites_and_links: SiteAndLink[]
+  mentor_history: MentorHistoryEntry[]
+  journey?: object | null
+  path?: object | null
+  resource_usage: ResourceUsageEntry[]
+  celebrations: CelebrationEntry[]
 }
 
 

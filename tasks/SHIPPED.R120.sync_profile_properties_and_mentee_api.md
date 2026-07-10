@@ -1,6 +1,6 @@
 # R120 – Sync Profile Properties and Mentee GET API from OpenAPI
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Align TypeScript types and API client methods with the latest mentor API OpenAPI spec for encounter-detail context data: `GET /api/profile/{ProfileId}/properties` (journey/activity) and `GET /api/mentee/{profile_id}` (mentee notes document).
@@ -52,4 +52,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Synced Profile Properties types and `getProfileProperties` / `getMentee` client methods from live OpenAPI (`curl localhost:8391/docs/openapi.yaml`).
+- Updated Encounter types with `agenda` and required `EncounterInput` fields per latest API.
+- `npm run test`: 81/81 passed.

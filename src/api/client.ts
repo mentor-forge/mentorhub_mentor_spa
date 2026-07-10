@@ -19,6 +19,7 @@ import type {
   EventInput,
 
   ProfileDetail,
+  ProfilePropertiesResponse,
   Mentee,
   MenteeUpdate,
   MentorDashboardProfile,
@@ -256,6 +257,14 @@ export const api = {
 
   async getProfile(profileId: string): Promise<ProfileDetail> {
     return request<ProfileDetail>(`/profile/${profileId}`)
+  },
+
+  async getProfileProperties(profileId: string): Promise<ProfilePropertiesResponse> {
+    return request<ProfilePropertiesResponse>(`/profile/${profileId}/properties`)
+  },
+
+  async getMentee(profileId: string): Promise<Mentee> {
+    return request<Mentee>(`/mentee/${profileId}`)
   },
 
   async updateMentee(menteeId: string, data: MenteeUpdate): Promise<Mentee> {

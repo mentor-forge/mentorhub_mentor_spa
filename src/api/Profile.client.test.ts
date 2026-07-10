@@ -122,4 +122,89 @@ describe('API Client - Profile Endpoints', () => {
       }),
     )
   })
+
+  it('should get profile properties', async () => {
+    const mockProperties = {
+      profile: {
+        _id: '507f1f77bcf86cd799439011',
+        name: 'test-mentee',
+        goals: ['Learn TypeScript'],
+        interests: ['api'],
+      },
+      status_summary: {
+        library_count: 2,
+        now_count: 1,
+        next_count: 3,
+        encounters_count: 1,
+        resources_engaged: 4,
+      },
+      sites_and_links: [
+        {
+          resource_id: '507f1f77bcf86cd799439020',
+          name: 'Vue Guide',
+          scope: 'now',
+          url: 'https://example.com/vue',
+        },
+      ],
+      mentor_history: [],
+      resource_usage: [],
+      celebrations: [
+        {
+          resource_id: '507f1f77bcf86cd799439021',
+          name: 'Completed Resource',
+          completed_at: '2024-01-10T10:00:00Z',
+        },
+      ],
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
+      json: async () => mockProperties,
+    })
+
+    const result = await api.getProfileProperties('507f1f77bcf86cd799439011')
+
+    expect(result).toEqual(mockProperties)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/profile/507f1f77bcf86cd799439011/properties',
+      expect.any(Object),
+    )
+  })
+
+  it('should get mentee notes by profile id', async () => {
+    const mockMentee = {
+      _id: '507f1f77bcf86cd799439013',
+      profile_id: '507f1f77bcf86cd799439011',
+      notes: 'Mentor notes',
+      created: {
+        from_ip: '127.0.0.1',
+        by_user: 'marti',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'abc',
+      },
+      saved: {
+        from_ip: '127.0.0.1',
+        by_user: 'marti',
+        at_time: '2024-01-01T00:00:00Z',
+        correlation_id: 'abc',
+      },
+    }
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
+      json: async () => mockMentee,
+    })
+
+    const result = await api.getMentee('507f1f77bcf86cd799439011')
+
+    expect(result).toEqual(mockMentee)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/mentee/507f1f77bcf86cd799439011',
+      expect.any(Object),
+    )
+  })
 })
