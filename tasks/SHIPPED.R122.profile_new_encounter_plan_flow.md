@@ -55,7 +55,5 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
-
 - Plan dialog creates encounter with required mentor_id, mentee_id, plan_id; server auto-fills agenda.
 - `npm run test`: 83/83 passed.
