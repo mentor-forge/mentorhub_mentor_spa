@@ -2,7 +2,7 @@
 
 **Status**: Pending  
 **Type**: Feature  
-**Depends On**: R120  
+**Depends On**: R122  
 **Description**: Replace the minimal `EncounterEditPage` layout with the Encounter Detail page shell: page heading, collapsible section cards, and coordinated data loading for encounter, mentee profile, and plan.
 
 ## Context

@@ -2,7 +2,7 @@
 
 **Status**: Pending  
 **Type**: Feature  
-**Depends On**: R122, R124, R125, R126  
+**Depends On**: R126  
 **Description**: Retire the standalone new-encounter form page now that encounters are created from Profile Detail with a plan prompt. Update routes, list page, Cypress specs, and README to match the Encounter Detail workflow.
 
 ## Context

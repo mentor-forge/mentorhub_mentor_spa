@@ -2,7 +2,7 @@
 
 **Status**: Pending  
 **Type**: Feature  
-**Depends On**: none  
+**Depends On**: R120  
 **Description**: Add a reusable dialog for selecting an Encounter Plan before creating a new encounter. Mirrors the dashboard dialog pattern established by `NamePromptDialog` but selects from existing plans via `GET /api/plan`.
 
 ## Context

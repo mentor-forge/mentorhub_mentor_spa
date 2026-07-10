@@ -2,7 +2,7 @@
 
 **Status**: Pending  
 **Type**: Feature  
-**Depends On**: R123  
+**Depends On**: R125  
 **Description**: Implement the Encounter content area on the Detail page: always-visible TLDR, and collapsible Summary and Transcript fields with large autosave editors.
 
 ## Context

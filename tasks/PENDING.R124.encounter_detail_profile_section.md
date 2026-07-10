@@ -2,7 +2,7 @@
 
 **Status**: Pending  
 **Type**: Feature  
-**Depends On**: R123, R120  
+**Depends On**: R123  
 **Description**: Implement the collapsible **Profile** section on the Encounter Detail page: read-only mentee profile fields, read-only journey activity, and editable mentor notes.
 
 ## Context
