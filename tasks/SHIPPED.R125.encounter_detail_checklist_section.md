@@ -1,6 +1,6 @@
 # R125 – Encounter Detail Checklist section
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R124  
 **Description**: Implement the collapsible **Checklist** section on the Encounter Detail page using checklist items from the encounter's linked Plan.
@@ -52,4 +52,5 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Checklist uses encounter.agenda from API (server-filled from plan); toggles persist via PATCH.
+- `npm run test`: 83/83 passed._

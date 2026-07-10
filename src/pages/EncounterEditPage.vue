@@ -144,7 +144,30 @@
             </v-card-title>
             <v-expand-transition>
               <v-card-text v-show="checklistExpanded">
-                <!-- R125 -->
+                <v-alert
+                  v-if="agendaItems.length === 0"
+                  type="info"
+                  variant="tonal"
+                  data-automation-id="encounter-detail-checklist-empty"
+                >
+                  No checklist items for this encounter.
+                </v-alert>
+                <v-list v-else density="compact">
+                  <v-list-item
+                    v-for="(item, index) in agendaItems"
+                    :key="`${index}-${item.step}`"
+                    :data-automation-id="`encounter-detail-checklist-item-${index}`"
+                  >
+                    <template #prepend>
+                      <v-checkbox-btn
+                        :model-value="item.checked ?? false"
+                        :disabled="isUpdatingAgenda"
+                        @update:model-value="toggleAgendaItem(index, $event)"
+                      />
+                    </template>
+                    <v-list-item-title>{{ item.step }}</v-list-item-title>
+                  </v-list-item>
+                </v-list>
               </v-card-text>
             </v-expand-transition>
           </v-card>
@@ -235,7 +258,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
-import type { CelebrationEntry, MenteeUpdate } from '@/api/types'
+import type { CelebrationEntry, EncounterAgendaItem, EncounterUpdate, MenteeUpdate } from '@/api/types'
 
 const routeLocation = useRoute()
 const router = useRouter()
@@ -294,6 +317,8 @@ const nowResources = computed(() => {
   return (profileProperties.value?.sites_and_links ?? []).filter((item) => item.scope === 'now')
 })
 
+const agendaItems = computed(() => encounter.value?.agenda ?? [])
+
 const backLabel = computed(() => (menteeId.value ? 'Back to Profile' : 'Back to Encounters'))
 
 const errorRef = ref<Error | null>(null)
@@ -324,6 +349,26 @@ const { mutateAsync: updateMentee } = useMutation({
 
 async function updateMenteeNotes(value: string) {
   await updateMentee({ notes: value })
+}
+
+const { mutateAsync: updateEncounter, isPending: isUpdatingAgenda } = useMutation({
+  mutationFn: (data: EncounterUpdate) => api.updateEncounter(encounterId.value, data),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
+    errorRef.value = null
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+async function toggleAgendaItem(index: number, checked: boolean | null) {
+  const currentAgenda = encounter.value?.agenda ?? []
+  const updatedAgenda: EncounterAgendaItem[] = currentAgenda.map((item, itemIndex) => {
+    if (itemIndex !== index) return { ...item }
+    return { ...item, checked: Boolean(checked) }
+  })
+  await updateEncounter({ agenda: updatedAgenda })
 }
 
 function goBack() {
