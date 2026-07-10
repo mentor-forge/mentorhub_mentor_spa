@@ -119,7 +119,6 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/encounters` | `EncountersListPage` — read/navigate-only encounter table | `GET /api/encounter` (list may be limited per API version) |
 | `/encounters/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
 
 **Encounter Detail** page layout:

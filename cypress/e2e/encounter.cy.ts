@@ -3,12 +3,6 @@ describe('Encounter Domain', () => {
     cy.loginAsMentor('/profiles')
   })
 
-  it('should display encounters list page', () => {
-    cy.visit('/encounters')
-    cy.get('h1').contains('Encounters').should('be.visible')
-    cy.get('[data-automation-id="encounter-list-new-button"]').should('not.exist')
-  })
-
   it('should create an encounter from ProfileEditPage plan dialog', () => {
     cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
       .first()
@@ -61,8 +55,8 @@ describe('Encounter Domain', () => {
     cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
   })
 
-  it('should show encounters table on list page', () => {
-    cy.visit('/encounters')
-    cy.get('table').should('exist')
+  it('should not expose a standalone encounters list route', () => {
+    cy.visit('/encounters', { failOnStatusCode: false })
+    cy.url().should('not.match', /\/encounters$/)
   })
 })

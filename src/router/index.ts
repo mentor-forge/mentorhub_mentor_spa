@@ -64,12 +64,10 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     
-    // Control domain: Encounter
+    // Encounter detail (created from Profile Detail)
     {
       path: '/encounters',
-      name: 'Encounters',
-      component: () => import('@/pages/EncountersListPage.vue'),
-      meta: { requiresAuth: true }
+      redirect: '/profiles',
     },
     {
       path: '/encounters/:id',

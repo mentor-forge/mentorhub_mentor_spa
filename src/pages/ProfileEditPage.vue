@@ -325,7 +325,6 @@ const { mutate: createEncounter, isPending: isCreatingEncounter } = useMutation<
   mutationFn: (payload: EncounterInput) => api.createEncounter(payload),
   onSuccess: (response) => {
     queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
-    queryClient.invalidateQueries({ queryKey: ['encounters'] })
     showPlanDialog.value = false
     errorRef.value = null
     router.push(`/encounters/${response._id}`)
@@ -346,7 +345,6 @@ function handleCreateEncounter(planId: string) {
     mentor_id: mentorId,
     mentee_id: profileId.value,
     plan_id: planId,
-    date: new Date().toISOString(),
     status: 'active',
   })
 }

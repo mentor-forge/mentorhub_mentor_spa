@@ -342,7 +342,7 @@ const nowResources = computed(() => {
 
 const agendaItems = computed(() => encounter.value?.agenda ?? [])
 
-const backLabel = computed(() => (menteeId.value ? 'Back to Profile' : 'Back to Encounters'))
+const backLabel = computed(() => (menteeId.value ? 'Back to Profile' : 'Back to Dashboard'))
 
 const errorRef = ref<Error | null>(null)
 watch(queryError, (err) => {
@@ -383,7 +383,6 @@ const { mutateAsync: updateEncounter, isPending: isUpdatingAgenda } = useMutatio
   mutationFn: (data: EncounterUpdate) => api.updateEncounter(encounterId.value, data),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
-    queryClient.invalidateQueries({ queryKey: ['encounters'] })
     if (menteeId.value) {
       queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
     }
@@ -412,7 +411,7 @@ function goBack() {
     router.push(`/profiles/${menteeId.value}`)
     return
   }
-  router.push('/encounters')
+  router.push('/profiles')
 }
 </script>
 

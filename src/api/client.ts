@@ -189,18 +189,6 @@ export const api = {
   },
 
 
-  async getEncounters(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Encounter>> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-    
-    const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Encounter>>(`/encounter${query ? `?${query}` : ''}`)
-  },
-
   async getEncounter(encounterId: string): Promise<Encounter> {
     return request<Encounter>(`/encounter/${encounterId}`)
   },
