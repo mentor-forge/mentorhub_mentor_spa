@@ -72,12 +72,6 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/encounters/new',
-      name: 'EncounterNew',
-      component: () => import('@/pages/EncounterNewPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/encounters/:id',
       name: 'EncounterEdit',
       component: () => import('@/pages/EncounterEditPage.vue'),

@@ -111,9 +111,10 @@ describe('API Client - Encounter Endpoints', () => {
 
   it('should create a encounter', async () => {
     const input: EncounterInput = {
-      name: 'new-encounter',
-      description: 'New description',
-      status: 'active'
+      mentor_id: '507f1f77bcf86cd799439012',
+      mentee_id: '507f1f77bcf86cd799439013',
+      plan_id: '507f1f77bcf86cd799439014',
+      status: 'active',
     }
 
     const mockResponse = { _id: '507f1f77bcf86cd799439011' }
@@ -138,11 +139,11 @@ describe('API Client - Encounter Endpoints', () => {
   })
 
   it('should update a encounter', async () => {
-    const update: EncounterUpdate = { name: 'updated-name' }
+    const update: EncounterUpdate = { tldr: 'Updated summary' }
 
     const mockEncounter = {
       _id: '507f1f77bcf86cd799439011',
-      name: 'updated-name',
+      tldr: 'Updated summary',
       status: 'active' as const,
       created: {
         from_ip: '127.0.0.1',

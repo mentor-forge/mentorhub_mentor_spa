@@ -15,16 +15,6 @@
           automation-id="encounter-list-search"
         />
       </v-col>
-      <v-col cols="12" md="6" class="d-flex justify-end align-center">
-        <v-btn 
-          color="primary" 
-          to="/encounters/new"
-          data-automation-id="encounter-list-new-button"
-        >
-          <v-icon left>mdi-plus</v-icon>
-          New Encounter
-        </v-btn>
-      </v-col>
     </v-row>
 
     <v-row>

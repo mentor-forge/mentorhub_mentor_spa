@@ -1,6 +1,6 @@
 # R122 – ProfileEditPage New Encounter with plan prompt
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R121  
 **Description**: Replace the Profile Detail **New Encounter** navigation to `/encounters/new` with a plan-selection dialog that creates an encounter via `POST /api/encounter` and navigates directly to the Encounter Detail page.
@@ -56,3 +56,6 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 _Reserved for the task execution agent._
+
+- Plan dialog creates encounter with required mentor_id, mentee_id, plan_id; server auto-fills agenda.
+- `npm run test`: 83/83 passed.

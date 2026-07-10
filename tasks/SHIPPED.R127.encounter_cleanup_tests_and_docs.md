@@ -1,6 +1,6 @@
 # R127 – Remove EncounterNewPage, update routes, E2E, and README
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R126  
 **Description**: Retire the standalone new-encounter form page now that encounters are created from Profile Detail with a plan prompt. Update routes, list page, Cypress specs, and README to match the Encounter Detail workflow.
@@ -75,4 +75,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Removed EncounterNewPage and /encounters/new route; updated E2E and README.
+- Updated Encounter.client.test.ts for required create fields.
+- `npm run test`: 83/83 passed; `npm run build` succeeded._
