@@ -1,6 +1,6 @@
 # R121 – PlanSelectDialog shared component
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R120  
 **Description**: Add a reusable dialog for selecting an Encounter Plan before creating a new encounter. Mirrors the dashboard dialog pattern established by `NamePromptDialog` but selects from existing plans via `GET /api/plan`.
@@ -57,4 +57,6 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Created `PlanSelectDialog` with plan list selection and `planSelectValidation.ts`.
+- Exported from dashboard barrel; unit tests pass.
+- `npm run test`: 83/83 passed.
