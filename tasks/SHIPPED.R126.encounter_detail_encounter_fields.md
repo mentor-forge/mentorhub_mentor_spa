@@ -1,6 +1,6 @@
 # R126 – Encounter Detail Encounter, Summary, and Transcript fields
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R125  
 **Description**: Implement the Encounter content area on the Detail page: always-visible TLDR, and collapsible Summary and Transcript fields with large autosave editors.
@@ -67,4 +67,5 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- TLDR, Summary, and Transcript autosave fields added to Encounter Detail page.
+- `npm run test`: 83/83 passed._

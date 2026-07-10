@@ -181,7 +181,14 @@
               <h2 class="text-h4 mb-0 font-italic">Encounter</h2>
             </v-card-title>
             <v-card-text>
-              <!-- R126 -->
+              <AutoSaveField
+                :model-value="encounter.tldr || ''"
+                label="TLDR *"
+                :rules="[rules.required, rules.descriptionPattern]"
+                hint="One-sentence summary, max 255 characters"
+                :on-save="(value: string | number) => updateField('tldr', String(value))"
+                automation-id="encounter-detail-tldr-input"
+              />
             </v-card-text>
           </v-card>
         </v-col>
@@ -203,7 +210,15 @@
             </v-card-title>
             <v-expand-transition>
               <v-card-text v-show="summaryExpanded">
-                <!-- R126 -->
+                <AutoSaveField
+                  :model-value="encounter.summary || ''"
+                  label="Summary"
+                  hint="Markdown is accepted"
+                  :on-save="(value: string | number) => updateField('summary', String(value))"
+                  textarea
+                  :rows="12"
+                  automation-id="encounter-detail-summary-input"
+                />
               </v-card-text>
             </v-expand-transition>
           </v-card>
@@ -226,7 +241,15 @@
             </v-card-title>
             <v-expand-transition>
               <v-card-text v-show="transcriptExpanded">
-                <!-- R126 -->
+                <AutoSaveField
+                  :model-value="encounter.transcript || ''"
+                  label="Transcript"
+                  hint="Markdown is accepted"
+                  :on-save="(value: string | number) => updateField('transcript', String(value))"
+                  textarea
+                  :rows="12"
+                  automation-id="encounter-detail-transcript-input"
+                />
               </v-card-text>
             </v-expand-transition>
           </v-card>
@@ -257,7 +280,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
-import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { AutoSaveField, formatDate, useErrorHandler, validationRules } from '@mentor-forge/mentorhub_spa_utils'
 import type { CelebrationEntry, EncounterAgendaItem, EncounterUpdate, MenteeUpdate } from '@/api/types'
 
 const routeLocation = useRoute()
@@ -328,6 +351,11 @@ watch(queryError, (err) => {
 
 const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
+const rules = {
+  required: validationRules.required,
+  descriptionPattern: validationRules.descriptionPattern,
+}
+
 const { mutateAsync: updateMentee } = useMutation({
   mutationFn: (data: MenteeUpdate) => {
     const menteeDocId = profileDetail.value?.mentee._id
@@ -355,12 +383,20 @@ const { mutateAsync: updateEncounter, isPending: isUpdatingAgenda } = useMutatio
   mutationFn: (data: EncounterUpdate) => api.updateEncounter(encounterId.value, data),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
+    queryClient.invalidateQueries({ queryKey: ['encounters'] })
+    if (menteeId.value) {
+      queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
+    }
     errorRef.value = null
   },
   onError: (error: Error) => {
     errorRef.value = error
   },
 })
+
+async function updateField(field: keyof EncounterUpdate, value: string) {
+  await updateEncounter({ [field]: value })
+}
 
 async function toggleAgendaItem(index: number, checked: boolean | null) {
   const currentAgenda = encounter.value?.agenda ?? []
