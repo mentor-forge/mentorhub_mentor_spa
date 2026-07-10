@@ -192,9 +192,8 @@
               </div>
               <v-btn
                 color="primary"
-                :to="newEncounterRoute"
                 data-automation-id="profile-edit-new-encounter-button"
-                @click.stop
+                @click.stop="showPlanDialog = true"
               >
                 <v-icon start>mdi-plus</v-icon>
                 New Encounter
@@ -262,6 +261,13 @@
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
       {{ errorMessage }}
     </v-snackbar>
+
+    <PlanSelectDialog
+      v-model="showPlanDialog"
+      automation-prefix="profile-edit-new-encounter-plan"
+      :loading="isCreatingEncounter"
+      @submit="handleCreateEncounter"
+    />
   </v-container>
 </template>
 
@@ -270,8 +276,9 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { PlanSelectDialog } from '@/components/dashboard'
 import { api } from '@/api/client'
-import type { Encounter, MenteeUpdate, ProfileExperience } from '@/api/types'
+import type { Encounter, EncounterInput, MenteeUpdate, ProfileExperience } from '@/api/types'
 
 const routeLocation = useRoute()
 const router = useRouter()
@@ -282,6 +289,7 @@ const profileId = computed(() => routeLocation.params.id as string)
 const profileExpanded = ref(true)
 const notesExpanded = ref(true)
 const encountersExpanded = ref(true)
+const showPlanDialog = ref(false)
 
 const { data: profileDetail, isLoading, error: queryError } = useQuery({
   queryKey: ['profile', profileId],
@@ -313,10 +321,35 @@ const startDateDisplay = computed(() => {
   return '—'
 })
 
-const newEncounterRoute = computed(() => ({
-  path: '/encounters/new',
-  query: { menteeId: profileId.value },
-}))
+const { mutate: createEncounter, isPending: isCreatingEncounter } = useMutation<{ _id: string }, Error, EncounterInput>({
+  mutationFn: (payload: EncounterInput) => api.createEncounter(payload),
+  onSuccess: (response) => {
+    queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
+    queryClient.invalidateQueries({ queryKey: ['encounters'] })
+    showPlanDialog.value = false
+    errorRef.value = null
+    router.push(`/encounters/${response._id}`)
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+function handleCreateEncounter(planId: string) {
+  const mentorId = profileDetail.value?.profile.mentor_id
+  if (!mentorId) {
+    errorRef.value = new Error('Mentor is not assigned to this profile.')
+    return
+  }
+
+  createEncounter({
+    mentor_id: mentorId,
+    mentee_id: profileId.value,
+    plan_id: planId,
+    date: new Date().toISOString(),
+    status: 'active',
+  })
+}
 
 const sortedEncounters = computed((): Encounter[] => {
   const encounters = profileDetail.value?.encounters ?? []
