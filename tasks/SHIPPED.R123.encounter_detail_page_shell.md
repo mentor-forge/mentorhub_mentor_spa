@@ -1,6 +1,6 @@
 # R123 – Encounter Detail page shell and data loading
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R122  
 **Description**: Replace the minimal `EncounterEditPage` layout with the Encounter Detail page shell: page heading, collapsible section cards, and coordinated data loading for encounter, mentee profile, and plan.
@@ -74,4 +74,5 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Encounter Detail shell with heading, collapsible sections, encounter/profile queries, and back navigation.
+- `npm run build` succeeded._
