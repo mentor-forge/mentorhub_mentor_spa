@@ -1,6 +1,6 @@
 # R124 – Encounter Detail Profile section
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R123  
 **Description**: Implement the collapsible **Profile** section on the Encounter Detail page: read-only mentee profile fields, read-only journey activity, and editable mentor notes.
@@ -65,4 +65,5 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Profile section with goals/interests, journey data from properties API, editable mentor notes.
+- `npm run test`: 83/83 passed._

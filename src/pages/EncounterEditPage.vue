@@ -31,7 +31,97 @@
             </v-card-title>
             <v-expand-transition>
               <v-card-text v-show="profileExpanded">
-                <!-- R124 -->
+                <h3 class="text-h6 mb-2">Profile Data</h3>
+                <div class="mb-4">
+                  <p class="text-body-2 text-medium-emphasis mb-1">Goals</p>
+                  <div v-if="profileGoals.length" data-automation-id="encounter-detail-profile-goals">
+                    <v-chip
+                      v-for="goal in profileGoals"
+                      :key="goal"
+                      class="mr-2 mb-2"
+                      size="small"
+                    >
+                      {{ goal }}
+                    </v-chip>
+                  </div>
+                  <p v-else data-automation-id="encounter-detail-profile-goals">—</p>
+                </div>
+                <div class="mb-6">
+                  <p class="text-body-2 text-medium-emphasis mb-1">Interests</p>
+                  <div v-if="profileInterests.length" data-automation-id="encounter-detail-profile-interests">
+                    <v-chip
+                      v-for="interest in profileInterests"
+                      :key="interest"
+                      class="mr-2 mb-2"
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                    >
+                      {{ interest }}
+                    </v-chip>
+                  </div>
+                  <p v-else data-automation-id="encounter-detail-profile-interests">—</p>
+                </div>
+
+                <h3 class="text-h6 mb-2">Journey Data</h3>
+                <p class="text-body-2 text-medium-emphasis mb-1">Resources completed in last 7 days</p>
+                <v-alert
+                  v-if="recentCompletions.length === 0"
+                  type="info"
+                  variant="tonal"
+                  class="mb-4"
+                  data-automation-id="encounter-detail-journey-recent-completions"
+                >
+                  No resources completed in the last 7 days.
+                </v-alert>
+                <v-list
+                  v-else
+                  density="compact"
+                  class="mb-4"
+                  data-automation-id="encounter-detail-journey-recent-completions"
+                >
+                  <v-list-item
+                    v-for="item in recentCompletions"
+                    :key="item.resource_id"
+                  >
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ formatDate(item.completed_at) }}</v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+
+                <p class="text-body-2 text-medium-emphasis mb-1">Resources in Now</p>
+                <v-alert
+                  v-if="nowResources.length === 0"
+                  type="info"
+                  variant="tonal"
+                  class="mb-4"
+                  data-automation-id="encounter-detail-journey-now-resources"
+                >
+                  No resources in Now.
+                </v-alert>
+                <v-list
+                  v-else
+                  density="compact"
+                  class="mb-4"
+                  data-automation-id="encounter-detail-journey-now-resources"
+                >
+                  <v-list-item
+                    v-for="item in nowResources"
+                    :key="item.resource_id"
+                  >
+                    <v-list-item-title>{{ item.name }}</v-list-item-title>
+                    <v-list-item-subtitle v-if="item.url">{{ item.url }}</v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+
+                <AutoSaveField
+                  :model-value="menteeNotes"
+                  label="Mentor Notes"
+                  :on-save="(value: string | number) => updateMenteeNotes(String(value))"
+                  textarea
+                  :rows="4"
+                  automation-id="encounter-detail-mentor-notes-input"
+                />
               </v-card-text>
             </v-expand-transition>
           </v-card>
@@ -142,12 +232,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
-import { formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import type { CelebrationEntry, MenteeUpdate } from '@/api/types'
 
 const routeLocation = useRoute()
 const router = useRouter()
+const queryClient = useQueryClient()
 
 const encounterId = computed(() => routeLocation.params.id as string)
 
@@ -169,6 +261,12 @@ const { data: profileDetail } = useQuery({
   enabled: computed(() => Boolean(menteeId.value)),
 })
 
+const { data: profileProperties } = useQuery({
+  queryKey: ['profile-properties', menteeId],
+  queryFn: () => api.getProfileProperties(menteeId.value),
+  enabled: computed(() => Boolean(menteeId.value)),
+})
+
 const menteeDisplayName = computed(() => {
   const profile = profileDetail.value?.profile
   if (!profile) return 'Encounter'
@@ -182,6 +280,20 @@ const encounterDateDisplay = computed(() => {
 
 const pageHeading = computed(() => `${menteeDisplayName.value} - ${encounterDateDisplay.value}`)
 
+const profileGoals = computed(() => profileDetail.value?.profile.goals ?? [])
+const profileInterests = computed(() => profileDetail.value?.profile.interests ?? [])
+const menteeNotes = computed(() => profileDetail.value?.mentee.notes ?? '')
+
+const recentCompletions = computed((): CelebrationEntry[] => {
+  const celebrations = profileProperties.value?.celebrations ?? []
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000
+  return celebrations.filter((item) => new Date(item.completed_at).getTime() >= cutoff)
+})
+
+const nowResources = computed(() => {
+  return (profileProperties.value?.sites_and_links ?? []).filter((item) => item.scope === 'now')
+})
+
 const backLabel = computed(() => (menteeId.value ? 'Back to Profile' : 'Back to Encounters'))
 
 const errorRef = ref<Error | null>(null)
@@ -190,6 +302,29 @@ watch(queryError, (err) => {
 }, { immediate: true })
 
 const { showError, errorMessage } = useErrorHandler(errorRef as any)
+
+const { mutateAsync: updateMentee } = useMutation({
+  mutationFn: (data: MenteeUpdate) => {
+    const menteeDocId = profileDetail.value?.mentee._id
+    if (!menteeDocId) {
+      return Promise.reject(new Error('Mentee document not loaded'))
+    }
+    return api.updateMentee(menteeDocId, data)
+  },
+  onSuccess: () => {
+    if (menteeId.value) {
+      queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
+    }
+    errorRef.value = null
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+async function updateMenteeNotes(value: string) {
+  await updateMentee({ notes: value })
+}
 
 function goBack() {
   if (menteeId.value) {
