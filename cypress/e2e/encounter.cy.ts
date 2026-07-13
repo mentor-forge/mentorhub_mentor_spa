@@ -1,76 +1,62 @@
 describe('Encounter Domain', () => {
   beforeEach(() => {
-    cy.login()
+    cy.loginAsMentor('/profiles')
   })
 
-  it('should display encounters list page', () => {
-    cy.visit('/encounters')
-    cy.get('h1').contains('Encounters').should('be.visible')
-    cy.get('[data-automation-id="encounter-list-new-button"]').should('be.visible')
+  it('should create an encounter from ProfileEditPage plan dialog', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-dialog"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
+
+    cy.url().should('match', /\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
+    cy.get('[data-automation-id="encounter-detail-profile-section"]').should('be.visible')
+    cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('be.visible')
+    cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('be.visible')
   })
 
-  it('should navigate to new encounter page', () => {
-    cy.visit('/encounters')
-    cy.get('[data-automation-id="encounter-list-new-button"]').click()
-    cy.url().should('include', '/encounters/new')
-    cy.get('h1').contains('New Encounter').should('be.visible')
-  })
+  it('should update encounter TLDR on detail page', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
 
-  it('should create a new encounter', () => {
-    cy.visit('/encounters/new')
+    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
+    cy.url().should('match', /\/encounters\/[0-9a-fA-F]{24}$/)
 
     const tldr = `Cypress encounter ${Date.now()}`
-
-    cy.get('[data-automation-id="encounter-new-tldr-input"]').type(tldr)
-    cy.get('[data-automation-id="encounter-new-summary-input"]').type('Test summary for Cypress')
-    cy.get('[data-automation-id="encounter-new-submit-button"]').click()
-
-    cy.url().should('include', '/encounters/')
-    cy.url().should('not.include', '/encounters/new')
-
-    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').should('have.value', tldr)
+    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').clear().type(tldr)
+    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').blur()
+    cy.wait(1000)
+    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('have.value', tldr)
   })
 
-  it('should update an encounter', () => {
-    const tldr = `Cypress update ${Date.now()}`
-    const updatedTldr = `Updated ${tldr}`
+  it('should open encounter detail from profile encounters list', () => {
+    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+      .first()
+      .click()
 
-    cy.visit('/encounters/new')
-    cy.get('[data-automation-id="encounter-new-tldr-input"]').type(tldr)
-    cy.get('[data-automation-id="encounter-new-summary-input"]').type('Original summary')
-    cy.get('[data-automation-id="encounter-new-submit-button"]').click()
-    cy.url().should('not.include', '/encounters/new')
+    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
+    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
+    cy.url().should('match', /\/encounters\/[0-9a-fA-F]{24}$/)
 
-    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').clear().type(updatedTldr)
-    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').blur()
-    cy.wait(1000)
-    cy.get('[data-automation-id="encounter-edit-tldr-input"]').find('input').should('have.value', updatedTldr)
+    cy.get('[data-automation-id="encounter-detail-back-button"]').click()
+    cy.url().should('match', /\/profiles\/[0-9a-fA-F]{24}$/)
 
-    cy.get('[data-automation-id="encounter-edit-summary-input"]').find('textarea').clear().type('Updated summary')
-    cy.get('[data-automation-id="encounter-edit-summary-input"]').find('textarea').blur()
-    cy.wait(1000)
-
-    cy.get('[data-automation-id="encounter-edit-status-select"]').click()
-    cy.get('.v-list-item').contains('archived').click()
-    cy.wait(1000)
-
-    cy.get('[data-automation-id="encounter-edit-back-button"]').click()
-    cy.url().should('include', '/encounters')
-    // List search/pagination API is in flux; list row content verified in a future feature.
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="profile-edit-encounter-item"]').first().click()
+    cy.url().should('match', /\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
   })
 
-  it('should show a created encounter in the list', () => {
-    const tldr = `Cypress list ${Date.now()}`
-
-    cy.visit('/encounters/new')
-    cy.get('[data-automation-id="encounter-new-tldr-input"]').type(tldr)
-    cy.get('[data-automation-id="encounter-new-summary-input"]').type('List visibility test summary')
-    cy.get('[data-automation-id="encounter-new-submit-button"]').click()
-    cy.url().should('not.include', '/encounters/new')
-
-    cy.visit('/encounters')
-    // Encounter list API/schema is in flux; row content assertions deferred to a future feature.
-    cy.get('table').should('exist')
+  it('should not expose a standalone encounters list route', () => {
+    cy.visit('/encounters', { failOnStatusCode: false })
+    cy.url().should('not.match', /\/encounters$/)
   })
 })

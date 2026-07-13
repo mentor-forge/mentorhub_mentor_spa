@@ -19,6 +19,7 @@ import type {
   EventInput,
 
   ProfileDetail,
+  ProfilePropertiesResponse,
   Mentee,
   MenteeUpdate,
   MentorDashboardProfile,
@@ -134,16 +135,12 @@ export const api = {
   },
 
 
-  async getPaths(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Path>> {
+  async getPaths(params?: { name?: string }): Promise<Path[]> {
     const queryParams = new URLSearchParams()
     if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-    
+
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Path>>(`/path${query ? `?${query}` : ''}`)
+    return request<Path[]>(`/path${query ? `?${query}` : ''}`)
   },
 
   async getPath(pathId: string): Promise<Path> {
@@ -187,18 +184,6 @@ export const api = {
     })
   },
 
-
-  async getEncounters(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Encounter>> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-    
-    const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Encounter>>(`/encounter${query ? `?${query}` : ''}`)
-  },
 
   async getEncounter(encounterId: string): Promise<Encounter> {
     return request<Encounter>(`/encounter/${encounterId}`)
@@ -256,6 +241,14 @@ export const api = {
 
   async getProfile(profileId: string): Promise<ProfileDetail> {
     return request<ProfileDetail>(`/profile/${profileId}`)
+  },
+
+  async getProfileProperties(profileId: string): Promise<ProfilePropertiesResponse> {
+    return request<ProfilePropertiesResponse>(`/profile/${profileId}/properties`)
+  },
+
+  async getMentee(profileId: string): Promise<Mentee> {
+    return request<Mentee>(`/mentee/${profileId}`)
   },
 
   async updateMentee(menteeId: string, data: MenteeUpdate): Promise<Mentee> {

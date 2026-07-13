@@ -41,7 +41,7 @@ describe('Mentor Dashboard', () => {
     cy.get('[data-automation-id="profile-edit-encounters-section"]').should('be.visible')
   })
 
-  it('should navigate to new encounter with menteeId from ProfileEditPage', () => {
+  it('should create encounter from ProfileEditPage plan dialog', () => {
     cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
       .first()
       .click()
@@ -51,8 +51,11 @@ describe('Mentor Dashboard', () => {
       expect(profileId).to.match(/^[0-9a-fA-F]{24}$/)
 
       cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
-      cy.url().should('include', '/encounters/new')
-      cy.url().should('include', `menteeId=${profileId}`)
+      cy.get('[data-automation-id="profile-edit-new-encounter-plan-dialog"]').should('be.visible')
+      cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
+      cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
+      cy.url().should('match', /\/encounters\/[0-9a-fA-F]{24}$/)
+      cy.url().should('not.include', '/encounters/new')
     })
   })
 

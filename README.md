@@ -94,9 +94,9 @@ npm run container
 
 - **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
 - **Notes** — editable mentee notes via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`
-- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** links to `/encounters/new?menteeId={profileId}`
+- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
 
-API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.updateMentee(menteeId, data)`.
+API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
 
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
 
@@ -122,6 +122,23 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 API client methods: `api.getPlans()`, `api.getPlan(planId)`, `api.createPlan(data)`, `api.updatePlan(planId, data)`.
 
 E2E coverage: `cypress/e2e/plan.cy.ts`.
+
+## Encounter Detail
+
+| Route | Page | API |
+|-------|------|-----|
+| `/encounters/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
+
+**Encounter Detail** page layout:
+
+- **Profile** (collapsible) — read-only goals/interests and journey activity (recent completions, resources in Now); editable mentor notes
+- **Checklist** (collapsible) — `encounter.agenda` items (server-filled from plan checklist); checked state persisted via PATCH
+- **Encounter** — TLDR one-sentence summary (always visible, autosave)
+- **Summary** / **Transcript** (collapsible) — large textarea autosave fields
+
+**New Encounter** flow from Profile Detail: select a plan → `POST /api/encounter` with required `mentor_id`, `mentee_id`, and `plan_id` → navigate to detail page.
+
+E2E coverage: `cypress/e2e/encounter.cy.ts`, `cypress/e2e/profile.cy.ts`.
 
 ## Architecture Overview
 
