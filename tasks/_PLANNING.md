@@ -89,8 +89,7 @@ Task planning and execution in **this SPA repo** (`mentorhub_mentor_spa`) must n
 
 - **`../mentorhub`** — platform standards and shared documentation (e.g. `DeveloperEdition/standards/spa_standards.md`).
 - **`../mentorhub_spa_utils`** — shared Vue components, composables, and auth helpers (e.g. `AutoSaveField`, `useAuth`, `README.md`).
-- **`../mentorhub_mentor_api`** — backing mentor API OpenAPI only when a task must sync types or clients (`docs/openapi.yaml`, or live `curl localhost:8391/docs/openapi.yaml` after `npm run api`).
-
+- **Reusable Components** - Prefer the use of spa_util editor components to implement all forms. If new editors are needed, create them with the intent of moving them to spa_utils after they are tested and verified locally.
 Do **not** reference paths under `mentorhub_mongodb_api`, other domain API or SPA repos, or CloudFormation repos in task **Context** or **Goals**. If work in another repository is a prerequisite, describe it as an **external prerequisite** in prose (e.g. “Mentor API OpenAPI must include field X”) and set **Status** to `Blocked` until a human confirms it — do not link to or read files in that repo.
 
 ## Backing API OpenAPI schemas
@@ -103,7 +102,7 @@ Start the backing API if needed (`npm run api`), then fetch the latest OpenAPI w
 curl -X GET "http://localhost:8391/docs/openapi.yaml"
 ```
 
-Use this response (or `../mentorhub_mentor_api/docs/openapi.yaml`) as the source of truth when updating `src/api/types.ts`, API client methods, or page bindings. Do **not** use deprecated paths under `../mentorhub/Specifications/schemas/` or MongoDB dictionary YAML in other repos.
+Use this response as the source of truth when updating `src/api/types.ts`, API client methods, or page bindings. Do **not** use deprecated paths under `../mentorhub/Specifications/schemas/` or MongoDB dictionary YAML in other repos.
 
 If the mentor API is unavailable and the task depends on the live contract, set the task **Status** to `Blocked` and stop — do not invent schemas from unrelated repositories.
 

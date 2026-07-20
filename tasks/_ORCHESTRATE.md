@@ -27,12 +27,12 @@ Now orchestrate all Pending Tasks as outlined below. Use an **orchestration agen
 
 ## Implementation Details
 - **Recommended filename pattern**:
-  - `STATUS.RNNN.short_task_name.md` where R is the SPA task series prefix and NNN is a serial task number (see `_PLANNING.md`). Use `D` for defects (e.g. `PENDING.D001.example_defect.md`).
+  - `STATUS.RNNN.short_task_name.md` where R is the SPA task series prefix and NNN is a serial task number (see `_PLANNING.md`). Use `D` for defects (e.g. `PENDING.D001.example_defect.md`). Use `F` for features (e.g. `PENDING.F001.example_feature.md`).
   - Examples:
-    - `PENDING.R130.add_encounter_notes_section.md`
-    - `PENDING.R131.sync_plan_client_types.md`
-    - `PENDING.R132.plan_edit_checklist_e2e.md`
-    - `SHIPPED.R130.add_encounter_notes_section.md`
+    - `PENDING.F130.add_encounter_notes_section.md`
+    - `PENDING.F131.sync_plan_client_types.md`
+    - `PENDING.F132.plan_edit_checklist_e2e.md`
+    - `SHIPPED.F130.add_encounter_notes_section.md`
 
 - **External prerequisites**
   - Task execution in this SPA may use only these sibling repos for input context: `../mentorhub` (e.g. `DeveloperEdition/standards/spa_standards.md`), `../mentorhub_spa_utils`, and `../mentorhub_mentor_api` OpenAPI when a task must sync types or clients.
@@ -45,7 +45,7 @@ Now orchestrate all Pending Tasks as outlined below. Use an **orchestration agen
 The steps below apply to the agent that executes a task.
 
 1. **Review the current tasks**
-   - Each task is a markdown file in this repo's `tasks/` folder (e.g. `PENDING.R130.add_encounter_notes_section.md`).
+   - Each task is a markdown file in this repo's `tasks/` folder (e.g. `PENDING.F130.add_encounter_notes_section.md`).
    - For each task, read the entire file before starting work.
    - Task shape follows `_PLANNING.md`: Status, Type, Depends On, Description, Context, Goals, Testing Expectations, Outputs, Execution Notes.
    - Context should always include `../mentorhub/DeveloperEdition/standards/spa_standards.md` and `README.md`.
