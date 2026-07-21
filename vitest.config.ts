@@ -11,6 +11,12 @@ export default defineConfig({
     env: {
       VITE_IDP_LOGIN_URI: 'http://127.0.0.1:8080/login.html',
     },
+    // spa_utils 0.5.4+ side-imports dist/index.css; inline so Vitest transforms it
+    server: {
+      deps: {
+        inline: ['@mentor-forge/mentorhub_spa_utils'],
+      },
+    },
     css: {
       modules: {
         classNameStrategy: 'non-scoped'
