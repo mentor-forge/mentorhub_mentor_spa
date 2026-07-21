@@ -153,7 +153,7 @@ src/
   plugins/          # Vuetify plugin configuration
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`CardGrid` / `MhCard` / `DataCard` + typed field editors, `AutoSaveSelect`, `ListPageSearch`; `AutoSaveField` remains available as a compatibility wrapper), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
 
 ## Key Implementation Patterns
 
@@ -178,7 +178,8 @@ src/
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
+- **Components (preferred)**: `CardGrid` / `MhCard` / `DataCard` for card chrome, plus typed field editors (`WordEditor`, `SentenceEditor`, `MarkdownEditor`, `EmailEditor`, `UsPhoneEditor`, `BreadcrumbDisplay`, etc.) bound via `field` inside a `DataCard`; `AutoSaveSelect` for enum/status selects; `ListPageSearch` for list-page search
+- **Components (compatibility only)**: `AutoSaveField` — a standalone autosave text field kept for backward compatibility; prefer a typed editor (e.g. `WordEditor`/`SentenceEditor`) inside a `DataCard` for new work instead
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
 - **Utilities**: `formatDate`, `validationRules`
 
@@ -215,7 +216,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, compose `CardGrid` / `MhCard` / `DataCard` with typed field editors bound via `field` (`AutoSaveSelect` for enum/status fields; `AutoSaveField` is compatibility-only — avoid it in new code). For list pages, use `CardGrid` / `MhCard`, `useResourceList`, and `ListPageSearch`.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling
