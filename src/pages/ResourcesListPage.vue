@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <h1 class="text-h4 mb-4">Resources</h1>
+        <h1 class="text-h4 mb-4" data-automation-id="resource-list-heading">Resources</h1>
       </v-col>
     </v-row>
 
@@ -16,92 +16,50 @@
         />
       </v-col>
       <v-col cols="12" md="6" class="d-flex justify-end align-center">
-        <v-btn 
-          color="primary" 
+        <v-btn
+          color="primary"
           to="/resources/new"
           data-automation-id="resource-list-new-button"
         >
-          <v-icon left>mdi-plus</v-icon>
+          <v-icon start>mdi-plus</v-icon>
           New Resource
         </v-btn>
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col>
-        <v-card>
-          <v-data-table
-            :headers="headers"
-            :items="(resources ?? []) as unknown as Resource[]"
-            :loading="isLoading as unknown as boolean"
-            @click:row="navigateToResource"
-            hover
-            :items-per-page="-1"
-            hide-default-footer
-          >
-            <template v-slot:header.name>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('name')">
-                Name
-                <v-icon v-if="sortByValue === 'name'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.status>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('status')">
-                Status
-                <v-icon v-if="sortByValue === 'status'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.created.at_time>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('created.at_time')">
-                Created
-                <v-icon v-if="sortByValue === 'created.at_time'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:header.saved.at_time>
-              <span style="cursor: pointer; user-select: none;" @click="handleSort('saved.at_time')">
-                Last Saved
-                <v-icon v-if="sortByValue === 'saved.at_time'" size="small">
-                  {{ orderValue === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down' }}
-                </v-icon>
-              </span>
-            </template>
-            <template v-slot:item.status="{ item }">
-              <v-chip
-                :color="item.status === 'active' ? 'success' : 'grey'"
-                size="small"
-              >
-                {{ item.status || 'N/A' }}
-              </v-chip>
-            </template>
-            <template v-slot:item.created.at_time="{ item }">
-              {{ formatDate(item.created.at_time) }}
-            </template>
-            <template v-slot:item.saved.at_time="{ item }">
-              {{ formatDate(item.saved.at_time) }}
-            </template>
-          </v-data-table>
-          
-          <!-- Load more button -->
-          <v-card-actions v-if="hasMoreValue">
-            <v-btn
-              @click="loadMore"
-              :loading="isFetchingNextPageValue"
-              color="primary"
-              block
-              data-automation-id="resource-list-load-more"
-            >
-              {{ isFetchingNextPageValue ? 'Loading...' : 'Load More' }}
-            </v-btn>
-          </v-card-actions>
-        </v-card>
+    <v-row v-if="!isLoading && resources.length === 0">
+      <v-col cols="12">
+        <v-alert type="info" variant="tonal" data-automation-id="resource-list-empty">
+          No resources found.
+        </v-alert>
       </v-col>
     </v-row>
+
+    <CardGrid automation-id="resource-list-grid">
+      <MhCard
+        v-for="resource in resources"
+        :key="resource._id"
+        :title="resource.name || 'Unnamed Resource'"
+        :automation-id="`resource-list-card-${resource._id}`"
+      >
+        <template #actions>
+          <v-btn
+            icon
+            variant="text"
+            size="small"
+            :data-automation-id="`resource-list-card-${resource._id}-open-button`"
+            aria-label="Open"
+            @click="navigateToResource(resource)"
+          >
+            <v-icon>mdi-arrow-right</v-icon>
+          </v-btn>
+        </template>
+
+        <p class="text-body-2 text-medium-emphasis">
+          {{ resource.description || 'No description' }}
+        </p>
+      </MhCard>
+    </CardGrid>
 
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
       Failed to load resources: {{ errorMessage }}
@@ -110,87 +68,50 @@
 </template>
 
 <script setup lang="ts">
-/**
- * Resources List Page - Showcase of mentorhub_spa_utils ease of use
- * 
- * This page demonstrates how easy it is to build a feature-rich list page with:
- * - Infinite scroll pagination
- * - Server-side sorting
- * - Debounced search
- * - Loading states
- * - Error handling
- * 
- * All of this functionality comes from a single composable: useInfiniteScroll
- * from @mentor-forge/mentorhub_spa_utils. Just provide your API call and you're done!
- */
-import { computed } from 'vue'
-import { api } from '@/api/client'
-import { formatDate, ListPageSearch, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuery } from '@tanstack/vue-query'
+import { CardGrid, MhCard, ListPageSearch, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { api } from '@/api/client'
 import type { Resource } from '@/api/types'
 
-const router = useRouter()
+// GET /api/resource is still cursor-paginated (items/limit/has_more/next_cursor) rather than a
+// plain array or offset/size headers. Until that endpoint is reshaped, this page fetches a single
+// batch at the API's max page size and does not re-page — see Execution Notes below.
+const RESOURCE_FETCH_LIMIT = 100
 
-// 🎯 One composable call gives you everything you need for infinite scroll:
-// - items: The flattened list of all loaded items
-// - isLoading: Loading state for initial load
-// - isFetchingNextPage: Loading state for "load more"
-// - hasMore: Whether there are more pages to load
-// - loadMore: Function to load the next page
-// - showError/errorMessage: Error handling
-// - searchQuery/debouncedSearch: Search with automatic 300ms debouncing
-// - sortBy/order/setSortBy/setOrder: Server-side sorting
-const {
-  items: resources,
-  isLoading,
-  isFetchingNextPage,
-  hasMore,
-  loadMore,
-  showError,
-  errorMessage,
-  searchQuery,
-  debouncedSearch,
-  sortBy,
-  order,
-  setSortBy,
-  setOrder,
-} = useInfiniteScroll<Resource>({
-  queryKey: ['resources'],
-  queryFn: (params) => api.getResources(params),
-  getItemId: (item) => item._id,
-  limit: 20,
+const router = useRouter()
+const searchQuery = ref('')
+const debouncedQuery = ref('')
+
+let searchTimeout: ReturnType<typeof setTimeout>
+function debouncedSearch(value: string | null) {
+  searchQuery.value = value || ''
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    debouncedQuery.value = value || ''
+  }, 300)
+}
+
+const { data, isLoading, error: queryError } = useQuery({
+  queryKey: computed(() => ['resources', debouncedQuery.value]),
+  queryFn: () =>
+    api.getResources({
+      name: debouncedQuery.value || undefined,
+      limit: RESOURCE_FETCH_LIMIT,
+    }),
 })
 
-// Simple navigation handler
-function navigateToResource(_event: unknown, { item }: { item: Resource }) {
-  router.push(`/resources/${item._id}`)
+const resources = computed(() => data.value?.items ?? [])
+
+const errorRef = ref<Error | null>(null)
+watch(queryError, (err) => {
+  errorRef.value = err
+}, { immediate: true })
+
+const { showError, errorMessage } = useErrorHandler(errorRef as any)
+
+function navigateToResource(resource: Resource) {
+  router.push(`/resources/${resource._id}`)
 }
-
-// Create computed properties for template use (TypeScript-friendly)
-const sortByValue = computed(() => sortBy.value)
-const orderValue = computed(() => order.value)
-const hasMoreValue = computed(() => hasMore.value)
-const isFetchingNextPageValue = computed(() => isFetchingNextPage.value)
-
-// 🎯 Sorting is simple: just toggle order or set new field
-// useInfiniteScroll automatically refetches when sort changes
-function handleSort(field: string) {
-  if (sortBy.value === field) {
-    // Toggle order if same field
-    setOrder(order.value === 'asc' ? 'desc' : 'asc')
-  } else {
-    // New field, default to ascending
-    setSortBy(field)
-    setOrder('asc')
-  }
-}
-
-const headers = [
-  { title: 'Name', key: 'name', sortable: false },
-  { title: 'Description', key: 'description', sortable: false },
-  { title: 'Status', key: 'status', sortable: false },
-  { title: 'Created', key: 'created.at_time', sortable: false },
-  { title: 'Last Saved', key: 'saved.at_time', sortable: false },
-]
-
 </script>
