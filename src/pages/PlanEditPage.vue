@@ -10,83 +10,74 @@
       <v-col cols="12" class="plan-edit-layout">
         <h1 class="text-h4 mb-6 text-center">Edit Plan</h1>
 
-        <div class="plan-edit-columns">
-          <div class="plan-edit-column">
-            <SchemaFieldsCard
-              title="An encounter plan"
-              :values="fieldValues"
-              :status-options="statusOptions"
-              :field-defs="fieldDefs"
-              :on-save-field="updateField"
-              automation-id="plan-edit-fields-section"
+        <CardGrid automation-id="plan-edit-grid">
+          <DataCard
+            title="An encounter plan"
+            color="primary"
+            name-field="name"
+            :model="metadataModel"
+            :on-save="saveMetadataField"
+            automation-id="plan-edit-fields-section"
+          >
+            <WordEditor
+              field="name"
+              label="Name"
+              hint="No whitespace, max 40 characters"
+              automation-id="plan-edit-name-input"
             />
-
-            <div
-              v-if="hasAdminRole"
-              class="plan-edit-metadata"
-              data-automation-id="plan-edit-metadata-section"
-            >
-              <v-text-field
-                :model-value="formatDate(plan.created.at_time)"
-                label="Created"
-                readonly
-                variant="outlined"
-                density="comfortable"
-                hide-details
-              />
-              <v-text-field
-                :model-value="formatDate(plan.saved.at_time)"
-                label="Last Saved"
-                readonly
-                variant="outlined"
-                density="comfortable"
-                hide-details
-              />
-              <v-text-field
-                :model-value="plan.created.by_user"
-                label="Created By"
-                readonly
-                variant="outlined"
-                density="comfortable"
-                hide-details
-              />
-              <v-text-field
-                :model-value="plan.saved.by_user"
-                label="Last Saved By"
-                readonly
-                variant="outlined"
-                density="comfortable"
-                hide-details
-              />
-            </div>
-
-            <div class="plan-edit-column-actions">
-              <v-btn
-                @click="router.push('/plans')"
-                variant="text"
-                data-automation-id="plan-edit-back-button"
-              >
-                Back to List
-              </v-btn>
-            </div>
-          </div>
-
-          <div class="plan-edit-column">
-            <PlanChecklistEditor
-              :checklist="plan.checklist ?? []"
-              :on-save="updateChecklist"
+            <SentenceEditor
+              field="description"
+              label="Description"
+              hint="Max 255 characters, no tabs or newlines"
+              automation-id="plan-edit-description-input"
+              class="mt-4"
             />
-
-            <div class="plan-edit-column-actions">
-              <v-btn
-                @click="router.push('/plans')"
-                variant="text"
-                data-automation-id="plan-edit-checklist-back-button"
-              >
-                Back to List
-              </v-btn>
+            <div class="plan-edit-status-row mt-4">
+              <AutoSaveSelect
+                :model-value="plan.status || 'active'"
+                label="Status"
+                :items="statusOptions"
+                :on-save="saveStatus"
+                automation-id="plan-edit-status-select"
+              />
             </div>
-          </div>
+          </DataCard>
+
+          <DataCard
+            v-if="hasAdminRole"
+            title="Audit"
+            color="secondary"
+            :model="auditModel"
+            :on-save="noopSave"
+            automation-id="plan-edit-metadata-section"
+          >
+            <BreadcrumbDisplay
+              field="created"
+              label="Created"
+              automation-id="plan-edit-metadata-created"
+            />
+            <BreadcrumbDisplay
+              field="saved"
+              label="Last Saved"
+              automation-id="plan-edit-metadata-saved"
+              class="mt-4"
+            />
+          </DataCard>
+
+          <PlanChecklistEditor
+            :checklist="plan.checklist ?? []"
+            :on-save="updateChecklist"
+          />
+        </CardGrid>
+
+        <div class="plan-edit-actions">
+          <v-btn
+            @click="router.push('/plans')"
+            variant="text"
+            data-automation-id="plan-edit-back-button"
+          >
+            Back to List
+          </v-btn>
         </div>
       </v-col>
     </v-row>
@@ -103,12 +94,15 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import {
-  validationRules,
-  formatDate,
+  CardGrid,
+  DataCard,
+  WordEditor,
+  SentenceEditor,
+  BreadcrumbDisplay,
+  AutoSaveSelect,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { PlanUpdate } from '@/api/types'
-import SchemaFieldsCard, { type SchemaFieldKey } from '@/components/SchemaFieldsCard.vue'
 import PlanChecklistEditor from '@/components/PlanChecklistEditor.vue'
 import { useRoles } from '@/composables/useRoles'
 
@@ -134,37 +128,14 @@ const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
 const statusOptions = ['active', 'archived']
 
-const rules = {
-  required: validationRules.required,
-  namePattern: validationRules.namePattern,
-  descriptionPattern: validationRules.descriptionPattern,
-}
-
-const fieldDefs = {
-  name: {
-    name: 'name',
-    hint: 'No whitespace, max 40 characters',
-    rules: [rules.required, rules.namePattern],
-    automationId: 'plan-edit-name-input',
-  },
-  description: {
-    name: 'description',
-    hint: 'Max 255 characters, no tabs or newlines',
-    rules: [rules.descriptionPattern],
-    textarea: true,
-    rows: 3,
-    automationId: 'plan-edit-description-input',
-  },
-  status: {
-    name: 'status',
-    automationId: 'plan-edit-status-select',
-  },
-}
-
-const fieldValues = computed(() => ({
+const metadataModel = computed(() => ({
   name: plan.value?.name ?? '',
   description: plan.value?.description ?? '',
-  status: plan.value?.status || 'active',
+}))
+
+const auditModel = computed(() => ({
+  created: plan.value?.created,
+  saved: plan.value?.saved,
 }))
 
 const { mutateAsync: updatePlan } = useMutation({
@@ -180,9 +151,17 @@ const { mutateAsync: updatePlan } = useMutation({
   },
 })
 
-async function updateField(field: SchemaFieldKey, value: string) {
-  await updatePlan({ [field]: value })
+async function saveMetadataField(field: string, value: unknown) {
+  await updatePlan({ [field]: value } as PlanUpdate)
 }
+
+async function saveStatus(value: string) {
+  await updatePlan({ status: value as 'active' | 'archived' })
+}
+
+// Audit card is display-only (BreadcrumbDisplay defaults to editable=false and never
+// calls onSave), but DataCard requires the prop to satisfy its context contract.
+async function noopSave() {}
 
 async function updateChecklist(checklist: string[]) {
   await updatePlan({ checklist })
@@ -196,43 +175,13 @@ async function updateChecklist(checklist: string[]) {
   padding-inline: 1rem;
 }
 
-.plan-edit-columns {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: stretch;
+.plan-edit-status-row {
+  max-width: 320px;
 }
 
-.plan-edit-column {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  min-width: 0;
-}
-
-.plan-edit-column-actions {
+.plan-edit-actions {
   display: flex;
   justify-content: center;
-  margin-top: auto;
-  padding-top: 1rem;
-}
-
-.plan-edit-metadata {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-  width: 100%;
-}
-
-@media (min-width: 960px) {
-  .plan-edit-metadata {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-@media (max-width: 959px) {
-  .plan-edit-columns {
-    grid-template-columns: 1fr;
-  }
+  margin-top: 1.5rem;
 }
 </style>

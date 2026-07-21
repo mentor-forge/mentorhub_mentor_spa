@@ -47,8 +47,8 @@ describe('Plan Domain', () => {
 
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', updatedName)
 
-    cy.get('[data-automation-id="plan-edit-description-input"]').find('textarea').clear().type('Updated description')
-    cy.get('[data-automation-id="plan-edit-description-input"]').find('textarea').blur()
+    cy.get('[data-automation-id="plan-edit-description-input"]').find('input').clear().type('Updated description')
+    cy.get('[data-automation-id="plan-edit-description-input"]').find('input').blur()
     cy.wait(1000)
 
     cy.get('[data-automation-id="plan-edit-status-select"]').click()

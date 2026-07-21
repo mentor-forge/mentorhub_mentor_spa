@@ -1,89 +1,88 @@
 <template>
-  <div class="schema-fields-card plan-checklist-editor" data-automation-id="plan-edit-checklist-section">
-    <div class="schema-fields-card__header">
-      <div class="schema-fields-card__title">Checklist</div>
+  <MhCard
+    title="Checklist"
+    color="primary"
+    class="plan-checklist-editor"
+    automation-id="plan-edit-checklist-section"
+  >
+    <div class="plan-checklist-add-row">
+      <v-text-field
+        ref="addInputRef"
+        v-model="newStepText"
+        placeholder="Add Todo"
+        variant="outlined"
+        density="comfortable"
+        :error-messages="addError"
+        :disabled="saving"
+        class="plan-checklist-add-input"
+        data-automation-id="plan-edit-checklist-add-input"
+        hide-details="auto"
+        @keyup.enter="addStep"
+      />
+
+      <v-btn
+        icon="mdi-plus"
+        color="primary"
+        variant="flat"
+        :disabled="saving"
+        data-automation-id="plan-edit-checklist-add-button"
+        @click="addStep"
+      />
     </div>
 
-    <div class="schema-fields-card__body">
-      <div class="plan-checklist-add-row">
+    <div
+      v-if="localChecklist.length"
+      class="plan-checklist-todos"
+      data-automation-id="plan-edit-checklist-step-list"
+    >
+      <div
+        v-for="(todo, index) in localChecklist"
+        :key="stepKeys[index]"
+        class="plan-checklist-todo-row"
+        :class="{
+          'plan-checklist-todo-row--drag-over': dragOverIndex === index && draggedIndex !== index,
+        }"
+        @dragover.prevent="onDragOver(index)"
+        @drop.prevent="onDrop(index)"
+      >
+        <v-btn
+          icon="mdi-drag-vertical"
+          variant="text"
+          size="small"
+          class="plan-checklist-drag-handle"
+          :disabled="saving"
+          :data-automation-id="`plan-edit-checklist-step-${index + 1}-drag-handle`"
+          draggable="true"
+          @dragstart.stop="onDragStart(index, $event)"
+          @dragend="onDragEnd"
+        />
+
         <v-text-field
-          ref="addInputRef"
-          v-model="newStepText"
-          placeholder="Add Todo"
+          :model-value="draftTodos[index] ?? todo"
+          placeholder="Todo item"
           variant="outlined"
           density="comfortable"
-          :error-messages="addError"
-          :disabled="saving"
-          class="plan-checklist-add-input"
-          data-automation-id="plan-edit-checklist-add-input"
           hide-details="auto"
-          @keyup.enter="addStep"
+          :disabled="saving"
+          :error-messages="editErrors[index]"
+          class="plan-checklist-todo-input"
+          :data-automation-id="`plan-edit-checklist-step-${index + 1}-input`"
+          @update:model-value="(value) => setDraftTodo(index, value)"
+          @blur="() => saveTodo(index)"
         />
 
         <v-btn
-          icon="mdi-plus"
-          color="primary"
-          variant="flat"
+          icon="mdi-delete"
+          variant="text"
+          size="small"
+          color="error"
           :disabled="saving"
-          data-automation-id="plan-edit-checklist-add-button"
-          @click="addStep"
+          :data-automation-id="`plan-edit-checklist-step-${index + 1}-delete-button`"
+          @click="deleteStep(index)"
         />
       </div>
-
-      <div
-        v-if="localChecklist.length"
-        class="plan-checklist-todos"
-        data-automation-id="plan-edit-checklist-step-list"
-      >
-        <div
-          v-for="(todo, index) in localChecklist"
-          :key="stepKeys[index]"
-          class="plan-checklist-todo-row"
-          :class="{
-            'plan-checklist-todo-row--drag-over': dragOverIndex === index && draggedIndex !== index,
-          }"
-          @dragover.prevent="onDragOver(index)"
-          @drop.prevent="onDrop(index)"
-        >
-          <v-btn
-            icon="mdi-drag-vertical"
-            variant="text"
-            size="small"
-            class="plan-checklist-drag-handle"
-            :disabled="saving"
-            :data-automation-id="`plan-edit-checklist-step-${index + 1}-drag-handle`"
-            draggable="true"
-            @dragstart.stop="onDragStart(index, $event)"
-            @dragend="onDragEnd"
-          />
-
-          <v-text-field
-            :model-value="draftTodos[index] ?? todo"
-            placeholder="Todo item"
-            variant="outlined"
-            density="comfortable"
-            hide-details="auto"
-            :disabled="saving"
-            :error-messages="editErrors[index]"
-            class="plan-checklist-todo-input"
-            :data-automation-id="`plan-edit-checklist-step-${index + 1}-input`"
-            @update:model-value="(value) => setDraftTodo(index, value)"
-            @blur="() => saveTodo(index)"
-          />
-
-          <v-btn
-            icon="mdi-delete"
-            variant="text"
-            size="small"
-            color="error"
-            :disabled="saving"
-            :data-automation-id="`plan-edit-checklist-step-${index + 1}-delete-button`"
-            @click="deleteStep(index)"
-          />
-        </div>
-      </div>
     </div>
-  </div>
+  </MhCard>
 </template>
 
 <script lang="ts">
@@ -138,6 +137,7 @@ export function reorderChecklistItem(checklist: string[], fromIndex: number, toI
 
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
+import { MhCard } from '@mentor-forge/mentorhub_spa_utils'
 
 const props = defineProps<{
   checklist: string[]
