@@ -60,8 +60,8 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-edit-name-input"]').find('input').should('have.value', updatedName)
     
     // Update description
-    cy.get('[data-automation-id="resource-edit-description-input"]').find('textarea').clear().type('Updated description')
-    cy.get('[data-automation-id="resource-edit-description-input"]').find('textarea').blur()
+    cy.get('[data-automation-id="resource-edit-description-input"]').find('input').clear().type('Updated description')
+    cy.get('[data-automation-id="resource-edit-description-input"]').find('input').blur()
     cy.wait(1000)
     
     // Update status
@@ -78,13 +78,13 @@ describe('Resource Domain', () => {
     // Wait for debounce (300ms) plus API call
     cy.wait(800)
     
-    // Verify the resource appears in the search results
-    cy.get('table').should('contain', updatedName)
+    // Verify the resource appears as a card in the search results
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', updatedName)
     
     // Clear search and verify all resources are shown again
     cy.get('[data-automation-id="resource-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="resource-list-grid"]').should('exist')
   })
 
   it('should search for resources', () => {
@@ -102,7 +102,7 @@ describe('Resource Domain', () => {
     cy.visit('/resources')
     
     // Wait for initial load
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="resource-list-grid"]').should('exist')
     
     // Search for the resource
     cy.get('[data-automation-id="resource-list-search"]').find('input').type(itemName)
@@ -110,11 +110,39 @@ describe('Resource Domain', () => {
     cy.wait(800)
     
     // Verify the search results contain the resource
-    cy.get('table tbody').should('contain', itemName)
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', itemName)
     
     // Clear search and verify all resources are shown again
     cy.get('[data-automation-id="resource-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="resource-list-grid"]').should('exist')
+  })
+
+  it('should show resource cards with name and description only, and open the edit page', () => {
+    cy.visit('/resources/new')
+    const timestamp = Date.now()
+    const itemName = `test-resource-card-${timestamp}`
+    
+    cy.get('[data-automation-id="resource-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="resource-new-description-input"]').type('Card description for Cypress')
+    cy.get('[data-automation-id="resource-new-submit-button"]').click()
+    cy.url().should('include', '/resources/')
+    
+    cy.visit('/resources')
+    cy.get('[data-automation-id="resource-list-search"]').find('input').type(itemName)
+    cy.wait(800)
+    
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', itemName)
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', 'Card description for Cypress')
+    cy.get('[data-automation-id="resource-list-grid"]').should('not.contain', 'archived')
+    
+    cy.get('[data-automation-id="resource-list-grid"]')
+      .contains('.mh-card', itemName)
+      .find('[data-automation-id$="-open-button"]')
+      .click()
+    
+    cy.url().should('include', '/resources/')
+    cy.url().should('not.include', '/resources/new')
+    cy.get('[data-automation-id="resource-edit-name-input"]').find('input').should('have.value', itemName)
   })
 })

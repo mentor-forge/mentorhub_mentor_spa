@@ -60,8 +60,8 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-edit-name-input"]').find('input').should('have.value', updatedName)
     
     // Update description
-    cy.get('[data-automation-id="path-edit-description-input"]').find('textarea').clear().type('Updated description')
-    cy.get('[data-automation-id="path-edit-description-input"]').find('textarea').blur()
+    cy.get('[data-automation-id="path-edit-description-input"]').find('input').clear().type('Updated description')
+    cy.get('[data-automation-id="path-edit-description-input"]').find('input').blur()
     cy.wait(1000)
     
     // Update status
@@ -78,13 +78,13 @@ describe('Path Domain', () => {
     // Wait for debounce (300ms) plus API call
     cy.wait(800)
     
-    // Verify the path appears in the search results
-    cy.get('table').should('contain', updatedName)
+    // Verify the path appears as a card in the search results
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', updatedName)
     
     // Clear search and verify all paths are shown again
     cy.get('[data-automation-id="path-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="path-list-grid"]').should('exist')
   })
 
   it('should search for paths', () => {
@@ -102,7 +102,7 @@ describe('Path Domain', () => {
     cy.visit('/paths')
     
     // Wait for initial load
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="path-list-grid"]').should('exist')
     
     // Search for the path
     cy.get('[data-automation-id="path-list-search"]').find('input').type(itemName)
@@ -110,11 +110,39 @@ describe('Path Domain', () => {
     cy.wait(800)
     
     // Verify the search results contain the path
-    cy.get('table tbody').should('contain', itemName)
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', itemName)
     
     // Clear search and verify all paths are shown again
     cy.get('[data-automation-id="path-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="path-list-grid"]').should('exist')
+  })
+
+  it('should show path cards with name and description only, and open the edit page', () => {
+    cy.visit('/paths/new')
+    const timestamp = Date.now()
+    const itemName = `test-path-card-${timestamp}`
+    
+    cy.get('[data-automation-id="path-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="path-new-description-input"]').type('Card description for Cypress')
+    cy.get('[data-automation-id="path-new-submit-button"]').click()
+    cy.url().should('include', '/paths/')
+    
+    cy.visit('/paths')
+    cy.get('[data-automation-id="path-list-search"]').find('input').type(itemName)
+    cy.wait(800)
+    
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', itemName)
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', 'Card description for Cypress')
+    cy.get('[data-automation-id="path-list-grid"]').should('not.contain', 'archived')
+    
+    cy.get('[data-automation-id="path-list-grid"]')
+      .contains('.mh-card', itemName)
+      .find('[data-automation-id$="-open-button"]')
+      .click()
+    
+    cy.url().should('include', '/paths/')
+    cy.url().should('not.include', '/paths/new')
+    cy.get('[data-automation-id="path-edit-name-input"]').find('input').should('have.value', itemName)
   })
 })

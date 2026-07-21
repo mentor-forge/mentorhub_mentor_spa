@@ -90,11 +90,11 @@ npm run container
 | `/profiles` | `ProfilesListPage` — mentee cards for the logged-in mentor | `GET /api/profile` |
 | `/profiles/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
 
-**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
+**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`) and composes each section as a `DataCard` / `MhCard` (`@mentor-forge/mentorhub_spa_utils`):
 
-- **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
-- **Notes** — editable mentee notes via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`
-- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
+- **Profile** (`DataCard`) — read-only mentee contact and experience fields from `ProfileDetail.profile`, rendered with typed display editors (`SentenceEditor`, `EmailEditor`, `UsPhoneEditor`, all `editable=false`)
+- **Notes** (`DataCard`) — editable mentee notes via typed editors (`SentenceEditor` for Relationship Summary / Focus, `MarkdownEditor` for Homework / Mentor Notes) blur-to-save via `PATCH /api/mentee/{mentee_id}`
+- **Encounters** (`MhCard`) — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
 
 API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
 
@@ -111,13 +111,13 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 
 **PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
 
-**PlanEditPage** loads plan metadata (`name`, `description`, `status`) with blur-to-save (`AutoSaveField` / `AutoSaveSelect`) and a **Steps** section for the ordered `checklist` array:
+**PlanEditPage** renders plan metadata (`name`, `description`, `status`) in a `CardGrid` of `DataCard`s using type-aligned editors — `WordEditor` for `name`, `SentenceEditor` for `description`, and `AutoSaveSelect` for `status` (kept as the discrete-options control; no enum editor wired yet) — plus a `PlanChecklistEditor` (wrapped in `MhCard` chrome) for the ordered `checklist` array:
 
 - **Add** — rapid-input field or **+** button appends a step (empty steps allowed) and PATCHes the full `checklist`
 - **Edit** — inline blur-to-save per step text
 - **Delete** — removes a step and PATCHes the remaining array
 - **Reorder** — drag handle per step persists the new sequence via `PATCH /api/plan/{id}` with `{ checklist: string[] }`
-- **Audit metadata** — Created / Created By / Last Saved / Last Saved By fields are visible only to users with the `admin` role
+- **Audit metadata** — a `DataCard` with `BreadcrumbDisplay` for `created` / `saved` is visible only to users with the `admin` role
 
 API client methods: `api.getPlans()`, `api.getPlan(planId)`, `api.createPlan(data)`, `api.updatePlan(planId, data)`.
 
@@ -129,12 +129,12 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 |-------|------|-----|
 | `/encounters/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
 
-**Encounter Detail** page layout:
+**Encounter Detail** page layout uses `DataCard` / `MhCard` (`@mentor-forge/mentorhub_spa_utils`) for section chrome, each collapsible:
 
-- **Profile** (collapsible) — read-only goals/interests and journey activity (recent completions, resources in Now); editable mentor notes
-- **Checklist** (collapsible) — `encounter.agenda` items (server-filled from plan checklist); checked state persisted via PATCH
-- **Encounter** — TLDR one-sentence summary (always visible, autosave)
-- **Summary** / **Transcript** (collapsible) — large textarea autosave fields
+- **Profile** (`DataCard`) — read-only goals/interests and journey activity (recent completions, resources in Now); editable mentor notes via `MarkdownEditor` (`Mentee.notes`)
+- **Checklist** (`MhCard`) — `encounter.agenda` items (server-filled from plan checklist); checked state persisted via PATCH
+- **Encounter** (`DataCard`) — TLDR one-sentence summary via `SentenceEditor` (required + max-255 rules)
+- **Summary** / **Transcript** (`DataCard`, collapsed by default) — `MarkdownEditor` fields (12 rows)
 
 **New Encounter** flow from Profile Detail: select a plan → `POST /api/encounter` with required `mentor_id`, `mentee_id`, and `plan_id` → navigate to detail page.
 
