@@ -14,10 +14,8 @@ describe('Mentor Dashboard', () => {
       .should('have.length.at.least', 1)
 
     cy.get('[data-automation-id="profile-dashboard-card"]').first().within(() => {
-      cy.get('.v-card-title').should('not.be.empty')
-      cy.contains('.v-chip', 'Library:').should('be.visible')
-      cy.contains('.v-chip', 'Now:').should('be.visible')
-      cy.contains('.v-chip', 'Next:').should('be.visible')
+      cy.get('.mh-card__title').should('not.be.empty')
+      cy.get('.mh-card__body').should('be.visible')
     })
   })
 

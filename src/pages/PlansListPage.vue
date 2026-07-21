@@ -21,32 +21,21 @@
       </v-btn>
     </template>
 
-    <DashboardCardGrid>
-      <v-col
+    <CardGrid automation-id="plan-list-grid">
+      <div
         v-for="plan in plans"
         :key="plan._id"
-        cols="12"
-        sm="6"
-        md="4"
+        class="dashboard-card-click"
+        data-automation-id="plan-list-card"
+        @click="navigateToPlan(plan)"
       >
-        <DashboardCard
-          automation-id="plan-list-card"
-          @click="navigateToPlan(plan)"
-        >
-          <template #title>
-            {{ plan.name || 'Unnamed Plan' }}
-          </template>
-
-          <p class="dashboard-card__description text-medium-emphasis">
+        <MhCard :name="plan.name || 'Unnamed Plan'">
+          <p class="text-medium-emphasis">
             {{ plan.description || 'No description' }}
           </p>
-
-          <v-chip size="small" color="primary" variant="tonal">
-            Steps: {{ plan.checklist?.length ?? 0 }}
-          </v-chip>
-        </DashboardCard>
-      </v-col>
-    </DashboardCardGrid>
+        </MhCard>
+      </div>
+    </CardGrid>
 
     <NamePromptDialog
       v-model="showCreateDialog"
@@ -66,15 +55,10 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
-import { useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { CardGrid, MhCard, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
 import type { Plan, PlanInput } from '@/api/types'
-import {
-  DashboardPageLayout,
-  DashboardCardGrid,
-  DashboardCard,
-  NamePromptDialog,
-} from '@/components/dashboard'
+import { DashboardPageLayout, NamePromptDialog } from '@/components/dashboard'
 
 const router = useRouter()
 const queryClient = useQueryClient()
@@ -115,3 +99,12 @@ function handleCreatePlan(name: string) {
   createPlan({ name })
 }
 </script>
+
+<style scoped>
+.dashboard-card-click {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  cursor: pointer;
+}
+</style>
