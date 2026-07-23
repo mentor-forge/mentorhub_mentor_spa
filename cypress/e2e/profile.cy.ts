@@ -40,6 +40,23 @@ describe('Mentor Dashboard', () => {
     cy.get('[data-automation-id="profile-edit-profile-section"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-notes-section"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-encounters-section"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-profile-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="profile-edit-notes-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="profile-edit-encounters-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="profile-edit-profile-section-collapse-button"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-notes-section-collapse-button"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-profile-name-display"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-notes-focus-input"]').find('input').should('exist')
+  })
+
+  it('should update typed mentor notes fields on ProfileEditPage', () => {
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
+      .first()
+      .click()
+
+    const focus = `Cypress focus ${Date.now()}`
+    cy.get('[data-automation-id="profile-edit-notes-focus-input"]').find('input').clear().type(focus).blur()
+    cy.get('[data-automation-id="profile-edit-notes-focus-input"]').find('input').should('have.value', focus)
   })
 
   it('should create encounter from ProfileEditPage plan dialog', () => {

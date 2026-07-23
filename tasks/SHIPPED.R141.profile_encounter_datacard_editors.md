@@ -1,6 +1,6 @@
 # R141 – Profile and Encounter edit pages → `DataCard` + typed editors
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: R135, R138  
 **Description**: Convert `ProfileEditPage` and `EncounterEditPage` section chrome and `AutoSaveField` forms to spa_utils `DataCard` (`model`, `nameField`, `onSave`) with configurator-type editors (`field`, `editable`, `visible`, `automationId`). Prefer typed editors (including `EnumEditor` via provided config) over new `AutoSaveField` usage.
@@ -71,4 +71,18 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Plan: replace Profile and Encounter section cards with `DataCard` where typed
+  fields bind to API models and `MhCard` for non-form sections; migrate text
+  autosaves to sentence/markdown editors, expose `Encounter.date` through
+  `DateTimeEditor`, and use the runtime `status` enumerator where status is
+  editable. Preserve the plan-selection flow and existing automation IDs.
+- Implemented `DataCard` model/onSave bindings for Profile notes and Encounter
+  content, typed read-only Profile fields, runtime `EnumEditor` status controls,
+  `DateTimeEditor` for encounter date, and `MhCard` chrome for non-form lists.
+  The New Encounter plan-selection flow remains unchanged.
+- Tests: `npm run test` (93 passed), `npm run build`, Profile Cypress (9 passed),
+  Encounter Cypress (4 passed), and `npm run container` all passed. The default
+  `npm run service` port was occupied by a concurrent Vite process, so the built
+  image was started on port 8395 and the full Cypress suite passed (39 tests).
+- README was not staged because concurrent R142/R143 work owns overlapping
+  documentation changes.
