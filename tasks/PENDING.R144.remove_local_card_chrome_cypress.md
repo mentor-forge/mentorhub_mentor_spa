@@ -1,9 +1,9 @@
-# R134 – Remove duplicate local card chrome; Cypress and docs alignment
+# R144 – Remove duplicate local card chrome; Cypress and docs alignment
 
 **Status**: Pending  
 **Type**: Feature  
-**Depends On**: R129, R130, R131, R132, R133  
-**Description**: After spa_utils cards and typed editors are adopted, delete unused local card chrome (`DashboardCard` / `DashboardCardGrid` and related styles), finish Cypress alignment on stable `data-automation-id`s, and update README guidance so new work prefers `CardGrid` / `MhCard` / `DataCard` + typed editors (with `AutoSaveField` as compatibility only).
+**Depends On**: R136, R139, R140, R141, R142, R143  
+**Description**: After spa_utils 0.5.5 cards, typed editors, Cypress auth helpers, and offset list clients are adopted, delete unused local card chrome, finish Cypress alignment on stable `data-automation-id`s, and update README guidance so new work prefers `CardGrid` / `MhCard` / `DataCard` + typed editors (with `AutoSaveField` as compatibility only).
 
 ## Context
 
@@ -12,12 +12,13 @@ Always read these files before implementation:
 - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
 - `README.md`
 - `../mentorhub_spa_utils/README.md`
-- `src/components/dashboard/` — after R129–R130: which exports remain in use
+- `src/components/dashboard/` — after R139–R140: which exports remain in use
 - `src/styles/dashboard.css` (or equivalent)
 - `src/main.ts` — style imports
-- `src/components/SchemaFieldsCard.vue` — should already be gone or unused after R132
+- `src/components/SchemaFieldsCard.vue` — should already be gone or unused after R142
+- `cypress.config.ts` / `cypress/support/` — confirm R136 auth wiring still clean
 - `cypress/e2e/*.ts` — final pass across profile, plan, path, resource, encounter, navigation
-- Tasks R129–R133 Execution Notes — remaining follow-ups
+- Tasks R136–R143 Execution Notes — remaining follow-ups
 
 ## Goals
 
@@ -26,8 +27,9 @@ Always read these files before implementation:
   - Any leftover `SchemaFieldsCard.vue` if still present and unused
 - **Keep** journey-specific dialogs/helpers still in use (`DashboardPageLayout` if still referenced, `NamePromptDialog`, `PlanSelectDialog`, plan-select validation, etc.).
 - Remove or slim `src/styles/dashboard.css` rules that only existed for the deleted local card chrome; drop unused imports from `main.ts`.
+- Confirm no remaining imports of deprecated spa_utils `useInfiniteScroll` in `src/`.
 - Cypress specs assert stable `data-automation-id`s consistent with spa_utils editor conventions (including `-display` for read-only editors where applicable).
-- README documents preferred UI: `CardGrid` / `MhCard` / `DataCard` + typed editors; notes that `AutoSaveField` remains a compatibility wrapper and `AutoSaveSelect` remains for enums.
+- README documents preferred UI: `CardGrid` / `MhCard` / `DataCard` + typed editors; notes offset/size list pagination; notes that `AutoSaveField` remains a compatibility wrapper.
 - No new `AutoSaveField` introductions in touched docs/examples.
 
 ## Testing Expectations
@@ -37,7 +39,7 @@ Run all commands from this SPA repository root.
 - **Unit tests**
   - `npm run test`
   - `npm run build`
-  - Confirm no imports remain to deleted local card components
+  - Confirm no imports remain to deleted local card components or `useInfiniteScroll`
 
 - **E2E**
   - `npm run cypress:run`
@@ -61,7 +63,7 @@ Run all commands from this SPA repository root.
 - `cypress/e2e/resource.cy.ts` — final automation-id alignment
 - `cypress/e2e/encounter.cy.ts` — final automation-id alignment
 - `cypress/e2e/navigation.cy.ts` — final automation-id alignment
-- `README.md` — prefer spa_utils cards + typed editors; `AutoSaveField` compatibility note
+- `README.md` — prefer spa_utils cards + typed editors; offset/size lists; `AutoSaveField` compatibility note
 
 The agent must not update files outside this list.
 

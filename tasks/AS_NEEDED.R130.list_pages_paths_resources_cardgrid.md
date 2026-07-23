@@ -1,8 +1,10 @@
 # R130 – Paths and Resources list pages → `CardGrid` + `MhCard`
 
-**Status**: Pending  
+**Status**: Run as needed — superseded by R135–R144 (spa_utils 0.5.5). Do not execute.  
 **Type**: Feature  
 **Depends On**: R128  
+**Superseded**: Replaced by the R135–R144 spa_utils **0.5.5** task series. Do not execute this file.
+
 **Description**: Convert Paths and Resources list UIs from data-table / infinite-scroll patterns to spa_utils `CardGrid` + `MhCard` dashboards. Cards show **name** in the title bar and **description** only in the body. Page-level Add buttons and per-card Delete in `MhCard` `#actions`. Stop using deprecated `useInfiniteScroll` on these pages.
 
 ## Context

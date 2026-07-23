@@ -1,8 +1,10 @@
 # R128 – Bump `@mentor-forge/mentorhub_spa_utils` to 0.5.4
 
-**Status**: Pending  
+**Status**: Run as needed — superseded by R135–R144 (spa_utils 0.5.5). Do not execute.  
 **Type**: Feature  
 **Depends On**: none  
+**Superseded**: Replaced by the R135–R144 spa_utils **0.5.5** task series. Do not execute this file.
+
 **Description**: Bump the Mentor SPA dependency to `@mentor-forge/mentorhub_spa_utils@0.5.4` so list and edit pages can adopt `MhCard` / `CardGrid` / `DataCard` and type-aligned editors. Refresh the lockfile via CodeArtifact (`mh` + `npm install`).
 
 ## Context

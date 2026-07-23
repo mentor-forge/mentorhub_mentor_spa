@@ -1,8 +1,10 @@
 # R129 – Profiles and Plans list pages → `CardGrid` + `MhCard`
 
-**Status**: Pending  
+**Status**: Run as needed — superseded by R135–R144 (spa_utils 0.5.5). Do not execute.  
 **Type**: Feature  
 **Depends On**: R128  
+**Superseded**: Replaced by the R135–R144 spa_utils **0.5.5** task series. Do not execute this file.
+
 **Description**: Replace local `DashboardCard` / `DashboardCardGrid` usage on Profiles and Plans list dashboards with spa_utils `CardGrid` + `MhCard`. Cards show **name** in the title bar and **description** only in the body. Plans get a page-level Add button and per-card Delete in `MhCard` `#actions`.
 
 ## Context
