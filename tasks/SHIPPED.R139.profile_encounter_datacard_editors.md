@@ -1,6 +1,6 @@
 # R139 – Profile and Encounter edit pages → `DataCard` + typed editors
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R135  
 **Description**: Convert `ProfileEditPage` and `EncounterEditPage` section chrome and `AutoSaveField` forms to spa_utils `DataCard` (`model`, `nameField`, `onSave`) with configurator-type editors (`field`, `editable`, `visible`, `automationId`). Prefer typed editors (including `EnumEditor` / `EnumArrayEditor` when `/api/config` enumerators apply) over new `AutoSaveField` usage.
@@ -72,4 +72,28 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Plan
+1. Replace Profile/Encounter section `v-card` shells with spa_utils `DataCard` (collapsible via `MhCard`).
+2. Bind Notes / Encounter / Summary / Transcript fields with typed editors; Profile read-only fields use `editable=false` editors.
+3. Wire runtime enum config at app bootstrap via `app.provide(editorConfigKey, config)` in `main.ts` (app-level equivalent of `provideEditorConfig`).
+4. Preserve section automation IDs; align Cypress only if selectors break.
+5. Run unit/build, then E2E/packaging per Testing Expectations. Leave Status Pending.
+
+### Completed
+- `ProfileEditPage`: Profile / Notes / Encounters sections use `DataCard`; Notes use `SentenceEditor`/`MarkdownEditor`; Profile uses read-only typed editors including `EnumEditor` (`profile_status`).
+- `EncounterEditPage`: sections use `DataCard`; TLDR/`date`/`status` editable; Summary/Transcript `MarkdownEditor`; interests via read-only `EnumArrayEditor`; mentor notes standalone `MarkdownEditor`.
+- `main.ts`: provides `editorConfigKey` from `useConfig()` for enum editors.
+- README Profile/Encounter guidance updated away from `AutoSaveField` as the preferred pattern on these pages.
+
+### Test results
+- `npm run test`: **PASS** (13 files / 91 tests)
+- `npm run build`: **PASS** (`vue-tsc` + vite)
+- `npm run container`: **PASS** (via `scripts/docker-build.sh`)
+- `npm run service`: **PASS** (mentor stack on `:8392` / `:8391` / welcome `:8080`)
+- `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`: **FAIL** — Cypress cross-origin IdP login (`http://localhost:8392` vs `http://127.0.0.1:8080`); not a page-regression from this task
+- `npm run cypress:run:spec -- cypress/e2e/encounter.cy.ts`: **FAIL** — same IdP cross-origin issue
+- `npm run cypress:run`: **FAIL** — same IdP cross-origin issue across all specs
+- Cypress: section IDs (`profile-edit-*-section`, `encounter-detail-*-section`) and `encounter-detail-tldr-input` preserved; `encounter.cy.ts` aligned to CardGrid `profile-dashboard-card-view-button` (same as parallel list-page Cypress updates)
+
+### Status
+Left **Pending** for orchestrator to ship.

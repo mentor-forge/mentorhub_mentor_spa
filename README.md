@@ -90,10 +90,10 @@ npm run container
 | `/profiles` | `ProfilesListPage` — mentee cards for the logged-in mentor | `GET /api/profile` |
 | `/profiles/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
 
-**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
+**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`) using spa_utils `DataCard` + typed editors:
 
-- **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
-- **Notes** — editable mentee notes via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`
+- **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile` (`SentenceEditor` / `EmailEditor` / `UsPhoneEditor` / `DateTimeEditor` / `EnumEditor` with `editable=false`)
+- **Notes** — editable mentee notes via blur-to-save typed editors (`SentenceEditor` / `MarkdownEditor`) and `PATCH /api/mentee/{mentee_id}`
 - **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
 
 API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
@@ -111,13 +111,13 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 
 **PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
 
-**PlanEditPage** loads plan metadata (`name`, `description`, `status`) with blur-to-save (`AutoSaveField` / `AutoSaveSelect`) and a **Steps** section for the ordered `checklist` array:
+**PlanEditPage** loads plan metadata in a spa_utils `DataCard` with typed editors (`WordEditor` for `name`, `SentenceEditor` for `description`, `EnumEditor` for `status` via runtime `/api/config` enumerator `default_status`) and a **Checklist** `MhCard` for the ordered `checklist` array:
 
 - **Add** — rapid-input field or **+** button appends a step (empty steps allowed) and PATCHes the full `checklist`
 - **Edit** — inline blur-to-save per step text
 - **Delete** — removes a step and PATCHes the remaining array
 - **Reorder** — drag handle per step persists the new sequence via `PATCH /api/plan/{id}` with `{ checklist: string[] }`
-- **Audit metadata** — Created / Created By / Last Saved / Last Saved By fields are visible only to users with the `admin` role
+- **Audit metadata** — `BreadcrumbDisplay` for `created` / `saved` is visible only to users with the `admin` role
 
 API client methods: `api.getPlans()`, `api.getPlan(planId)`, `api.createPlan(data)`, `api.updatePlan(planId, data)`.
 
@@ -129,12 +129,12 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 |-------|------|-----|
 | `/encounters/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
 
-**Encounter Detail** page layout:
+**Encounter Detail** page layout (`DataCard` + typed editors):
 
-- **Profile** (collapsible) — read-only goals/interests and journey activity (recent completions, resources in Now); editable mentor notes
+- **Profile** (collapsible) — read-only goals/interests (`EnumArrayEditor` for interests) and journey activity (recent completions, resources in Now); editable mentor notes (`MarkdownEditor`)
 - **Checklist** (collapsible) — `encounter.agenda` items (server-filled from plan checklist); checked state persisted via PATCH
-- **Encounter** — TLDR one-sentence summary (always visible, autosave)
-- **Summary** / **Transcript** (collapsible) — large textarea autosave fields
+- **Encounter** — TLDR (`SentenceEditor`), date (`DateTimeEditor`), and status (`EnumEditor` / `default_status`) with blur-to-save
+- **Summary** / **Transcript** (collapsible) — `MarkdownEditor` autosave fields
 
 **New Encounter** flow from Profile Detail: select a plan → `POST /api/encounter` with required `mentor_id`, `mentee_id`, and `plan_id` → navigate to detail page.
 
@@ -153,7 +153,20 @@ src/
   plugins/          # Vuetify plugin configuration
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+**Note**: This template uses `@mentor-forge/mentorhub_spa_utils` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on `CardGrid` / `MhCard`, `DataCard` / typed editors, compatibility wrappers (`AutoSaveField`, `AutoSaveSelect`), `ListPageSearch`, composables (`useErrorHandler`, `useRoles`, `provideEditorConfig`), and utilities (`formatDate`, `validationRules`).
+
+## Paths and Resources Lists
+
+| Route | Page | API |
+|-------|------|-----|
+| `/paths` | `PathsListPage` — `CardGrid` + `MhCard` (name + description); page-level **New Path** | `GET /api/path` (`offset`/`size` headers) |
+| `/paths/new` | `PathNewPage` | `POST /api/path` |
+| `/paths/:id` | `PathEditPage` | `GET` / `PATCH /api/path/{id}` |
+| `/resources` | `ResourcesListPage` — same card pattern; page-level **New Resource** | `GET /api/resource` (`offset`/`size` headers) |
+| `/resources/new` | `ResourceNewPage` | `POST /api/resource` |
+| `/resources/:id` | `ResourceEditPage` | `GET` / `PATCH /api/resource/{id}` |
+
+List cards show **name** in the title bar and **description** only in the body. Open via the card view action; there is no Delete (OpenAPI has no Path/Resource DELETE). Search uses `ListPageSearch` (name filter). Load More advances `offset` by page size when a full page is returned.
 
 ## Key Implementation Patterns
 
@@ -173,13 +186,13 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
+- Path and Resource list pages use `CardGrid` + `MhCard` with offset/size header pagination (`useInfiniteQuery` load-more). Do not use deprecated `useInfiniteScroll` / `after_id` cursors.
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
-- **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
+- **Components**: `CardGrid`, `MhCard`, `DataCard`, typed editors, `ListPageSearch`; compatibility: `AutoSaveField`, `AutoSaveSelect`
+- **Composables**: `useErrorHandler`, `useRoles` (`useInfiniteScroll` is deprecated)
 - **Utilities**: `formatDate`, `validationRules`
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
@@ -215,7 +228,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For Profile/Encounter edit pages, prefer `DataCard` with typed editors (`SentenceEditor`, `MarkdownEditor`, `EnumEditor`, `DateTimeEditor`, …). `AutoSaveField`/`AutoSaveSelect` remain compatibility wrappers for pages not yet migrated. For Path/Resource list pages, use `CardGrid` + `MhCard` (name + description) with offset/size list fetch and optional `ListPageSearch`.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

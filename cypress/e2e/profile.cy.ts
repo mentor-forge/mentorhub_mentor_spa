@@ -14,15 +14,16 @@ describe('Mentor Dashboard', () => {
       .should('have.length.at.least', 1)
 
     cy.get('[data-automation-id="profile-dashboard-card"]').first().within(() => {
-      cy.get('.v-card-title').should('not.be.empty')
-      cy.contains('.v-chip', 'Library:').should('be.visible')
-      cy.contains('.v-chip', 'Now:').should('be.visible')
-      cy.contains('.v-chip', 'Next:').should('be.visible')
+      cy.get('[data-automation-id="profile-dashboard-card-title-display"]').should('not.be.empty')
+      cy.contains('.v-chip', 'Library:').should('not.exist')
+      cy.contains('.v-chip', 'Now:').should('not.exist')
+      cy.contains('.v-chip', 'Next:').should('not.exist')
+      cy.get('.text-body-2').should('exist')
     })
   })
 
-  it('should navigate to ProfileEditPage when a card is clicked', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+  it('should navigate to ProfileEditPage when a card is opened', () => {
+    cy.get('[data-automation-id="profile-dashboard-card-view-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -32,7 +33,7 @@ describe('Mentor Dashboard', () => {
   })
 
   it('should show Profile, Notes, and Encounters sections on ProfileEditPage', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-view-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -42,7 +43,7 @@ describe('Mentor Dashboard', () => {
   })
 
   it('should create encounter from ProfileEditPage plan dialog', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-view-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -66,7 +67,7 @@ describe('Mentor Dashboard', () => {
   it('should not show a Properties button on dashboard or ProfileEditPage', () => {
     cy.get('button').contains('Properties').should('not.exist')
 
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-view-button"]', { timeout: 10000 })
       .first()
       .click()
 
