@@ -127,7 +127,10 @@ E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 
 **PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
 
-**PlanEditPage** loads plan metadata (`name`, `description`, `status`) with blur-to-save (`AutoSaveField` / `AutoSaveSelect`) and a **Steps** section for the ordered `checklist` array:
+**PlanEditPage** renders plan metadata in a shared `DataCard` with type-aligned
+`WordEditor`, `SentenceEditor`, and runtime-configured `EnumEditor` controls.
+The **Steps** section uses shared `MhCard` chrome for the ordered `checklist`
+array:
 
 - **Add** — rapid-input field or **+** button appends a step (empty steps allowed) and PATCHes the full `checklist`
 - **Edit** — inline blur-to-save per step text

@@ -53,12 +53,12 @@ describe('Plan Domain', () => {
 
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', updatedName)
 
-    cy.get('[data-automation-id="plan-edit-description-input"]').find('textarea').clear().type('Updated description')
-    cy.get('[data-automation-id="plan-edit-description-input"]').find('textarea').blur()
+    cy.get('[data-automation-id="plan-edit-description-input"]').find('input').clear().type('Updated description')
+    cy.get('[data-automation-id="plan-edit-description-input"]').find('input').blur()
     cy.wait(1000)
 
     cy.get('[data-automation-id="plan-edit-status-select"]').click()
-    cy.get('.v-list-item').contains('archived').click()
+    cy.get('.v-overlay--active .v-list-item').contains('Soft Delete Indicator').click()
     cy.wait(1000)
 
     cy.get('[data-automation-id="plan-edit-back-button"]').click()
@@ -72,7 +72,9 @@ describe('Plan Domain', () => {
 
     cy.get('[data-automation-id="plan-list-card-open-button"]').first().click()
     cy.url().should('match', /\/plans\/[a-f0-9]{24}$/)
-    cy.get('[data-automation-id="plan-edit-fields-section"]').should('be.visible')
+    cy.get('[data-automation-id="plan-edit-fields-section"]')
+      .should('be.visible')
+      .and('have.class', 'mh-card')
     cy.get('[data-automation-id="plan-edit-name-input"]').should('be.visible')
   })
 
@@ -86,7 +88,9 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-list-new-name-input"]').find('input').type(itemName)
     cy.get('[data-automation-id="plan-list-new-submit-button"]').click()
 
-    cy.get('[data-automation-id="plan-edit-checklist-section"]').should('be.visible')
+    cy.get('[data-automation-id="plan-edit-checklist-section"]')
+      .should('be.visible')
+      .and('have.class', 'mh-card')
 
     cy.get('[data-automation-id="plan-edit-checklist-add-input"]').find('input').type('Step one')
     cy.get('[data-automation-id="plan-edit-checklist-add-button"]').click()

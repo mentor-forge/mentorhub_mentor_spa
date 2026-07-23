@@ -1,10 +1,6 @@
 <template>
-  <div class="schema-fields-card plan-checklist-editor" data-automation-id="plan-edit-checklist-section">
-    <div class="schema-fields-card__header">
-      <div class="schema-fields-card__title">Checklist</div>
-    </div>
-
-    <div class="schema-fields-card__body">
+  <MhCard title="Checklist" automation-id="plan-edit-checklist-section">
+    <div class="plan-checklist-editor">
       <div class="plan-checklist-add-row">
         <v-text-field
           ref="addInputRef"
@@ -83,7 +79,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </MhCard>
 </template>
 
 <script lang="ts">
@@ -138,6 +134,7 @@ export function reorderChecklistItem(checklist: string[], fromIndex: number, toI
 
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
+import { MhCard } from '@mentor-forge/mentorhub_spa_utils'
 
 const props = defineProps<{
   checklist: string[]
