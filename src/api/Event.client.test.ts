@@ -29,23 +29,47 @@ describe('API Client - Event Endpoints', () => {
       }
     ]
 
-    const mockResponse = {
-      items: mockEvents,
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
+      json: async () => mockEvents
     })
 
     const result = await api.getEvents()
 
-    expect(result).toEqual(mockResponse)
+    expect(result).toEqual(mockEvents)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/event',
+      expect.objectContaining({
+        headers: expect.objectContaining({ offset: '0', size: '20' })
+      })
+    )
+  })
+
+  it('should get events with query filters and pagination headers', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
+      json: async () => []
+    })
+
+    await api.getEvents({
+      type: 'login',
+      profile_id: '507f1f77bcf86cd799439011',
+      offset: 20,
+      size: 10,
+      sort_by: 'created.at_time',
+      order: 'desc'
+    })
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/event?type=login&profile_id=507f1f77bcf86cd799439011&sort_by=created.at_time&order=desc',
+      expect.objectContaining({
+        headers: expect.objectContaining({ offset: '20', size: '10' })
+      })
+    )
   })
 
   it('should get a single event', async () => {

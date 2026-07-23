@@ -299,18 +299,15 @@ export interface ConfigResponse {
   }
 }
 
-// Infinite Scroll
-export interface InfiniteScrollParams {
+// Offset/size list pagination (request headers offset/size; query filters + sort)
+export interface ListParams {
+  offset?: number
+  size?: number
   name?: string
-  after_id?: string
-  limit?: number
+  description?: string
+  status?: string
+  type?: string
+  profile_id?: string
   sort_by?: string
   order?: 'asc' | 'desc'
-}
-
-export interface InfiniteScrollResponse<T> {
-  items: T[]
-  limit: number
-  has_more: boolean
-  next_cursor: string | null
 }

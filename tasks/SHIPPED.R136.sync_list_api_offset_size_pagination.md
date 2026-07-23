@@ -1,6 +1,6 @@
 # R136 – Sync list API client to offset/size header pagination
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R135  
 **Description**: Align Mentor SPA list client methods and types with the live Mentor API OpenAPI Get List contract: `offset`/`size` **request headers**, plain JSON **array** bodies, `sort_by`/`order` and filters as **query params**, and `X-Pagination-*` response headers. Remove cursor / infinite-scroll shapes (`after_id`, `limit`, `has_more`, `next_cursor`) from SPA ↔ API contracts used by list pages.
@@ -90,4 +90,30 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Plan
+- Confirmed live OpenAPI 0.1.0: Path/Plan/Resource/Event GET lists use header `offset`/`size`, query filters + sort, JSON array body, `X-Pagination-*` response headers. Profile has no pagination.
+- Add `ListParams` (offset/size + shared filters); stop using `InfiniteScrollParams`/`InfiniteScrollResponse` for list clients.
+- Update `getPaths`/`getPlans`/`getResources`/`getEvents` to send offset/size headers and return `T[]`.
+- Update client + types tests to assert header pagination.
+- Minimal `ResourcesListPage` adapter so `useInfiniteScroll` still compiles (first page via offset/size; load-more deferred to R138).
+- Paths/Plans pages already return arrays — no page changes needed.
+
+### Results
+- **OpenAPI check**: Live `http://localhost:8391/docs/openapi.yaml` (0.1.0) matches Goals for Path/Plan/Resource/Event (header offset/size, array body, X-Pagination-*). Profile has no pagination.
+- **`npm run test`**: 13 files, 91 tests passed.
+- **`npm run build`**: `vue-tsc` + vite build succeeded.
+- **`npm run container`**: Image `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` built successfully (exit 0).
+- **Dev smoke**: Not run (optional); API was up for OpenAPI check.
+- **Blockers**: None.
+- **Note**: `ResourcesListPage` temporary adapter loads first page only (`has_more: false`) until R138 CardGrid + offset list. Paths/Plans list pages unchanged.
+
+### Files changed
+- `src/api/types.ts`
+- `src/api/client.ts`
+- `src/api/Path.client.test.ts`
+- `src/api/Plan.client.test.ts`
+- `src/api/Resource.client.test.ts`
+- `src/api/Event.client.test.ts`
+- `src/api/types.test.ts`
+- `src/pages/ResourcesListPage.vue`
+- `tasks/PENDING.R136.sync_list_api_offset_size_pagination.md` (Execution Notes)

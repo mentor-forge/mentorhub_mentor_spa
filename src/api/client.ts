@@ -26,8 +26,7 @@ import type {
 
   ConfigResponse,
   Error,
-  InfiniteScrollParams,
-  InfiniteScrollResponse
+  ListParams
 } from './types'
 import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
 
@@ -100,20 +99,21 @@ export const api = {
     return request<ConfigResponse>('/config')
   },
 
-  // Control endpoints
-  // 🎯 API methods use InfiniteScrollParams and InfiniteScrollResponse types
-  // Shapes used by spa_utils useInfiniteScroll
-
-  async getResources(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Resource>> {
+  async getResources(params?: ListParams): Promise<Resource[]> {
     const queryParams = new URLSearchParams()
     if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
+    if (params?.description) queryParams.append('description', params.description)
+    if (params?.status) queryParams.append('status', params.status)
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
     if (params?.order) queryParams.append('order', params.order)
-    
+
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Resource>>(`/resource${query ? `?${query}` : ''}`)
+    return request<Resource[]>(`/resource${query ? `?${query}` : ''}`, {
+      headers: {
+        offset: String(params?.offset ?? 0),
+        size: String(params?.size ?? 20),
+      },
+    })
   },
 
   async getResource(resourceId: string): Promise<Resource> {
@@ -135,12 +135,19 @@ export const api = {
   },
 
 
-  async getPaths(params?: { name?: string }): Promise<Path[]> {
+  async getPaths(params?: ListParams): Promise<Path[]> {
     const queryParams = new URLSearchParams()
     if (params?.name) queryParams.append('name', params.name)
+    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
+    if (params?.order) queryParams.append('order', params.order)
 
     const query = queryParams.toString()
-    return request<Path[]>(`/path${query ? `?${query}` : ''}`)
+    return request<Path[]>(`/path${query ? `?${query}` : ''}`, {
+      headers: {
+        offset: String(params?.offset ?? 0),
+        size: String(params?.size ?? 20),
+      },
+    })
   },
 
   async getPath(pathId: string): Promise<Path> {
@@ -162,8 +169,19 @@ export const api = {
   },
 
 
-  async getPlans(): Promise<Plan[]> {
-    return request<Plan[]>('/plan')
+  async getPlans(params?: ListParams): Promise<Plan[]> {
+    const queryParams = new URLSearchParams()
+    if (params?.name) queryParams.append('name', params.name)
+    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
+    if (params?.order) queryParams.append('order', params.order)
+
+    const query = queryParams.toString()
+    return request<Plan[]>(`/plan${query ? `?${query}` : ''}`, {
+      headers: {
+        offset: String(params?.offset ?? 0),
+        size: String(params?.size ?? 20),
+      },
+    })
   },
 
   async getPlan(planId: string): Promise<Plan> {
@@ -205,18 +223,20 @@ export const api = {
 
 
 
-  // Create endpoints
-
-  async getEvents(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Event>> {
+  async getEvents(params?: ListParams): Promise<Event[]> {
     const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
+    if (params?.type) queryParams.append('type', params.type)
+    if (params?.profile_id) queryParams.append('profile_id', params.profile_id)
     if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
     if (params?.order) queryParams.append('order', params.order)
-    
+
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Event>>(`/event${query ? `?${query}` : ''}`)
+    return request<Event[]>(`/event${query ? `?${query}` : ''}`, {
+      headers: {
+        offset: String(params?.offset ?? 0),
+        size: String(params?.size ?? 20),
+      },
+    })
   },
 
   async getEvent(eventId: string): Promise<Event> {

@@ -111,35 +111,41 @@
 
 <script setup lang="ts">
 /**
- * Resources List Page - Showcase of mentorhub_spa_utils ease of use
- * 
- * This page demonstrates how easy it is to build a feature-rich list page with:
- * - Infinite scroll pagination
- * - Server-side sorting
- * - Debounced search
- * - Loading states
- * - Error handling
- * 
- * All of this functionality comes from a single composable: useInfiniteScroll
- * from @mentor-forge/mentorhub_spa_utils. Just provide your API call and you're done!
+ * Resources List Page
+ *
+ * Temporary adapter: spa_utils useInfiniteScroll still expects cursor-shaped
+ * responses. getResources now returns a plain array with offset/size headers
+ * (OpenAPI). R138 will replace this with CardGrid + offset list.
  */
 import { computed } from 'vue'
 import { api } from '@/api/client'
 import { formatDate, ListPageSearch, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
+import type { InfiniteScrollParams, InfiniteScrollResponse } from '@mentor-forge/mentorhub_spa_utils'
 import { useRouter } from 'vue-router'
 import type { Resource } from '@/api/types'
 
 const router = useRouter()
 
-// 🎯 One composable call gives you everything you need for infinite scroll:
-// - items: The flattened list of all loaded items
-// - isLoading: Loading state for initial load
-// - isFetchingNextPage: Loading state for "load more"
-// - hasMore: Whether there are more pages to load
-// - loadMore: Function to load the next page
-// - showError/errorMessage: Error handling
-// - searchQuery/debouncedSearch: Search with automatic 300ms debouncing
-// - sortBy/order/setSortBy/setOrder: Server-side sorting
+/** Bridge InfiniteScrollParams → offset/size ListParams until R138. */
+async function fetchResourcesPage(
+  params: InfiniteScrollParams
+): Promise<InfiniteScrollResponse<Resource>> {
+  const items = await api.getResources({
+    name: params.name,
+    offset: 0,
+    size: params.limit,
+    sort_by: params.sort_by,
+    order: params.order,
+  })
+  // Disable cursor load-more; first page only until CardGrid offset list (R138).
+  return {
+    items,
+    limit: params.limit,
+    has_more: false,
+    next_cursor: null,
+  }
+}
+
 const {
   items: resources,
   isLoading,
@@ -156,7 +162,7 @@ const {
   setOrder,
 } = useInfiniteScroll<Resource>({
   queryKey: ['resources'],
-  queryFn: (params) => api.getResources(params),
+  queryFn: fetchResourcesPage,
   getItemId: (item) => item._id,
   limit: 20,
 })
@@ -172,14 +178,10 @@ const orderValue = computed(() => order.value)
 const hasMoreValue = computed(() => hasMore.value)
 const isFetchingNextPageValue = computed(() => isFetchingNextPage.value)
 
-// 🎯 Sorting is simple: just toggle order or set new field
-// useInfiniteScroll automatically refetches when sort changes
 function handleSort(field: string) {
   if (sortBy.value === field) {
-    // Toggle order if same field
     setOrder(order.value === 'asc' ? 'desc' : 'asc')
   } else {
-    // New field, default to ascending
     setSortBy(field)
     setOrder('asc')
   }

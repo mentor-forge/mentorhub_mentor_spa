@@ -9,8 +9,7 @@ import type {
   CreateInput,
   Consume,
   ConfigResponse,
-  InfiniteScrollParams,
-  InfiniteScrollResponse
+  ListParams
 } from './types'
 
 describe('API Types', () => {
@@ -239,103 +238,43 @@ describe('API Types', () => {
     })
   })
 
-  describe('InfiniteScrollParams', () => {
-    it('should match InfiniteScrollParams interface with all fields', () => {
-      const params: InfiniteScrollParams = {
+  describe('ListParams', () => {
+    it('should match the OpenAPI list contract', () => {
+      const params: ListParams = {
+        offset: 20,
+        size: 10,
         name: 'test',
-        after_id: '507f1f77bcf86cd799439011',
-        limit: 20,
+        description: 'guide',
+        status: 'active,draft',
         sort_by: 'name',
         order: 'asc'
       }
-      
+
+      expect(params.offset).toBe(20)
+      expect(params.size).toBe(10)
       expect(params.name).toBe('test')
-      expect(params.after_id).toBe('507f1f77bcf86cd799439011')
-      expect(params.limit).toBe(20)
+      expect(params.description).toBe('guide')
+      expect(params.status).toBe('active,draft')
       expect(params.sort_by).toBe('name')
       expect(params.order).toBe('asc')
     })
 
     it('should allow optional fields', () => {
-      const params: InfiniteScrollParams = {}
-      
+      const params: ListParams = {}
+
+      expect(params.offset).toBeUndefined()
+      expect(params.size).toBeUndefined()
       expect(params.name).toBeUndefined()
-      expect(params.after_id).toBeUndefined()
-      expect(params.limit).toBeUndefined()
       expect(params.sort_by).toBeUndefined()
       expect(params.order).toBeUndefined()
     })
 
     it('should accept desc order', () => {
-      const params: InfiniteScrollParams = {
+      const params: ListParams = {
         order: 'desc'
       }
-      
+
       expect(params.order).toBe('desc')
-    })
-  })
-
-  describe('InfiniteScrollResponse', () => {
-    it('should match InfiniteScrollResponse interface', () => {
-      const response: InfiniteScrollResponse<Control> = {
-        items: [
-          {
-            _id: '507f1f77bcf86cd799439011',
-            name: 'test-control',
-            created: {
-              from_ip: '192.168.1.1',
-              by_user: 'user-123',
-              at_time: '2024-01-01T00:00:00Z',
-              correlation_id: 'corr-123'
-            },
-            saved: {
-              from_ip: '192.168.1.1',
-              by_user: 'user-123',
-              at_time: '2024-01-01T00:00:00Z',
-              correlation_id: 'corr-123'
-            }
-          }
-        ],
-        limit: 20,
-        has_more: true,
-        next_cursor: '507f1f77bcf86cd799439011'
-      }
-      
-      expect(response.items).toHaveLength(1)
-      expect(response.limit).toBe(20)
-      expect(response.has_more).toBe(true)
-      expect(response.next_cursor).toBe('507f1f77bcf86cd799439011')
-    })
-
-    it('should allow null next_cursor when no more items', () => {
-      const response: InfiniteScrollResponse<Create> = {
-        items: [],
-        limit: 20,
-        has_more: false,
-        next_cursor: null
-      }
-      
-      expect(response.has_more).toBe(false)
-      expect(response.next_cursor).toBeNull()
-    })
-
-    it('should be generic over item type', () => {
-      const controlResponse: InfiniteScrollResponse<Control> = {
-        items: [],
-        limit: 20,
-        has_more: false,
-        next_cursor: null
-      }
-      
-      const createResponse: InfiniteScrollResponse<Create> = {
-        items: [],
-        limit: 20,
-        has_more: false,
-        next_cursor: null
-      }
-      
-      expect(controlResponse.items).toEqual([])
-      expect(createResponse.items).toEqual([])
     })
   })
 })
