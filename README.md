@@ -166,7 +166,7 @@ src/
   api/              # API client layer (types.ts, client.ts)
   components/       # App-specific UI components (admin components)
   pages/            # Route-level components (List, New, Edit/View pages)
-  composables/      # App-specific composables (useAuth, useConfig, useRoles wrapper)
+  composables/      # App wrappers (useAuth re-exports spa_utils; useConfig; useRoles)
   stores/           # Pinia stores (UI state only)
   router/           # Vue Router configuration
   plugins/          # Vuetify plugin configuration
@@ -177,10 +177,12 @@ src/
 ## Key Implementation Patterns
 
 ### Authentication
-- JWT tokens stored in localStorage (`access_token`, `token_expires_at`)
-- `useAuth()` composable manages authentication state
-- Sign-in uses IdP / URL hash (`bootstrapAuthFromUrl` from spa_utils); APIs are not used as a login surface
-- Router guards protect routes requiring authentication
+- Prefer spa_utils for the full auth flow — no local `useAuth` implementation
+- `src/initAuth.ts` (imported first from `main.ts`) calls `bootstrapAuthFromUrl()` then `syncAuthFromStorage()`
+- JWT tokens live in localStorage (`access_token`, `token_expires_at`, `user_roles`); reactive state comes from spa_utils `useAuth()`
+- `src/composables/useAuth.ts` re-exports `useAuth`, `syncAuthFromStorage`, `getStoredRoles`, and `hasStoredRole` from spa_utils for app-local imports
+- Router guards and logout use spa_utils `useAuth` + `redirectToIdpLogin`; API 401 handling calls `logout()` then redirects to the IdP
+- Cypress uses spa_utils `registerJwtSignTask` / `registerAuthCommands` (`cy.login`); Mentor-only helpers (`loginAsMentor`, `loginAndVisit`, drawer) remain thin wrappers over the shared JWT task
 
 ### API Client
 - Located in `src/api/client.ts`

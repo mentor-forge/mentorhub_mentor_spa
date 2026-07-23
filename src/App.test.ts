@@ -15,13 +15,6 @@ vi.mock('vue-router', () => ({
   useRouter: () => ({ afterEach: mocks.afterEach }),
 }))
 
-vi.mock('@/composables/useAuth', () => ({
-  useAuth: () => ({
-    isAuthenticated: mocks.isAuthenticated,
-    logout: vi.fn(),
-  }),
-}))
-
 vi.mock('@/composables/useConfig', () => ({
   useConfig: () => ({
     config: mocks.config,
@@ -39,6 +32,10 @@ vi.mock('@mentor-forge/mentorhub_spa_utils', () => {
   return {
     provideEditorConfig: vi.fn(),
     redirectToIdpLogin: vi.fn(),
+    useAuth: () => ({
+      isAuthenticated: mocks.isAuthenticated,
+      logout: vi.fn(),
+    }),
   }
 })
 

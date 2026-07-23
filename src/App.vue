@@ -73,12 +73,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
 import {
   provideEditorConfig,
   redirectToIdpLogin,
+  useAuth,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { RuntimeEditorConfig } from '@mentor-forge/mentorhub_spa_utils'
 

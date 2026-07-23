@@ -1,6 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuth, hasStoredRole } from '@/composables/useAuth'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import {
+  hasStoredRole,
+  redirectToIdpLogin,
+  useAuth,
+} from '@mentor-forge/mentorhub_spa_utils'
 
 const router = createRouter({
   history: createWebHistory(),

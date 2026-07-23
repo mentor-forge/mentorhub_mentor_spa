@@ -31,7 +31,7 @@ import type {
   InfiniteScrollParams,
   InfiniteScrollResponse
 } from './types'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
 const API_BASE = '/api'
 const DEFAULT_LIST_OFFSET = 0
@@ -91,8 +91,8 @@ async function request<T>(
     
     // Handle 401 Unauthorized - clear invalid token and redirect to IdP login
     if (response.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('token_expires_at')
+      const { logout } = useAuth()
+      logout()
       redirectToIdpLogin()
     }
     
