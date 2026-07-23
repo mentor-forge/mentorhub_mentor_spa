@@ -1,6 +1,6 @@
 # R135 – Bump `@mentor-forge/mentorhub_spa_utils` to 0.5.5
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Bump the Mentor SPA dependency to `@mentor-forge/mentorhub_spa_utils@0.5.5` so list and edit pages can adopt `MhCard` / `CardGrid` / `DataCard`, typed editors (including enum editors), and drop deprecated infinite-scroll list helpers. Refresh the lockfile via CodeArtifact (`mh` + `npm install`).
@@ -47,9 +47,24 @@ Run all commands from this SPA repository root.
 
 - `package.json` — bump `@mentor-forge/mentorhub_spa_utils` to `0.5.5`
 - `package-lock.json` — lock resolved 0.5.5 tarball
+- `vitest.config.ts` — inline `@mentor-forge/mentorhub_spa_utils` so Vitest can transform package CSS side-effect import (required for unit tests after 0.5.5)
 
 The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Plan (2026-07-23)
+- Confirm branch `FRS13try2` (do not switch).
+- Goals already satisfied in tree: `package.json` and `package-lock.json` pin `@mentor-forge/mentorhub_spa_utils@0.5.5` (commit `ca36445`). Do not change version.
+- No page migrations (R136+).
+- Auth/install: `mh` then `npm install --include=dev`.
+- Verify: `npm run test`, `npm run build`, `npm run container`.
+
+### Results
+- Install: `npm install --include=dev` — up to date at 0.5.5 (CodeArtifact tarball).
+- Unit tests initially failed: Vitest `Unknown file extension ".css"` for spa_utils `dist/index.css` side-effect import.
+- Fix: `vitest.config.ts` `server.deps.inline: ['@mentor-forge/mentorhub_spa_utils']` (same pattern as mentee SPA).
+- `npm run test` — 13 files / 92 tests passed.
+- `npm run build` — passed.
+- `npm run container` — passed (`ghcr.io/mentor-forge/mentorhub_mentor_spa:latest`).
+- Compatibility: no page renames; AutoSaveField not touched.

@@ -5,6 +5,12 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   plugins: [vue()],
   test: {
+    server: {
+      deps: {
+        // spa_utils 0.5.x side-effect-imports dist CSS; Vitest must inline the package to transform it
+        inline: ['@mentor-forge/mentorhub_spa_utils'],
+      },
+    },
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
