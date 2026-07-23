@@ -1,6 +1,6 @@
 # R140 – Paths and Resources list pages → `CardGrid` + `MhCard`
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: R135, R137  
 **Description**: Convert Paths and Resources list UIs from data-table / infinite-scroll patterns to spa_utils `CardGrid` + `MhCard` dashboards driven by OpenAPI **offset/size** list APIs. Cards show **name** in the title bar and **description** only in the body. Page-level Add buttons. Stop using deprecated `useInfiniteScroll` on these pages.
@@ -73,4 +73,23 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Plan: migrate both list pages to `CardGrid` + `MhCard`, use the existing
+  `useOffsetList` helper for header-based offset/size paging and debounced name
+  search, preserve Add/edit navigation automation IDs, and update the focused
+  Cypress assertions and README documentation.
+- Live OpenAPI confirmed `offset` / `size` request headers, plain-array
+  responses, and `X-Pagination-*` response headers for both Path and Resource.
+  No DELETE operation is documented, so no delete action will be added.
+- Implemented responsive Path and Resource card dashboards with description-only
+  bodies, edit actions, Add buttons, debounced name search, and explicit
+  offset/size Load More controls.
+- Verification: `npm run test` (14 files / 92 tests), `npm run build`,
+  `npm run container`, Path Cypress (6/6), Resource Cypress (6/6), and
+  Navigation Cypress (9/9) passed. The first Navigation run had one transient
+  drawer timeout and passed on retry.
+- `npm run service` built and started the API dependencies but could not bind
+  the SPA container because port 8392 was occupied by the concurrent R139 Vite
+  server; both API and SPA remained reachable. The complete Cypress run passed
+  all R140, Navigation, Plan, and Profile specs (33/36 overall); only Encounter
+  tests failed because concurrent uncommitted R139 changed profile-card
+  navigation to its action button while `encounter.cy.ts` still clicks the card.

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row>
       <v-col>
         <h1 class="text-h4 mb-4">Paths</h1>
@@ -27,36 +27,46 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col>
-        <v-card>
-          <v-data-table
-            :headers="headers"
-            :items="paths"
-            :loading="isLoading"
-            @click:row="navigateToPath"
-            hover
-            :items-per-page="-1"
-            hide-default-footer
+    <v-progress-linear v-if="isLoading" indeterminate color="primary" data-automation-id="path-list-loading" />
+
+    <CardGrid v-else automation-id="path-list-grid">
+      <MhCard
+        v-for="path in paths"
+        :key="path._id"
+        :title="path.name"
+        :automation-id="`path-list-card-${path._id}`"
+      >
+        <template #actions>
+          <v-btn
+            icon
+            variant="text"
+            size="small"
+            :aria-label="`Edit ${path.name}`"
+            :data-automation-id="`path-list-card-${path._id}-edit-button`"
+            @click="navigateToPath(path)"
           >
-            <template v-slot:item.status="{ item }">
-              <v-chip
-                :color="item.status === 'active' ? 'success' : 'grey'"
-                size="small"
-              >
-                {{ item.status || 'N/A' }}
-              </v-chip>
-            </template>
-            <template v-slot:item.created.at_time="{ item }">
-              {{ formatDate(item.created.at_time) }}
-            </template>
-            <template v-slot:item.saved.at_time="{ item }">
-              {{ formatDate(item.saved.at_time) }}
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col>
-    </v-row>
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+        </template>
+
+        <p class="text-body-2">{{ path.description }}</p>
+      </MhCard>
+    </CardGrid>
+
+    <div v-if="!isLoading && paths.length === 0" class="text-body-1 text-medium-emphasis py-4">
+      No paths found.
+    </div>
+
+    <div v-if="hasMore" class="d-flex justify-center mt-4">
+      <v-btn
+        color="primary"
+        :loading="isFetchingNextPage"
+        data-automation-id="path-list-load-more"
+        @click="loadMore"
+      >
+        Load More
+      </v-btn>
+    </div>
 
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
       Failed to load paths: {{ errorMessage }}
@@ -65,52 +75,31 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuery } from '@tanstack/vue-query'
-import { formatDate, ListPageSearch, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { CardGrid, ListPageSearch, MhCard } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
 import type { Path } from '@/api/types'
+import { useOffsetList } from '@/composables/useOffsetList'
 
 const router = useRouter()
-const searchQuery = ref('')
-const debouncedQuery = ref('')
 
-let searchTimeout: ReturnType<typeof setTimeout>
-function debouncedSearch(value: string | null) {
-  searchQuery.value = value || ''
-  clearTimeout(searchTimeout)
-  searchTimeout = setTimeout(() => {
-    debouncedQuery.value = value || ''
-  }, 300)
-}
-
-const { data, isLoading, error: queryError } = useQuery({
-  queryKey: computed(() => ['paths', debouncedQuery.value]),
-  queryFn: () =>
-    debouncedQuery.value
-      ? api.getPaths({ name: debouncedQuery.value })
-      : api.getPaths(),
+const {
+  items: paths,
+  isLoading,
+  isFetchingNextPage,
+  hasMore,
+  loadMore,
+  showError,
+  errorMessage,
+  searchQuery,
+  debouncedSearch,
+} = useOffsetList<Path>({
+  queryKey: ['paths'],
+  queryFn: (params) => api.getPaths(params),
+  size: 20,
 })
 
-const paths = computed(() => data.value ?? [])
-
-const errorRef = ref<Error | null>(null)
-watch(queryError, (err) => {
-  errorRef.value = err
-}, { immediate: true })
-
-const { showError, errorMessage } = useErrorHandler(errorRef as any)
-
-function navigateToPath(_event: unknown, { item }: { item: Path }) {
-  router.push(`/paths/${item._id}`)
+function navigateToPath(path: Path) {
+  router.push(`/paths/${path._id}`)
 }
-
-const headers = [
-  { title: 'Name', key: 'name', sortable: false },
-  { title: 'Description', key: 'description', sortable: false },
-  { title: 'Status', key: 'status', sortable: false },
-  { title: 'Created', key: 'created.at_time', sortable: false },
-  { title: 'Last Saved', key: 'saved.at_time', sortable: false },
-]
 </script>

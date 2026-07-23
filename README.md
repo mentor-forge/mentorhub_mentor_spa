@@ -102,6 +102,16 @@ E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec --
 
 For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
+## Paths and Resources Dashboards
+
+The `/paths` and `/resources` list pages render responsive `CardGrid` +
+`MhCard` dashboards. Each card contains only the item's name and description,
+with an edit action; page-level **New Path** and **New Resource** buttons open
+the existing create pages. Both lists use `offset` / `size` request headers and
+an explicit **Load More** action instead of cursor-based infinite scrolling.
+
+E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
+
 ## Encounter Plans Dashboard
 
 | Route | Page | API |
@@ -173,7 +183,7 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
+- Use the local `useOffsetList` composable for paginated list pages backed by plain-array APIs with `offset` / `size` request headers
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
@@ -215,7 +225,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list dashboards, use `CardGrid` + `MhCard` and offset/size paging.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

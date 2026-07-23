@@ -7,6 +7,8 @@ describe('Path Domain', () => {
     cy.visit('/paths')
     cy.get('h1').contains('Paths').should('be.visible')
     cy.get('[data-automation-id="path-list-new-button"]').should('be.visible')
+    cy.get('[data-automation-id="path-list-grid"]').should('be.visible')
+    cy.get('table').should('not.exist')
   })
 
   it('should navigate to new path page', () => {
@@ -14,6 +16,38 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-list-new-button"]').click()
     cy.url().should('include', '/paths/new')
     cy.get('h1').contains('New Path').should('be.visible')
+  })
+
+  it('should load additional path cards with offset paging', () => {
+    let requestCount = 0
+    const firstPage = Array.from({ length: 20 }, (_, index) => ({
+      _id: `${index + 1}`.padStart(24, '0'),
+      name: `path-${index + 1}`,
+      description: `Path description ${index + 1}`,
+    }))
+    const secondPage = [{
+      _id: '000000000000000000000021',
+      name: 'path-21',
+      description: 'Path description 21',
+    }]
+
+    cy.intercept('GET', '/api/path*', (request) => {
+      requestCount += 1
+      expect(request.headers.offset).to.equal(requestCount === 1 ? '0' : '20')
+      expect(request.headers.size).to.equal('20')
+      request.reply({
+        body: requestCount === 1 ? firstPage : secondPage,
+        headers: { 'X-Pagination-Returned': requestCount === 1 ? '20' : '1' },
+      })
+    }).as('getPaths')
+
+    cy.visit('/paths')
+    cy.wait('@getPaths')
+    cy.get('[data-automation-id="path-list-grid"] .mh-card').should('have.length', 20)
+    cy.get('[data-automation-id="path-list-load-more"]').click()
+    cy.wait('@getPaths')
+    cy.get('[data-automation-id="path-list-grid"] .mh-card').should('have.length', 21)
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', 'Path description 21')
   })
 
   it('should create a new path', () => {
@@ -79,12 +113,12 @@ describe('Path Domain', () => {
     cy.wait(800)
     
     // Verify the path appears in the search results
-    cy.get('table').should('contain', updatedName)
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', updatedName)
     
     // Clear search and verify all paths are shown again
     cy.get('[data-automation-id="path-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="path-list-grid"]').should('exist')
   })
 
   it('should search for paths', () => {
@@ -102,7 +136,7 @@ describe('Path Domain', () => {
     cy.visit('/paths')
     
     // Wait for initial load
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="path-list-grid"]').should('exist')
     
     // Search for the path
     cy.get('[data-automation-id="path-list-search"]').find('input').type(itemName)
@@ -110,11 +144,11 @@ describe('Path Domain', () => {
     cy.wait(800)
     
     // Verify the search results contain the path
-    cy.get('table tbody').should('contain', itemName)
+    cy.get('[data-automation-id="path-list-grid"]').should('contain', itemName)
     
     // Clear search and verify all paths are shown again
     cy.get('[data-automation-id="path-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="path-list-grid"]').should('exist')
   })
 })

@@ -7,6 +7,8 @@ describe('Resource Domain', () => {
     cy.visit('/resources')
     cy.get('h1').contains('Resources').should('be.visible')
     cy.get('[data-automation-id="resource-list-new-button"]').should('be.visible')
+    cy.get('[data-automation-id="resource-list-grid"]').should('be.visible')
+    cy.get('table').should('not.exist')
   })
 
   it('should navigate to new resource page', () => {
@@ -14,6 +16,38 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-list-new-button"]').click()
     cy.url().should('include', '/resources/new')
     cy.get('h1').contains('New Resource').should('be.visible')
+  })
+
+  it('should load additional resource cards with offset paging', () => {
+    let requestCount = 0
+    const firstPage = Array.from({ length: 20 }, (_, index) => ({
+      _id: `${index + 1}`.padStart(24, '0'),
+      name: `resource-${index + 1}`,
+      description: `Resource description ${index + 1}`,
+    }))
+    const secondPage = [{
+      _id: '000000000000000000000021',
+      name: 'resource-21',
+      description: 'Resource description 21',
+    }]
+
+    cy.intercept('GET', '/api/resource*', (request) => {
+      requestCount += 1
+      expect(request.headers.offset).to.equal(requestCount === 1 ? '0' : '20')
+      expect(request.headers.size).to.equal('20')
+      request.reply({
+        body: requestCount === 1 ? firstPage : secondPage,
+        headers: { 'X-Pagination-Returned': requestCount === 1 ? '20' : '1' },
+      })
+    }).as('getResources')
+
+    cy.visit('/resources')
+    cy.wait('@getResources')
+    cy.get('[data-automation-id="resource-list-grid"] .mh-card').should('have.length', 20)
+    cy.get('[data-automation-id="resource-list-load-more"]').click()
+    cy.wait('@getResources')
+    cy.get('[data-automation-id="resource-list-grid"] .mh-card').should('have.length', 21)
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', 'Resource description 21')
   })
 
   it('should create a new resource', () => {
@@ -79,12 +113,12 @@ describe('Resource Domain', () => {
     cy.wait(800)
     
     // Verify the resource appears in the search results
-    cy.get('table').should('contain', updatedName)
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', updatedName)
     
     // Clear search and verify all resources are shown again
     cy.get('[data-automation-id="resource-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="resource-list-grid"]').should('exist')
   })
 
   it('should search for resources', () => {
@@ -102,7 +136,7 @@ describe('Resource Domain', () => {
     cy.visit('/resources')
     
     // Wait for initial load
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="resource-list-grid"]').should('exist')
     
     // Search for the resource
     cy.get('[data-automation-id="resource-list-search"]').find('input').type(itemName)
@@ -110,11 +144,11 @@ describe('Resource Domain', () => {
     cy.wait(800)
     
     // Verify the search results contain the resource
-    cy.get('table tbody').should('contain', itemName)
+    cy.get('[data-automation-id="resource-list-grid"]').should('contain', itemName)
     
     // Clear search and verify all resources are shown again
     cy.get('[data-automation-id="resource-list-search"]').find('input').clear()
     cy.wait(800)
-    cy.get('table').should('exist')
+    cy.get('[data-automation-id="resource-list-grid"]').should('exist')
   })
 })
