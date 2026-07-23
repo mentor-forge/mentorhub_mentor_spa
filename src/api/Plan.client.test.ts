@@ -46,7 +46,42 @@ describe('API Client - Plan Endpoints', () => {
     const result = await api.getPlans()
 
     expect(result).toEqual(mockPlans)
-    expect(mockFetch).toHaveBeenCalledWith('/api/plan', expect.any(Object))
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/plan',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          offset: '0',
+          size: '20',
+        }),
+      })
+    )
+  })
+
+  it('should get plans with pagination headers and list query parameters', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
+      json: async () => []
+    })
+
+    await api.getPlans({
+      offset: 40,
+      size: 25,
+      sort_by: 'created.at_time',
+      order: 'asc',
+      name: 'intro',
+    })
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/plan?sort_by=created.at_time&order=asc&name=intro',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          offset: '40',
+          size: '25',
+        }),
+      })
+    )
   })
 
   it('should get a single plan', async () => {

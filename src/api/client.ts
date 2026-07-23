@@ -26,12 +26,29 @@ import type {
 
   ConfigResponse,
   Error,
+  ListParams,
+  ResourceListParams,
   InfiniteScrollParams,
   InfiniteScrollResponse
 } from './types'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
 const API_BASE = '/api'
+const DEFAULT_LIST_OFFSET = 0
+const DEFAULT_LIST_SIZE = 20
+
+function listHeaders(params?: ListParams): Record<string, string> {
+  return {
+    offset: String(params?.offset ?? DEFAULT_LIST_OFFSET),
+    size: String(params?.size ?? DEFAULT_LIST_SIZE),
+  }
+}
+
+function appendListQuery(queryParams: URLSearchParams, params?: ListParams) {
+  if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
+  if (params?.order) queryParams.append('order', params.order)
+  if (params?.name) queryParams.append('name', params.name)
+}
 
 class ApiError extends Error {
   constructor(
@@ -74,8 +91,8 @@ async function request<T>(
     
     // Handle 401 Unauthorized - clear invalid token and redirect to IdP login
     if (response.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('token_expires_at')
+      const { logout } = useAuth()
+      logout()
       redirectToIdpLogin()
     }
     
@@ -101,19 +118,17 @@ export const api = {
   },
 
   // Control endpoints
-  // 🎯 API methods use InfiniteScrollParams and InfiniteScrollResponse types
-  // Shapes used by spa_utils useInfiniteScroll
 
-  async getResources(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Resource>> {
+  async getResources(params?: ResourceListParams): Promise<Resource[]> {
     const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
+    appendListQuery(queryParams, params)
+    if (params?.description) queryParams.append('description', params.description)
+    if (params?.status) queryParams.append('status', params.status)
     
     const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Resource>>(`/resource${query ? `?${query}` : ''}`)
+    return request<Resource[]>(`/resource${query ? `?${query}` : ''}`, {
+      headers: listHeaders(params),
+    })
   },
 
   async getResource(resourceId: string): Promise<Resource> {
@@ -135,12 +150,14 @@ export const api = {
   },
 
 
-  async getPaths(params?: { name?: string }): Promise<Path[]> {
+  async getPaths(params?: ListParams): Promise<Path[]> {
     const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
+    appendListQuery(queryParams, params)
 
     const query = queryParams.toString()
-    return request<Path[]>(`/path${query ? `?${query}` : ''}`)
+    return request<Path[]>(`/path${query ? `?${query}` : ''}`, {
+      headers: listHeaders(params),
+    })
   },
 
   async getPath(pathId: string): Promise<Path> {
@@ -162,8 +179,14 @@ export const api = {
   },
 
 
-  async getPlans(): Promise<Plan[]> {
-    return request<Plan[]>('/plan')
+  async getPlans(params?: ListParams): Promise<Plan[]> {
+    const queryParams = new URLSearchParams()
+    appendListQuery(queryParams, params)
+
+    const query = queryParams.toString()
+    return request<Plan[]>(`/plan${query ? `?${query}` : ''}`, {
+      headers: listHeaders(params),
+    })
   },
 
   async getPlan(planId: string): Promise<Plan> {

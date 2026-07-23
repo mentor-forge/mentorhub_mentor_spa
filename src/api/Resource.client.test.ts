@@ -35,46 +35,53 @@ describe('API Client - Resource Endpoints', () => {
       }
     ]
 
-    const mockResponse = {
-      items: mockResources,
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
+      json: async () => mockResources
     })
 
     const result = await api.getResources()
 
-    expect(result).toEqual(mockResponse)
-    expect(mockFetch).toHaveBeenCalledWith('/api/resource', expect.any(Object))
+    expect(result).toEqual(mockResources)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/resource',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          offset: '0',
+          size: '20',
+        }),
+      })
+    )
   })
 
-  it('should get resources with name query', async () => {
-    const mockResponse = {
-      items: [],
-      limit: 20,
-      has_more: false,
-      next_cursor: null
-    }
-
+  it('should get resources with pagination headers and filter query parameters', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResponse
+      json: async () => []
     })
 
-    await api.getResources({ name: 'test' })
+    await api.getResources({
+      offset: 20,
+      size: 10,
+      sort_by: 'name',
+      order: 'desc',
+      name: 'test',
+      description: 'guide',
+      status: 'active,draft',
+    })
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource?name=test',
-      expect.any(Object)
+      '/api/resource?sort_by=name&order=desc&name=test&description=guide&status=active%2Cdraft',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          offset: '20',
+          size: '10',
+        }),
+      })
     )
   })
 

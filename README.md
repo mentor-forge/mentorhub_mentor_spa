@@ -93,7 +93,7 @@ npm run container
 **ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
 
 - **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
-- **Notes** — editable mentee notes via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`
+- **Notes** — editable mentee notes via typed, blur-to-save editors and `PATCH /api/mentee/{mentee_id}`
 - **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
 
 API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
@@ -101,6 +101,22 @@ API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.getPr
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
 
 For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
+
+## Paths and Resources Dashboards
+
+The `/paths` and `/resources` list pages render responsive `CardGrid` +
+`MhCard` dashboards. Each card contains only the item's name and description,
+with an edit action; page-level **New Path** and **New Resource** buttons open
+the existing create pages. Both lists use `offset` / `size` request headers and
+an explicit **Load More** action instead of cursor-based infinite scrolling.
+
+The Path and Resource edit pages use `DataCard` with typed, blur-to-save
+editors: `WordEditor` for names and `SentenceEditor` for descriptions.
+Status temporarily uses `AutoSaveSelect` until `/api/config` publishes a
+usable status enumerator. Created and last-saved audit trails are displayed
+with `BreadcrumbDisplay`.
+
+E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 
 ## Encounter Plans Dashboard
 
@@ -111,7 +127,10 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 
 **PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
 
-**PlanEditPage** loads plan metadata (`name`, `description`, `status`) with blur-to-save (`AutoSaveField` / `AutoSaveSelect`) and a **Steps** section for the ordered `checklist` array:
+**PlanEditPage** renders plan metadata in a shared `DataCard` with type-aligned
+`WordEditor`, `SentenceEditor`, and runtime-configured `EnumEditor` controls.
+The **Steps** section uses shared `MhCard` chrome for the ordered `checklist`
+array:
 
 - **Add** — rapid-input field or **+** button appends a step (empty steps allowed) and PATCHes the full `checklist`
 - **Edit** — inline blur-to-save per step text
@@ -147,7 +166,7 @@ src/
   api/              # API client layer (types.ts, client.ts)
   components/       # App-specific UI components (admin components)
   pages/            # Route-level components (List, New, Edit/View pages)
-  composables/      # App-specific composables (useAuth, useConfig, useRoles wrapper)
+  composables/      # App wrappers (useAuth re-exports spa_utils; useConfig; useRoles)
   stores/           # Pinia stores (UI state only)
   router/           # Vue Router configuration
   plugins/          # Vuetify plugin configuration
@@ -158,10 +177,12 @@ src/
 ## Key Implementation Patterns
 
 ### Authentication
-- JWT tokens stored in localStorage (`access_token`, `token_expires_at`)
-- `useAuth()` composable manages authentication state
-- Sign-in uses IdP / URL hash (`bootstrapAuthFromUrl` from spa_utils); APIs are not used as a login surface
-- Router guards protect routes requiring authentication
+- Prefer spa_utils for the full auth flow — no local `useAuth` implementation
+- `src/initAuth.ts` (imported first from `main.ts`) calls `bootstrapAuthFromUrl()` then `syncAuthFromStorage()`
+- JWT tokens live in localStorage (`access_token`, `token_expires_at`, `user_roles`); reactive state comes from spa_utils `useAuth()`
+- `src/composables/useAuth.ts` re-exports `useAuth`, `syncAuthFromStorage`, `getStoredRoles`, and `hasStoredRole` from spa_utils for app-local imports
+- Router guards and logout use spa_utils `useAuth` + `redirectToIdpLogin`; API 401 handling calls `logout()` then redirects to the IdP
+- Cypress uses spa_utils `registerJwtSignTask` / `registerAuthCommands` (`cy.login`); Mentor-only helpers (`loginAsMentor`, `loginAndVisit`, drawer) remain thin wrappers over the shared JWT task
 
 ### API Client
 - Located in `src/api/client.ts`
@@ -173,12 +194,17 @@ src/
 - Uses TanStack Query (Vue Query) for server state management
 - Query keys follow pattern: `['resource', id]` or `['resources']`
 - Mutations invalidate related queries on success
-- Use `useResourceList` composable from `spa_utils` for list pages with search support
+- Use the local `useOffsetList` composable for paginated list pages backed by plain-array APIs with `offset` / `size` request headers
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
+- **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
+  `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
+  prefer `CardGrid` + `MhCard` for list dashboards and `DataCard` + typed editors
+  for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy
+  pages, and `AutoSaveSelect` remains available where runtime enumerators have
+  not yet migrated
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
 - **Utilities**: `formatDate`, `validationRules`
 
@@ -215,7 +241,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list pages, use `useResourceList` and `ListPageSearch`.
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.); do not introduce new `AutoSaveField` usage. For list dashboards, use `CardGrid` + `MhCard` and API list requests with `offset` / `size` headers.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

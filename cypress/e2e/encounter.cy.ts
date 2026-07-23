@@ -4,7 +4,7 @@ describe('Encounter Domain', () => {
   })
 
   it('should create an encounter from ProfileEditPage plan dialog', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -18,10 +18,16 @@ describe('Encounter Domain', () => {
     cy.get('[data-automation-id="encounter-detail-profile-section"]').should('be.visible')
     cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('be.visible')
     cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('be.visible')
+    cy.get('[data-automation-id="encounter-detail-profile-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="encounter-detail-date-input"]').find('input[type="date"]').should('exist')
+    cy.get('[data-automation-id="encounter-detail-status-select"]').should('be.visible')
+    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('exist')
   })
 
   it('should update encounter TLDR on detail page', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -38,7 +44,7 @@ describe('Encounter Domain', () => {
   })
 
   it('should open encounter detail from profile encounters list', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
       .first()
       .click()
 

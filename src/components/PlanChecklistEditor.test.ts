@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import {
+import { shallowMount } from '@vue/test-utils'
+import PlanChecklistEditor, {
   appendChecklistItem,
   moveChecklistItem,
   removeChecklistItem,
@@ -7,6 +8,31 @@ import {
   stepTextRule,
   updateChecklistItem,
 } from './PlanChecklistEditor.vue'
+
+describe('PlanChecklistEditor', () => {
+  it('uses shared MhCard chrome and preserves its automation ID', () => {
+    const wrapper = shallowMount(PlanChecklistEditor, {
+      props: {
+        checklist: [],
+        onSave: async () => undefined,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template:
+              '<section :data-automation-id="automationId" :data-title="title"><slot /></section>',
+          },
+          VTextField: true,
+          VBtn: true,
+        },
+      },
+    })
+
+    const card = wrapper.get('[data-automation-id="plan-edit-checklist-section"]')
+    expect(card.attributes('data-title')).toBe('Checklist')
+  })
+})
 
 describe('PlanChecklistEditor helpers', () => {
   it('validates step text per OpenAPI pattern', () => {

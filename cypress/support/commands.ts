@@ -1,7 +1,9 @@
 // Mentor SPA Cypress commands (extends spa_utils auth).
+// Base `cy.login` comes from registerAuthCommands in e2e.ts.
 
 const defaultVisitPath = '/'
 
+/** Seed JWT via shared spa_utils task, then visit a path (optional `sub` claim). */
 function seedAuthAndVisit(
   roles: string[],
   visitPath: string,
@@ -27,12 +29,13 @@ function seedAuthAndVisit(
   cy.wait(300)
 }
 
+/** Login as seeded mentor profile (default user: marti) for dashboard tests. */
 Cypress.Commands.add('loginAsMentor', (visitPath = defaultVisitPath) => {
   const mentorUser = Cypress.env('MENTOR_DASHBOARD_USER') as string
   seedAuthAndVisit(['mentor', 'admin'], visitPath, mentorUser)
 })
 
-/** Seed auth and land on a route without the default `/` → dashboard redirect. */
+/** Programmatic login then visit a path (skips `/` dashboard redirect). */
 Cypress.Commands.add('loginAndVisit', (path: string, roles: string[] = ['admin']) => {
   seedAuthAndVisit(roles, path)
 })
@@ -58,13 +61,9 @@ Cypress.Commands.add('closeNavDrawer', () => {
 declare global {
   namespace Cypress {
     interface Chainable {
-      /** Login as seeded mentor profile (default user: marti) for dashboard tests. */
       loginAsMentor(visitPath?: string): Chainable<void>
-      /** Programmatic login then visit a path (skips `/` dashboard redirect). */
       loginAndVisit(path: string, roles?: string[]): Chainable<void>
-      /** Open the temporary nav drawer and wait until it is active. */
       openNavDrawer(): Chainable<void>
-      /** Close the temporary nav drawer. */
       closeNavDrawer(): Chainable<void>
     }
   }

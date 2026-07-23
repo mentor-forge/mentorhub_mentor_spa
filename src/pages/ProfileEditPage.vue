@@ -17,190 +17,150 @@
     <template v-else-if="profileDetail">
       <v-row>
         <v-col cols="12">
-          <v-card data-automation-id="profile-edit-profile-section">
-            <v-card-title
-              class="d-flex align-center cursor-pointer"
-              data-automation-id="profile-edit-profile-toggle"
-              @click="profileExpanded = !profileExpanded"
-            >
-              <v-icon
-                :icon="profileExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-                class="mr-2"
-              />
-              <h2 class="text-h4 mb-0 font-italic">Profile</h2>
-            </v-card-title>
-            <v-expand-transition>
-              <v-card-text v-show="profileExpanded">
-                <v-row>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="displayName"
-                    label="Name"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-name"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="profileDetail.profile.status || '—'"
-                    label="Status"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-status"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="startDateDisplay"
-                    label="Start Date"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-start-date"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="profileDetail.profile.location || '—'"
-                    label="Location"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-location"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="employerDisplay"
-                    label="Employer"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-employer"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="jobTitleDisplay"
-                    label="Job Title"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-job-title"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="profileDetail.profile.email || '—'"
-                    label="Email"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-email"
-                  />
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    :model-value="profileDetail.profile.phone || '—'"
-                    label="Phone"
-                    readonly
-                    variant="outlined"
-                    density="compact"
-                    data-automation-id="profile-edit-profile-phone"
-                  />
-                </v-col>
-              </v-row>
-              </v-card-text>
-            </v-expand-transition>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row class="mt-4">
-        <v-col cols="12">
-          <v-card data-automation-id="profile-edit-notes-section">
-            <v-card-title
-              class="d-flex align-center cursor-pointer"
-              data-automation-id="profile-edit-notes-toggle"
-              @click="notesExpanded = !notesExpanded"
-            >
-              <v-icon
-                :icon="notesExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-                class="mr-2"
-              />
-              <h2 class="text-h4 mb-0 font-italic">Notes</h2>
-            </v-card-title>
-            <v-expand-transition>
-              <v-card-text v-show="notesExpanded">
-              <AutoSaveField
-                :model-value="profileDetail.mentee.description || ''"
-                label="Relationship Summary"
-                :on-save="(value: string | number) => updateMenteeField('description', String(value))"
-                automation-id="profile-edit-notes-description-input"
-              />
-
-              <AutoSaveField
-                :model-value="profileDetail.mentee.focus || ''"
-                label="Focus"
-                :on-save="(value: string | number) => updateMenteeField('focus', String(value))"
-                class="mt-4"
-                automation-id="profile-edit-notes-focus-input"
-              />
-
-              <AutoSaveField
-                :model-value="profileDetail.mentee.homework || ''"
-                label="Homework"
-                :on-save="(value: string | number) => updateMenteeField('homework', String(value))"
-                class="mt-4"
-                textarea
-                :rows="3"
-                automation-id="profile-edit-notes-homework-input"
-              />
-
-              <AutoSaveField
-                :model-value="profileDetail.mentee.notes || ''"
-                label="Mentor Notes"
-                :on-save="(value: string | number) => updateMenteeField('notes', String(value))"
-                class="mt-4"
-                textarea
-                :rows="4"
-                automation-id="profile-edit-notes-input"
-              />
-              </v-card-text>
-            </v-expand-transition>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row class="mt-4">
-        <v-col cols="12">
-          <v-card data-automation-id="profile-edit-encounters-section">
-            <v-card-title class="d-flex align-center">
-              <div
-                class="d-flex align-center flex-grow-1 cursor-pointer"
-                data-automation-id="profile-edit-encounters-toggle"
-                @click="encountersExpanded = !encountersExpanded"
-              >
-                <v-icon
-                  :icon="encountersExpanded ? 'mdi-chevron-down' : 'mdi-chevron-right'"
-                  class="mr-2"
+          <DataCard
+            v-model:collapsed="profileCollapsed"
+            title="Profile"
+            name-field="display_name"
+            :model="profileCardModel"
+            :on-save="readonlySave"
+            automation-id="profile-edit-profile-section"
+          >
+            <v-row>
+              <v-col cols="12" md="6">
+                <SentenceEditor
+                  field="display_name"
+                  label="Name"
+                  :editable="false"
+                  automation-id="profile-edit-profile-name"
                 />
-                <h2 class="text-h4 mb-0 font-italic">Encounters</h2>
-              </div>
+              </v-col>
+              <v-col cols="12" md="6">
+                <EnumEditor
+                  field="status"
+                  enums="status"
+                  label="Status"
+                  :editable="false"
+                  automation-id="profile-edit-profile-status"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <DateTimeEditor
+                  field="start_date"
+                  label="Start Date"
+                  :editable="false"
+                  automation-id="profile-edit-profile-start-date"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <SentenceEditor
+                  field="location"
+                  label="Location"
+                  :editable="false"
+                  automation-id="profile-edit-profile-location"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <SentenceEditor
+                  field="employer"
+                  label="Employer"
+                  :editable="false"
+                  automation-id="profile-edit-profile-employer"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <SentenceEditor
+                  field="job_title"
+                  label="Job Title"
+                  :editable="false"
+                  automation-id="profile-edit-profile-job-title"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <EmailEditor
+                  field="email"
+                  label="Email"
+                  :editable="false"
+                  automation-id="profile-edit-profile-email"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <UsPhoneEditor
+                  field="phone"
+                  label="Phone"
+                  :editable="false"
+                  automation-id="profile-edit-profile-phone"
+                />
+              </v-col>
+            </v-row>
+          </DataCard>
+        </v-col>
+      </v-row>
+
+      <v-row class="mt-4">
+        <v-col cols="12">
+          <DataCard
+            v-model:collapsed="notesCollapsed"
+            title="Notes"
+            :model="menteeCardModel"
+            :on-save="updateMenteeField"
+            automation-id="profile-edit-notes-section"
+          >
+            <SentenceEditor
+              field="description"
+              label="Relationship Summary"
+              automation-id="profile-edit-notes-description-input"
+            />
+            <SentenceEditor
+              field="focus"
+              label="Focus"
+              class="mt-4"
+              automation-id="profile-edit-notes-focus-input"
+            />
+            <MarkdownEditor
+              field="homework"
+              label="Homework"
+              :rows="3"
+              class="mt-4"
+              automation-id="profile-edit-notes-homework-input"
+            />
+            <MarkdownEditor
+              field="notes"
+              label="Mentor Notes"
+              :rows="4"
+              class="mt-4"
+              automation-id="profile-edit-notes-input"
+            />
+          </DataCard>
+        </v-col>
+      </v-row>
+
+      <v-row class="mt-4">
+        <v-col cols="12">
+          <MhCard
+            title="Encounters"
+            automation-id="profile-edit-encounters-section"
+          >
+            <template #actions>
               <v-btn
                 color="primary"
                 data-automation-id="profile-edit-new-encounter-button"
-                @click.stop="showPlanDialog = true"
+                @click="showPlanDialog = true"
               >
                 <v-icon start>mdi-plus</v-icon>
                 New Encounter
               </v-btn>
-            </v-card-title>
-            <v-expand-transition>
-              <v-card-text v-show="encountersExpanded">
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                data-automation-id="profile-edit-encounters-toggle"
+                @click="encountersCollapsed = !encountersCollapsed"
+              >
+                <v-icon>{{ encountersCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
+              </v-btn>
+            </template>
+
+            <div v-show="!encountersCollapsed">
               <p
                 v-if="firstEncounterDate"
                 class="text-body-2 text-medium-emphasis mb-4"
@@ -239,18 +199,17 @@
                   </template>
                 </v-list-item>
               </v-list>
-              </v-card-text>
-            </v-expand-transition>
-          </v-card>
+            </div>
+          </MhCard>
         </v-col>
       </v-row>
 
       <v-row class="mt-4">
         <v-col>
           <v-btn
-            @click="router.push('/profiles')"
             variant="text"
             data-automation-id="profile-edit-back-button"
+            @click="router.push('/profiles')"
           >
             Back to Dashboard
           </v-btn>
@@ -275,7 +234,18 @@
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { AutoSaveField, formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import {
+  DataCard,
+  DateTimeEditor,
+  EmailEditor,
+  EnumEditor,
+  MarkdownEditor,
+  MhCard,
+  SentenceEditor,
+  UsPhoneEditor,
+  formatDate,
+  useErrorHandler,
+} from '@mentor-forge/mentorhub_spa_utils'
 import { PlanSelectDialog } from '@/components/dashboard'
 import { api } from '@/api/client'
 import type { Encounter, EncounterInput, MenteeUpdate, ProfileExperience } from '@/api/types'
@@ -286,9 +256,9 @@ const queryClient = useQueryClient()
 
 const profileId = computed(() => routeLocation.params.id as string)
 
-const profileExpanded = ref(true)
-const notesExpanded = ref(true)
-const encountersExpanded = ref(true)
+const profileCollapsed = ref(false)
+const notesCollapsed = ref(false)
+const encountersCollapsed = ref(false)
 const showPlanDialog = ref(false)
 
 const { data: profileDetail, isLoading, error: queryError } = useQuery({
@@ -308,18 +278,24 @@ const latestExperience = computed((): ProfileExperience | undefined => {
 
 const latestRole = computed(() => latestExperience.value?.roles?.[0])
 
-const employerDisplay = computed(() => latestExperience.value?.company || '—')
-const jobTitleDisplay = computed(() => latestRole.value?.title || '—')
-
-const startDateDisplay = computed(() => {
-  const roleStart = latestRole.value?.start
-  if (roleStart) return formatDate(roleStart)
-
-  const created = profileDetail.value?.profile.created?.at_time
-  if (created) return formatDate(created)
-
-  return '—'
+const profileCardModel = computed<Record<string, unknown>>(() => {
+  const profile = profileDetail.value?.profile
+  return {
+    ...profile,
+    display_name: profile?.full_name || profile?.name,
+    start_date: latestRole.value?.start || profile?.created?.at_time,
+    employer: latestExperience.value?.company,
+    job_title: latestRole.value?.title,
+  }
 })
+
+const menteeCardModel = computed<Record<string, unknown>>(() => ({
+  ...profileDetail.value?.mentee,
+}))
+
+function readonlySave(_field: string, _value: unknown): Promise<void> {
+  return Promise.resolve()
+}
 
 const { mutate: createEncounter, isPending: isCreatingEncounter } = useMutation<{ _id: string }, Error, EncounterInput>({
   mutationFn: (payload: EncounterInput) => api.createEncounter(payload),
@@ -396,13 +372,10 @@ const { mutateAsync: updateMentee } = useMutation({
   },
 })
 
-async function updateMenteeField(field: keyof MenteeUpdate, value: string) {
-  await updateMentee({ [field]: value })
+async function updateMenteeField(field: string, value: unknown) {
+  if (!['description', 'focus', 'homework', 'notes'].includes(field)) {
+    throw new Error(`Unsupported mentee field: ${field}`)
+  }
+  await updateMentee({ [field]: String(value ?? '') } as MenteeUpdate)
 }
 </script>
-
-<style scoped>
-.cursor-pointer {
-  cursor: pointer;
-}
-</style>

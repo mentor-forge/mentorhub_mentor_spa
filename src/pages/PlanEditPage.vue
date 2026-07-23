@@ -12,14 +12,34 @@
 
         <div class="plan-edit-columns">
           <div class="plan-edit-column">
-            <SchemaFieldsCard
-              title="An encounter plan"
-              :values="fieldValues"
-              :status-options="statusOptions"
-              :field-defs="fieldDefs"
-              :on-save-field="updateField"
+            <DataCard
+              title="Plan"
+              name-field="name"
+              :model="fieldValues"
+              :on-save="updateField"
               automation-id="plan-edit-fields-section"
-            />
+            >
+              <WordEditor
+                field="name"
+                label="Name"
+                hint="No whitespace, max 40 characters"
+                automation-id="plan-edit-name-input"
+              />
+              <SentenceEditor
+                field="description"
+                label="Description"
+                hint="Max 255 characters, no tabs or newlines"
+                automation-id="plan-edit-description-input"
+                class="mt-4"
+              />
+              <EnumEditor
+                field="status"
+                enums="default_status"
+                label="Status"
+                automation-id="plan-edit-status-select"
+                class="mt-4"
+              />
+            </DataCard>
 
             <div
               v-if="hasAdminRole"
@@ -103,12 +123,14 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import {
-  validationRules,
+  DataCard,
+  EnumEditor,
+  SentenceEditor,
+  WordEditor,
   formatDate,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { PlanUpdate } from '@/api/types'
-import SchemaFieldsCard, { type SchemaFieldKey } from '@/components/SchemaFieldsCard.vue'
 import PlanChecklistEditor from '@/components/PlanChecklistEditor.vue'
 import { useRoles } from '@/composables/useRoles'
 
@@ -132,35 +154,6 @@ watch(queryError, (err) => {
 
 const { showError, errorMessage } = useErrorHandler(errorRef as any)
 
-const statusOptions = ['active', 'archived']
-
-const rules = {
-  required: validationRules.required,
-  namePattern: validationRules.namePattern,
-  descriptionPattern: validationRules.descriptionPattern,
-}
-
-const fieldDefs = {
-  name: {
-    name: 'name',
-    hint: 'No whitespace, max 40 characters',
-    rules: [rules.required, rules.namePattern],
-    automationId: 'plan-edit-name-input',
-  },
-  description: {
-    name: 'description',
-    hint: 'Max 255 characters, no tabs or newlines',
-    rules: [rules.descriptionPattern],
-    textarea: true,
-    rows: 3,
-    automationId: 'plan-edit-description-input',
-  },
-  status: {
-    name: 'status',
-    automationId: 'plan-edit-status-select',
-  },
-}
-
 const fieldValues = computed(() => ({
   name: plan.value?.name ?? '',
   description: plan.value?.description ?? '',
@@ -180,8 +173,11 @@ const { mutateAsync: updatePlan } = useMutation({
   },
 })
 
-async function updateField(field: SchemaFieldKey, value: string) {
-  await updatePlan({ [field]: value })
+async function updateField(field: string, value: unknown) {
+  if (!['name', 'description', 'status'].includes(field) || typeof value !== 'string') {
+    throw new Error(`Unsupported Plan field: ${field}`)
+  }
+  await updatePlan({ [field]: value } as PlanUpdate)
 }
 
 async function updateChecklist(checklist: string[]) {
