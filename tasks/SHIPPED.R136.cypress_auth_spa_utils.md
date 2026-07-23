@@ -1,6 +1,6 @@
 # R136 – Align Cypress auth with spa_utils shared helpers
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R135  
 **Description**: Stop maintaining a local `signCypressJwt` Cypress task. Wire `cypress.config.ts` to spa_utils `registerJwtSignTask` and keep `cy.login` via `registerAuthCommands`. Retain only Mentor-specific helpers (`loginAsMentor`, `loginAndVisit`, nav drawer commands) as thin wrappers over the shared JWT task — mirror the lean support-file pattern used by other journey SPAs on spa_utils 0.5.5.
@@ -75,4 +75,15 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Replaced the inline `jsonwebtoken` Cypress task with spa_utils
+  `registerJwtSignTask`; retained shared `registerAuthCommands` registration
+  and the existing thin Mentor-specific command wrappers.
+- `npm run test && npm run build`: passed (14 test files / 92 tests; production
+  build completed).
+- Required dev-stack Cypress specs passed: navigation (9/9) and profile (8/8).
+- `npm run container`: passed.
+- `npm run service` started the packaged API stack, but Cursor's Windows port
+  forwarding process already owned host port 8392, so Docker could not publish
+  the SPA there; the script's browser-open fallback is also unavailable in WSL.
+  The same built image was started on port 8393 against the service stack.
+- Full Cypress suite against that packaged image passed (6 specs / 36 tests).

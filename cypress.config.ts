@@ -1,7 +1,7 @@
 import createBundler from '@bahmutov/cypress-esbuild-preprocessor'
 import { defineConfig } from 'cypress'
-import jwt from 'jsonwebtoken'
 import { e2eDefaultJwtSecret } from '@mentor-forge/mentorhub_spa_utils/cypress/jwtDefaults'
+import { registerJwtSignTask } from '@mentor-forge/mentorhub_spa_utils/cypress/registerJwtSignTask'
 
 export default defineConfig({
   e2e: {
@@ -19,23 +19,7 @@ export default defineConfig({
       MENTOR_DASHBOARD_USER: 'marti',
     },
     setupNodeEvents(on) {
-      on('task', {
-        signCypressJwt(opts: { roles: string[]; secret: string; sub?: string }) {
-          const exp = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365
-          const token = jwt.sign(
-            {
-              sub: opts.sub ?? 'cypress-user',
-              iss: 'dev-idp',
-              aud: 'dev-api',
-              roles: opts.roles,
-              exp,
-            },
-            opts.secret,
-            { algorithm: 'HS256' },
-          )
-          return { token, expiresAt: new Date(exp * 1000).toISOString() }
-        },
-      })
+      registerJwtSignTask(on)
       // Webpack cannot parse TS from spa_utils in node_modules; esbuild bundles it.
       on('file:preprocessor', createBundler())
     },
