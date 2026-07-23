@@ -45,10 +45,18 @@ describe('API Client - Path Endpoints', () => {
     const result = await api.getPaths()
 
     expect(result).toEqual(mockPaths)
-    expect(mockFetch).toHaveBeenCalledWith('/api/path', expect.any(Object))
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/api/path',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          offset: '0',
+          size: '20',
+        }),
+      })
+    )
   })
 
-  it('should get paths with name query', async () => {
+  it('should get paths with pagination headers and list query parameters', async () => {
     const mockPaths: never[] = []
 
     mockFetch.mockResolvedValueOnce({
@@ -58,11 +66,22 @@ describe('API Client - Path Endpoints', () => {
       json: async () => mockPaths
     })
 
-    await api.getPaths({ name: 'test' })
+    await api.getPaths({
+      offset: 20,
+      size: 10,
+      sort_by: 'name',
+      order: 'desc',
+      name: 'test',
+    })
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path?name=test',
-      expect.any(Object)
+      '/api/path?sort_by=name&order=desc&name=test',
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          offset: '20',
+          size: '10',
+        }),
+      })
     )
   })
 

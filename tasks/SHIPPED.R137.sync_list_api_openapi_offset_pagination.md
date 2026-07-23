@@ -1,6 +1,6 @@
 # R137 – Sync list API client to OpenAPI offset/size pagination
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Align Mentor SPA list types and client methods with the **live mentor API OpenAPI** header-based `offset` / `size` pagination (plain JSON array responses). Drop cursor / `after_id` / `InfiniteScrollResponse` shapes for Path, Plan, and Resource lists so CardGrid pages (R139–R140) can fetch pages correctly. This work is expected to land alongside related mentor API pagination changes — always re-check the live spec before coding.
@@ -81,4 +81,26 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Plan: replace Path/Plan/Resource cursor-style list contracts with a shared
+  `ListParams`, send `offset`/`size` as request headers, keep filters and sorting
+  in the query string, and update the Resource page only enough to consume plain
+  array pages through a local offset-list composable. Update client/type tests,
+  then run the required unit, build, and container checks.
+- OpenAPI pre-check (`npm run api`; live
+  `GET http://localhost:8391/docs/openapi.yaml`): `GET /api/path`,
+  `GET /api/plan`, and `GET /api/resource` all declare optional `offset`
+  (default `0`) and `size` (default `20`, maximum `100`) request headers,
+  `sort_by`/`order` query parameters, plain array response bodies, and
+  `X-Pagination-Offset`, `X-Pagination-Size`, and `X-Pagination-Returned`
+  response headers. Resource additionally declares `name`, `description`, and
+  `status` filters; Path and Plan declare `name`. `GET /api/profile` remains an
+  unpaginated plain array with no pagination headers.
+- Implemented shared offset list params and request helpers; Path, Plan, and
+  Resource list clients now send stringified `offset`/`size` headers, keep list
+  queries in the URL, and return plain arrays. Resource list paging now uses the
+  local `useOffsetList` composable rather than the deprecated cursor helper.
+- Verification:
+  - `npm run test` — passed (13 files, 91 tests).
+  - `npm run build` — passed.
+  - `npm run container` — passed; image
+    `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` built successfully.

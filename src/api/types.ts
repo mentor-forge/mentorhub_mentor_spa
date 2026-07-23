@@ -299,7 +299,21 @@ export interface ConfigResponse {
   }
 }
 
-// Infinite Scroll
+// Header-based offset pagination
+export interface ListParams {
+  offset?: number
+  size?: number
+  sort_by?: string
+  order?: 'asc' | 'desc'
+  name?: string
+}
+
+export interface ResourceListParams extends ListParams {
+  description?: string
+  status?: string
+}
+
+// Legacy cursor pagination used only by Event endpoints.
 export interface InfiniteScrollParams {
   name?: string
   after_id?: string

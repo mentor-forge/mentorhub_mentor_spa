@@ -114,18 +114,18 @@
  * Resources List Page - Showcase of mentorhub_spa_utils ease of use
  * 
  * This page demonstrates how easy it is to build a feature-rich list page with:
- * - Infinite scroll pagination
+ * - Offset pagination
  * - Server-side sorting
  * - Debounced search
  * - Loading states
  * - Error handling
  * 
- * All of this functionality comes from a single composable: useInfiniteScroll
- * from @mentor-forge/mentorhub_spa_utils. Just provide your API call and you're done!
+ * All of this functionality comes from the local useOffsetList composable.
  */
 import { computed } from 'vue'
 import { api } from '@/api/client'
-import { formatDate, ListPageSearch, useInfiniteScroll } from '@mentor-forge/mentorhub_spa_utils'
+import { formatDate, ListPageSearch } from '@mentor-forge/mentorhub_spa_utils'
+import { useOffsetList } from '@/composables/useOffsetList'
 import { useRouter } from 'vue-router'
 import type { Resource } from '@/api/types'
 
@@ -154,11 +154,10 @@ const {
   order,
   setSortBy,
   setOrder,
-} = useInfiniteScroll<Resource>({
+} = useOffsetList<Resource>({
   queryKey: ['resources'],
   queryFn: (params) => api.getResources(params),
-  getItemId: (item) => item._id,
-  limit: 20,
+  size: 20,
 })
 
 // Simple navigation handler
@@ -173,7 +172,7 @@ const hasMoreValue = computed(() => hasMore.value)
 const isFetchingNextPageValue = computed(() => isFetchingNextPage.value)
 
 // 🎯 Sorting is simple: just toggle order or set new field
-// useInfiniteScroll automatically refetches when sort changes
+// useOffsetList automatically refetches when sort changes
 function handleSort(field: string) {
   if (sortBy.value === field) {
     // Toggle order if same field
