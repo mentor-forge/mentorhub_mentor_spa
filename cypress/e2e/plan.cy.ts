@@ -9,6 +9,12 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-list-new-button"]').should('be.visible')
     cy.get('table').should('not.exist')
     cy.get('[data-automation-id="plan-list-search"]').should('not.exist')
+    cy.get('[data-automation-id="plan-list-grid"]').should('be.visible')
+    cy.get('[data-automation-id="plan-list-card"]').first().within(() => {
+      cy.get('.mh-card__title').should('not.be.empty')
+      cy.get('.mh-card__body').should('not.be.empty')
+      cy.get('.v-chip').should('not.exist')
+    })
   })
 
   it('should create a new plan via dialog and open edit page', () => {
@@ -61,10 +67,10 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-list-card"]').contains(updatedName).should('be.visible')
   })
 
-  it('should navigate to plan edit when clicking a card', () => {
+  it('should navigate to plan edit from a card action', () => {
     cy.visit('/plans')
 
-    cy.get('[data-automation-id="plan-list-card"]').first().click()
+    cy.get('[data-automation-id="plan-list-card-open-button"]').first().click()
     cy.url().should('match', /\/plans\/[a-f0-9]{24}$/)
     cy.get('[data-automation-id="plan-edit-fields-section"]').should('be.visible')
     cy.get('[data-automation-id="plan-edit-name-input"]').should('be.visible')

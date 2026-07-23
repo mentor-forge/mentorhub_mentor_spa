@@ -10,52 +10,36 @@
     :error-message="errorMessage"
     error-prefix="Failed to load dashboard: "
   >
-    <DashboardCardGrid>
-      <v-col
+    <CardGrid automation-id="profile-dashboard-grid">
+      <div
         v-for="profile in profiles"
         :key="profile._id"
-        cols="12"
-        sm="6"
-        md="4"
+        class="d-flex h-100"
+        @click="navigateToProfile(profile)"
       >
-        <DashboardCard
+        <MhCard
+          :title="profile.name || 'Unnamed Profile'"
           automation-id="profile-dashboard-card"
-          @click="navigateToProfile(profile)"
         >
-          <template #title>
-            {{ profile.name || 'Unnamed Profile' }}
+          <template #actions>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              data-automation-id="profile-dashboard-card-open-button"
+              aria-label="Open profile"
+              @click.stop="navigateToProfile(profile)"
+            >
+              <v-icon>mdi-open-in-new</v-icon>
+            </v-btn>
           </template>
 
-          <p class="dashboard-card__description text-medium-emphasis">
+          <p class="text-body-2 text-medium-emphasis mb-0">
             {{ profile.description || 'No description' }}
           </p>
-
-          <div class="dashboard-card__chips">
-            <v-chip size="small" color="primary" variant="tonal">
-              Library: {{ profile.progress.library }}
-            </v-chip>
-            <v-chip size="small" color="secondary" variant="tonal">
-              Now: {{ profile.progress.now }}
-            </v-chip>
-            <v-chip size="small" variant="tonal">
-              Next: {{ profile.progress.next }}
-            </v-chip>
-          </div>
-
-          <div v-if="profile.last_encounter">
-            <p class="text-caption text-medium-emphasis mb-1">
-              Last encounter · {{ formatDate(profile.last_encounter.date) }}
-            </p>
-            <p class="dashboard-card__caption">
-              {{ profile.last_encounter.tldr || profile.last_encounter.summary || 'No summary' }}
-            </p>
-          </div>
-          <p v-else class="text-caption text-medium-emphasis dashboard-card__caption">
-            No encounters yet
-          </p>
-        </DashboardCard>
-      </v-col>
-    </DashboardCardGrid>
+        </MhCard>
+      </div>
+    </CardGrid>
   </DashboardPageLayout>
 </template>
 
@@ -63,14 +47,10 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
-import { formatDate, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
+import { CardGrid, MhCard, useErrorHandler } from '@mentor-forge/mentorhub_spa_utils'
 import { api } from '@/api/client'
 import type { MentorDashboardProfile } from '@/api/types'
-import {
-  DashboardPageLayout,
-  DashboardCardGrid,
-  DashboardCard,
-} from '@/components/dashboard'
+import { DashboardPageLayout } from '@/components/dashboard'
 
 const router = useRouter()
 

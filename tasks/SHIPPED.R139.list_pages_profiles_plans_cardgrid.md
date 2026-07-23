@@ -1,6 +1,6 @@
 # R139 – Profiles and Plans list pages → `CardGrid` + `MhCard`
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: R135, R137  
 **Description**: Replace local `DashboardCard` / `DashboardCardGrid` usage on Profiles and Plans list dashboards with spa_utils `CardGrid` + `MhCard`. Cards show **name** in the title bar and **description** only in the body. Plans keep a page-level Add button. Use the OpenAPI-aligned Plan list client from R137 (offset/size when present; Profiles remain a full array fetch if unpaginated).
@@ -79,4 +79,10 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Confirm the live OpenAPI contract before implementation; use offset/size headers for the Plan dashboard and omit Plan delete unless the contract exposes DELETE.
+- Replace each local dashboard grid/card composition with spa_utils `CardGrid` + `MhCard`, retaining the existing page shell, stable card automation IDs, and Plans create dialog.
+- Keep card bodies to description-only content and expose navigation through title-bar `#actions`.
+- Update only affected Cypress selectors/assertions, then run the full unit, build, dev/E2E, and packaging verification requested above.
+- Live OpenAPI confirmed Plan GET pagination via `offset`/`size` request headers and no Plan DELETE operation. The dashboard requests a single 100-item page and exposes no delete UI.
+- Implemented `CardGrid` + `MhCard` on Profiles and Plans with name-only title bars, description-only bodies, title-bar Open actions, and backwards-compatible whole-card navigation. Plans retains the page-level `NamePromptDialog` create flow.
+- Verification passed: `npm run test` (92/92), `npm run build`, the three requested Cypress specs (22/22 total), `npm run container`, packaged stack startup/HTTP checks, and `npm run cypress:run` (38/38). `npm run service` brought up the stack but its trailing browser-open helper is unavailable in WSL; direct `mh down && mh up mentor` completed successfully and the packaged SPA/API endpoints responded.
