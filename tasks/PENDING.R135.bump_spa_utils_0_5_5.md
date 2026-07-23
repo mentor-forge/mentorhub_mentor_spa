@@ -3,7 +3,7 @@
 **Status**: Pending  
 **Type**: Feature  
 **Depends On**: none  
-**Description**: Bump the Mentor SPA dependency to `@mentor-forge/mentorhub_spa_utils@0.5.5` so list/edit pages can adopt `MhCard` / `CardGrid` / `DataCard`, typed editors, and shared Cypress auth helpers. Refresh the lockfile via CodeArtifact (`mh` + `npm install`). This series supersedes the earlier 0.5.4 plan (AS_NEEDED R128–R134).
+**Description**: Bump the Mentor SPA dependency to `@mentor-forge/mentorhub_spa_utils@0.5.5` so list/edit pages can adopt `MhCard` / `CardGrid` / `DataCard`, typed editors, and shared Cypress auth helpers. Refresh the lockfile via CodeArtifact (`mh` + `npm install`).
 
 ## Context
 
