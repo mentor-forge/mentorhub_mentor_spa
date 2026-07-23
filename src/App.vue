@@ -76,13 +76,19 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useConfig } from '@/composables/useConfig'
 import { useRoles } from '@/composables/useRoles'
-import { redirectToIdpLogin } from '@mentor-forge/mentorhub_spa_utils'
+import {
+  provideEditorConfig,
+  redirectToIdpLogin,
+} from '@mentor-forge/mentorhub_spa_utils'
+import type { RuntimeEditorConfig } from '@mentor-forge/mentorhub_spa_utils'
 
 const router = useRouter()
 const { isAuthenticated, logout } = useAuth()
-const { loadConfig } = useConfig()
+const { config, loadConfig } = useConfig()
 const { hasRole } = useRoles()
 const drawer = ref(false)
+
+provideEditorConfig(() => config.value as RuntimeEditorConfig | null)
 
 const hasAdminRole = hasRole('admin')
 
