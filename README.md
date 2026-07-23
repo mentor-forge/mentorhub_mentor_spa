@@ -110,6 +110,12 @@ with an edit action; page-level **New Path** and **New Resource** buttons open
 the existing create pages. Both lists use `offset` / `size` request headers and
 an explicit **Load More** action instead of cursor-based infinite scrolling.
 
+The Path and Resource edit pages use `DataCard` with typed, blur-to-save
+editors: `WordEditor` for names and `SentenceEditor` for descriptions.
+Status temporarily uses `AutoSaveSelect` until `/api/config` publishes a
+usable status enumerator. Created and last-saved audit trails are displayed
+with `BreadcrumbDisplay`.
+
 E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 
 ## Encounter Plans Dashboard
@@ -188,7 +194,9 @@ src/
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
-- **Components**: `AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`
+- **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
+  `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
+  `AutoSaveField` / `AutoSaveSelect` remain available for legacy pages
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
 - **Utilities**: `formatDate`, `validationRules`
 
@@ -225,7 +233,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `AutoSaveField`/`AutoSaveSelect` from `spa_utils`. For list dashboards, use `CardGrid` + `MhCard` and offset/size paging.
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.). For list dashboards, use `CardGrid` + `MhCard` and offset/size paging.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

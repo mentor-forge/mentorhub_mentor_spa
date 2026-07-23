@@ -94,8 +94,8 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-edit-name-input"]').find('input').should('have.value', updatedName)
     
     // Update description
-    cy.get('[data-automation-id="path-edit-description-input"]').find('textarea').clear().type('Updated description')
-    cy.get('[data-automation-id="path-edit-description-input"]').find('textarea').blur()
+    cy.get('[data-automation-id="path-edit-description-input"]').find('input').clear().type('Updated description')
+    cy.get('[data-automation-id="path-edit-description-input"]').find('input').blur()
     cy.wait(1000)
     
     // Update status

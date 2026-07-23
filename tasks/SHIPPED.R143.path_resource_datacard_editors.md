@@ -1,6 +1,6 @@
 # R143 – Path and Resource edit pages → `DataCard` + typed editors
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: R135, R138  
 **Description**: Convert Path and Resource edit forms from ad-hoc `v-card` + `AutoSaveField` / `AutoSaveSelect` to spa_utils `DataCard` with typed editors. Prefer `EnumEditor` for status via runtime config.
@@ -65,4 +65,24 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Plan: replace the Path and Resource edit-page cards with `DataCard`, bind
+  `WordEditor`, `SentenceEditor`, and runtime-configured `EnumEditor` controls
+  through each card's field save callback, and render created/saved audit
+  breadcrumbs read-only while preserving existing automation IDs.
+- Runtime note: focused Cypress verification showed the current `/api/config`
+  does not provide usable `status` options (`EnumEditor` rendered “No data
+  available”), so both pages retain the task-authorized temporary
+  `AutoSaveSelect` fallback for status.
+- Verification plan: run unit tests, production build, both focused Cypress
+  specs, container build, service startup, and the full Cypress suite.
+- Implemented: migrated both edit pages to `DataCard`, `WordEditor`, and
+  `SentenceEditor`; replaced ad-hoc audit fields with `BreadcrumbDisplay`;
+  preserved the existing edit automation IDs; and aligned Cypress description
+  selectors with `SentenceEditor`'s input rendering.
+- Verification: `npm run test` passed (93 tests), `npm run build` passed,
+  focused Path and Resource Cypress specs passed (6 tests each),
+  `npm run container` passed, and the full packaged-container Cypress suite
+  passed (39/39). `npm run service` reached SPA startup but WSL Docker's
+  port-forwarder rejected host port 8392 despite no listener; the same built
+  image was started on 8394 and passed its service health check and full E2E
+  suite.
