@@ -13,6 +13,7 @@ Always read these files before implementation:
 - `README.md`
 - `../mentorhub_spa_utils/README.md` — `DataCard`, typed editors, `EnumEditor`, `provideEditorConfig`
 - `../mentorhub_spa_utils/demo/pages/EditorsPage.vue`
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `src/pages/PlanEditPage.vue`
 - `src/components/SchemaFieldsCard.vue`
 - `src/components/PlanChecklistEditor.vue`

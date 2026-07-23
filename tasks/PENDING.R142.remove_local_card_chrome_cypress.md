@@ -12,6 +12,7 @@ Always read these files before implementation:
 - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
 - `README.md`
 - `../mentorhub_spa_utils/README.md`
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `src/components/dashboard/` — after R137–R138: which exports remain in use
 - `src/styles/dashboard.css` (or equivalent)
 - `src/main.ts` — style imports / `provideEditorConfig`

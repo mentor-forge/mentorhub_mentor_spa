@@ -13,6 +13,7 @@ Always read these files before implementation:
 - `README.md`
 - `../mentorhub_spa_utils/README.md` — Preferred UI cards; fixed `CardGrid` contract; **Deprecated: infinite-scroll list APIs**
 - `../mentorhub_spa_utils/demo/pages/DashboardPage.vue` — `#actions` reference
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `src/pages/PathsListPage.vue`
 - `src/pages/ResourcesListPage.vue`
 - `src/pages/PathNewPage.vue` / `src/pages/ResourceNewPage.vue` — create navigation targets

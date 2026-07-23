@@ -12,6 +12,7 @@ Always read these files before implementation:
 - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
 - `README.md`
 - `../mentorhub_spa_utils/README.md` — Card / DataCard / typed-editor public API; deprecated infinite-scroll list APIs
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `package.json`
 - `package-lock.json`
 - `tasks/_PLANNING.md` — Dependency management (CodeArtifact / `mh`)

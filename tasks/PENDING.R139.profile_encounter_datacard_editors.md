@@ -13,6 +13,7 @@ Always read these files before implementation:
 - `README.md`
 - `../mentorhub_spa_utils/README.md` — `DataCard`, typed editors, `provideEditorConfig` / enum editors, `AutoSaveField` compatibility wrapper
 - `../mentorhub_spa_utils/demo/pages/EditorsPage.vue` — reference composition
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `src/pages/ProfileEditPage.vue`
 - `src/pages/EncounterEditPage.vue`
 - `src/api/types.ts` — Profile / Mentee / Encounter field shapes

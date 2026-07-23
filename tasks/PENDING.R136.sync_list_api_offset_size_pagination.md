@@ -12,6 +12,7 @@ Always read these files before implementation:
 - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
 - `README.md`
 - `../mentorhub_spa_utils/README.md` — Deprecated: infinite-scroll list APIs; replacement is offset/size header pagination + plain arrays
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `src/api/client.ts`
 - `src/api/types.ts`
 - `src/api/Resource.client.test.ts`

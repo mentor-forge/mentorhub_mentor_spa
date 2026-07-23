@@ -13,6 +13,7 @@ Always read these files before implementation:
 - `README.md`
 - `../mentorhub_spa_utils/README.md` — Preferred UI: Cards; fixed `CardGrid` column contract (no `cols`/`sm`/`md`/`lg` props); demo at `/demo/dashboard`
 - `../mentorhub_spa_utils/demo/pages/DashboardPage.vue` — reference composition (`#actions` pattern)
+- `../mentorhub_mentee_spa/src/pages` — example pages already adopted in the mentee SPA
 - `src/pages/ProfilesListPage.vue`
 - `src/pages/PlansListPage.vue`
 - `src/components/dashboard/DashboardCard.vue`
