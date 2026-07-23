@@ -4,7 +4,7 @@ describe('Encounter Domain', () => {
   })
 
   it('should create an encounter from ProfileEditPage plan dialog', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -27,7 +27,7 @@ describe('Encounter Domain', () => {
   })
 
   it('should update encounter TLDR on detail page', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
       .first()
       .click()
 
@@ -44,7 +44,7 @@ describe('Encounter Domain', () => {
   })
 
   it('should open encounter detail from profile encounters list', () => {
-    cy.get('[data-automation-id="profile-dashboard-card"]', { timeout: 10000 })
+    cy.get('[data-automation-id="profile-dashboard-card-open-button"]', { timeout: 10000 })
       .first()
       .click()
 

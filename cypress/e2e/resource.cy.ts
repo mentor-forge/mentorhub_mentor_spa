@@ -43,10 +43,12 @@ describe('Resource Domain', () => {
 
     cy.visit('/resources')
     cy.wait('@getResources')
-    cy.get('[data-automation-id="resource-list-grid"] .mh-card').should('have.length', 20)
+    cy.get('.mh-card[data-automation-id^="resource-list-card-"]')
+      .should('have.length', 20)
     cy.get('[data-automation-id="resource-list-load-more"]').click()
     cy.wait('@getResources')
-    cy.get('[data-automation-id="resource-list-grid"] .mh-card').should('have.length', 21)
+    cy.get('.mh-card[data-automation-id^="resource-list-card-"]')
+      .should('have.length', 21)
     cy.get('[data-automation-id="resource-list-grid"]').should('contain', 'Resource description 21')
   })
 

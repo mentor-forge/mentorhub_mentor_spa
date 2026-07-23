@@ -43,10 +43,12 @@ describe('Path Domain', () => {
 
     cy.visit('/paths')
     cy.wait('@getPaths')
-    cy.get('[data-automation-id="path-list-grid"] .mh-card').should('have.length', 20)
+    cy.get('.mh-card[data-automation-id^="path-list-card-"]')
+      .should('have.length', 20)
     cy.get('[data-automation-id="path-list-load-more"]').click()
     cy.wait('@getPaths')
-    cy.get('[data-automation-id="path-list-grid"] .mh-card').should('have.length', 21)
+    cy.get('.mh-card[data-automation-id^="path-list-card-"]')
+      .should('have.length', 21)
     cy.get('[data-automation-id="path-list-grid"]').should('contain', 'Path description 21')
   })
 

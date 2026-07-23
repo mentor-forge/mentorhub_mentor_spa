@@ -93,7 +93,7 @@ npm run container
 **ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
 
 - **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
-- **Notes** — editable mentee notes via blur-to-save (`AutoSaveField`) and `PATCH /api/mentee/{mentee_id}`
+- **Notes** — editable mentee notes via typed, blur-to-save editors and `PATCH /api/mentee/{mentee_id}`
 - **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
 
 API client methods: `api.getProfiles()`, `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
@@ -199,7 +199,10 @@ src/
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
 - **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
   `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
-  `AutoSaveField` / `AutoSaveSelect` remain available for legacy pages
+  prefer `CardGrid` + `MhCard` for list dashboards and `DataCard` + typed editors
+  for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy
+  pages, and `AutoSaveSelect` remains available where runtime enumerators have
+  not yet migrated
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`
 - **Utilities**: `formatDate`, `validationRules`
 
@@ -236,7 +239,7 @@ When adding a new resource or feature:
 2. **Add API Methods**: Add methods to `src/api/client.ts`
 3. **Create Pages**: Follow the appropriate pattern (List/New/Edit or List/New/View)
 4. **Add Routes**: Register routes in `src/router/index.ts`
-5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.). For list dashboards, use `CardGrid` + `MhCard` and offset/size paging.
+5. **Use spa_utils Components**: For edit pages with PATCH support, use `DataCard` with type-aligned editors (`WordEditor`, `SentenceEditor`, `EnumEditor`, etc.); do not introduce new `AutoSaveField` usage. For list dashboards, use `CardGrid` + `MhCard` and API list requests with `offset` / `size` headers.
 6. **Query Management**: Use Vue Query for data fetching with appropriate query keys
 7. **Cache Invalidation**: Invalidate related queries in mutation `onSuccess` callbacks
 8. **Error Handling**: Use `useErrorHandler` from `spa_utils` for consistent error handling

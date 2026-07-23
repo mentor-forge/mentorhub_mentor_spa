@@ -1,6 +1,6 @@
 # R144 – Remove duplicate local card chrome; Cypress and docs alignment
 
-**Status**: Pending  
+**Status**: Shipped
 **Type**: Feature  
 **Depends On**: R136, R139, R140, R141, R142, R143  
 **Description**: After spa_utils 0.5.5 cards, typed editors, Cypress auth helpers, and offset list clients are adopted, delete unused local card chrome, finish Cypress alignment on stable `data-automation-id`s, and update README guidance so new work prefers `CardGrid` / `MhCard` / `DataCard` + typed editors (with `AutoSaveField` as compatibility only).
@@ -69,4 +69,29 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Plan: delete the unreferenced local `DashboardCard` / `DashboardCardGrid`
+  components and exports, remove their now-unused dashboard stylesheet/import,
+  and retain `DashboardPageLayout`, `NamePromptDialog`, `PlanSelectDialog`, and
+  checklist styling that are still used.
+- Align the final Cypress selectors with stable automation IDs (including typed
+  editor `-display` output where applicable), update README guidance for shared
+  cards, typed editors, compatibility-only `AutoSaveField`, and offset/size
+  lists, then run the complete unit/build, E2E, and packaging sequence.
+- Implemented: removed the unused local dashboard card/grid components, exports,
+  stylesheet, and bootstrap import while retaining the referenced dashboard
+  layout and dialogs. Cypress now opens Profiles through the stable card action
+  ID and counts Path/Resource cards by their stable per-card IDs. README now
+  directs new work to shared cards, typed editors, and offset/size list headers.
+- Verification:
+  - `npm run test` — passed (14 files, 93 tests).
+  - `npm run build` — passed.
+  - `npm run cypress:run` — passed (6 specs, 39/39).
+  - `npm run container` — passed.
+  - `npm run service` — API dependencies started, but Docker Desktop's WSL
+    forwarding bridge returned HTTP 500 while publishing host port 8392; the
+    trailing desktop browser opener is also unavailable in this environment.
+  - The same packaged image was started on host port 8394, its health check
+    passed, and `CYPRESS_BASE_URL=http://localhost:8394 npm run cypress:run`
+    passed all 6 specs (39/39).
+- Confirmed no `DashboardCard`, `DashboardCardGrid`, `SchemaFieldsCard`, or
+  `useInfiniteScroll` source imports remain.
