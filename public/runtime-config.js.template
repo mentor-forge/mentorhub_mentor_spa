@@ -1,0 +1,3 @@
+window.__MENTORHUB_RUNTIME__ = Object.assign(window.__MENTORHUB_RUNTIME__ || {}, {
+  IDP_LOGIN_URI: '${IDP_LOGIN_URI}'
+});
