@@ -59,6 +59,12 @@ http {
             add_header Content-Type text/plain;
         }
 
+        # Runtime IdP URL — generated at container start; must not be immutable-cached
+        location = /runtime-config.js {
+            add_header Cache-Control "no-store";
+            try_files $uri =404;
+        }
+
         # Handle Vue Router history mode
         location / {
             try_files $uri $uri/ /index.html;
