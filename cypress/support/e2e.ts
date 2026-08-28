@@ -3,6 +3,6 @@
 import { registerAuthCommands } from '@mentor-forge/mentorhub_spa_utils/cypress/registerAuthCommands'
 import './commands'
 
-registerAuthCommands({ visitPath: '/paths/new' })
+registerAuthCommands({ visitPath: '/mentor/paths/new' })
 
 export {}

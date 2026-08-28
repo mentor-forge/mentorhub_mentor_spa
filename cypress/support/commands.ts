@@ -1,7 +1,7 @@
 // Mentor SPA Cypress commands (extends spa_utils auth).
 // Base `cy.login` comes from registerAuthCommands in e2e.ts.
 
-const defaultVisitPath = '/paths/new'
+const defaultVisitPath = '/mentor/paths/new'
 
 /** Seed JWT via shared spa_utils task, then visit a path (optional `sub` claim). */
 function seedAuthAndVisit(
@@ -55,7 +55,7 @@ Cypress.Commands.add('mentorMenteeProfileId', () => {
       return cy
         .request({
           method: 'GET',
-          url: '/api/profile',
+          url: '/mentor/api/profile',
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -64,7 +64,7 @@ Cypress.Commands.add('mentorMenteeProfileId', () => {
           expect(response.status).to.eq(200)
           expect(response.body).to.be.an('array')
           if (!response.body.length || !response.body[0]._id) {
-            throw new Error(`Seeded mentor '${mentorUser}' has no mentees returned from GET /api/profile`)
+            throw new Error(`Seeded mentor '${mentorUser}' has no mentees returned from GET /mentor/api/profile`)
           }
           return response.body[0]._id as string
         })

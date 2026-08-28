@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { shallowMount } from '@vue/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+import { mount, shallowMount } from '@vue/test-utils'
 import PlanChecklistEditor, {
   appendChecklistItem,
   moveChecklistItem,
@@ -8,6 +8,15 @@ import PlanChecklistEditor, {
   stepTextRule,
   updateChecklistItem,
 } from './PlanChecklistEditor.vue'
+
+const VTextFieldStub = {
+  name: 'VTextField',
+  props: ['modelValue', 'dataAutomationId'],
+  methods: {
+    focus() {},
+  },
+  template: '<input :data-automation-id="dataAutomationId" :value="modelValue" @input="$emit(\'update:modelValue\', $event.target.value)" @blur="$emit(\'blur\')" />',
+}
 
 describe('PlanChecklistEditor', () => {
   it('uses shared MhCard chrome and preserves its automation ID', () => {
@@ -31,6 +40,306 @@ describe('PlanChecklistEditor', () => {
 
     const card = wrapper.get('[data-automation-id="plan-edit-checklist-section"]')
     expect(card.attributes('data-title')).toBe('Checklist')
+  })
+
+  it('updates local checklist when props change', async () => {
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1', 'Step 2'],
+        onSave: vi.fn(),
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: true,
+          VIcon: true,
+        },
+      },
+    })
+
+    await wrapper.setProps({ checklist: ['Step 1'] })
+    expect(wrapper.findAll('.plan-checklist-todo-row').length).toBe(2)
+
+    await wrapper.setProps({ checklist: ['Step A', 'Step B', 'Step C'] })
+    expect(wrapper.findAll('.plan-checklist-todo-row').length).toBe(3)
+  })
+
+  it('adds a step via the add button and calls onSave', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const addInput = wrapper.find('[data-automation-id="plan-edit-checklist-add-input"]')
+    await addInput.setValue('Step 2')
+
+    const addBtn = wrapper.find('[data-automation-id="plan-edit-checklist-add-button"]')
+    await addBtn.trigger('click')
+
+    expect(onSave).toHaveBeenCalledWith(['Step 1', 'Step 2'])
+  })
+
+  it('adds an empty step without calling onSave', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const addBtn = wrapper.find('[data-automation-id="plan-edit-checklist-add-button"]')
+    await addBtn.trigger('click')
+
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('validates invalid step on add', async () => {
+    const onSave = vi.fn()
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const addInput = wrapper.find('[data-automation-id="plan-edit-checklist-add-input"]')
+    await addInput.setValue('has\ttab')
+    const addBtn = wrapper.find('[data-automation-id="plan-edit-checklist-add-button"]')
+    await addBtn.trigger('click')
+
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('saves an edited step on blur', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const stepInput = wrapper.find('[data-automation-id="plan-edit-checklist-step-1-input"]')
+    await stepInput.setValue('Step 1 Edited')
+    await stepInput.trigger('blur')
+
+    expect(onSave).toHaveBeenCalledWith(['Step 1 Edited'])
+  })
+
+  it('handles unchanged or invalid edited step on blur', async () => {
+    const onSave = vi.fn()
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: true,
+          VIcon: true,
+        },
+      },
+    })
+
+    const stepInput = wrapper.find('[data-automation-id="plan-edit-checklist-step-1-input"]')
+    await stepInput.trigger('blur')
+    expect(onSave).not.toHaveBeenCalled()
+
+    await stepInput.setValue('has\ttab')
+    await stepInput.trigger('blur')
+    expect(onSave).not.toHaveBeenCalled()
+
+    await stepInput.setValue('')
+    await stepInput.trigger('blur')
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
+  it('deletes a step when delete button is clicked', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1', 'Step 2'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const deleteBtn = wrapper.find('[data-automation-id="plan-edit-checklist-step-1-delete-button"]')
+    await deleteBtn.trigger('click')
+
+    expect(onSave).toHaveBeenCalledWith(['Step 2'])
+  })
+
+  it('deletes last step calling onSave with empty array', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const deleteBtn = wrapper.find('[data-automation-id="plan-edit-checklist-step-1-delete-button"]')
+    await deleteBtn.trigger('click')
+
+    expect(onSave).toHaveBeenCalledWith([])
+  })
+
+  it('handles drag and drop reordering', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined)
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1', 'Step 2', 'Step 3'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const rows = wrapper.findAll('.plan-checklist-todo-row')
+    const handle0 = wrapper.find('[data-automation-id="plan-edit-checklist-step-1-drag-handle"]')
+
+    // Drag over self or when null
+    await rows[0].trigger('dragover')
+    await rows[0].trigger('drop')
+
+    await handle0.trigger('dragstart', { dataTransfer: { setData: vi.fn(), effectAllowed: '' } })
+    await rows[0].trigger('dragover')
+    await rows[1].trigger('dragover')
+    await rows[1].trigger('drop')
+
+    expect(onSave).toHaveBeenCalledWith(['Step 2', 'Step 1', 'Step 3'])
+  })
+
+  it('handles error in persistChecklist', async () => {
+    const onSave = vi.fn().mockRejectedValue(new Error('Save error'))
+    const wrapper = mount(PlanChecklistEditor, {
+      props: {
+        checklist: ['Step 1'],
+        onSave,
+      },
+      global: {
+        stubs: {
+          MhCard: {
+            props: ['title', 'automationId'],
+            template: '<section :data-automation-id="automationId"><slot /></section>',
+          },
+          VTextField: VTextFieldStub,
+          VBtn: {
+            template: '<button @click="$emit(\'click\')"><slot /></button>',
+          },
+          VIcon: true,
+        },
+      },
+    })
+
+    const addInput = wrapper.find('[data-automation-id="plan-edit-checklist-add-input"]')
+    await addInput.setValue('Step 2')
+    const addBtn = wrapper.find('[data-automation-id="plan-edit-checklist-add-button"]')
+    await addBtn.trigger('click')
+
+    expect(onSave).toHaveBeenCalled()
   })
 })
 

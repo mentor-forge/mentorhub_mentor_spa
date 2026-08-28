@@ -1,7 +1,7 @@
 describe('Profile Edit Page', () => {
   beforeEach(() => {
     cy.mentorMenteeProfileId().then((profileId) => {
-      cy.loginAsMentor(`/profiles/${profileId}`)
+      cy.loginAsMentor(`/mentor/profiles/${profileId}`)
     })
   })
 
@@ -29,8 +29,8 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-dialog"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
-    cy.url().should('match', /\/encounters\/[0-9a-fA-F]{24}$/)
-    cy.url().should('not.include', '/encounters/new')
+    cy.url().should('match', /\/mentor\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.url().should('not.include', '/mentor/encounters/new')
   })
 
   it('should have a Back to Dashboard link pointing to Discovery', () => {

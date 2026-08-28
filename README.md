@@ -251,10 +251,13 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 
 ### E2E Tests
 - Uses Cypress for end-to-end testing
-- Tests cover main user flows: authentication, CRUD operations per domain, and Profile/Encounter detail
+- Tests cover main user flows: `PageFrame` navigation, CRUD operations per domain, and Profile/Encounter detail
+- Specs visit prefixed routes starting at `/mentor/...` (e.g. `/mentor/paths/new`) and **never visit the root `/mentor/`** (which forwards out to Discovery)
+- `cy.login()` and `cy.loginAsMentor()` seed auth on `/mentor/paths/new`
+- `cy.mentorMenteeProfileId()` fetches mentee profile ID dynamically via `GET /mentor/api/profile`
+- Requires containerized service stack (`npm run service`) to be running (do **not** run `npm run dev` concurrently, as both bind port 8392)
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
-- Requires dev server (`npm run dev`) and API stack (`npm run api`) to be running
 
 ## Adding New Features
 

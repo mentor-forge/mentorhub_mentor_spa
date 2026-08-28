@@ -1,6 +1,6 @@
 # F154 – Cypress e2e under `/mentor/` and full packaging verification
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F153_nginx_mentor_prefix_and_api_client`  
 **Description**: Re-point every Cypress visit, intercept, and URL assertion to the `/mentor/` prefix, replace the deleted local drawer coverage with the spa_utils `PageFrame` automation ids, and run the full packaged stack as the acceptance gate for both source issues (F-RS15 and F-RS16).
@@ -84,4 +84,34 @@ Do not change `cypress.config.ts` `baseUrl`, `vite.config.ts`, `nginx.conf.templ
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Created `cypress/e2e/navigation.cy.ts` using `spa_utils` `PageFrame` automation IDs (`page-frame-title`, `nav-drawer-toggle`, `nav-profile-link`, `nav-home-link`, `nav-resources-link`, `nav-paths-link`, `nav-plans-link`, `nav-notifications-link`, `nav-logout-link`, `nav-products-link`, `nav-settings-link`).
+- Updated `cypress/support/e2e.ts` to use `visitPath: '/mentor/paths/new'`.
+- Updated `cypress/support/commands.ts` to set `defaultVisitPath = '/mentor/paths/new'` and `mentorMenteeProfileId` URL to `/mentor/api/profile`.
+- Updated all E2E spec files (`encounter.cy.ts`, `path.cy.ts`, `plan.cy.ts`, `profile.cy.ts`, `resource.cy.ts`) with `/mentor/` visits and URL assertions.
+- Updated `README.md` Testing section with prefixed Cypress test documentation.
+- Augmented unit test coverage in `PlanChecklistEditor.test.ts`, `PlanSelectDialog.test.ts`, and `useConfig.test.ts` to achieve 100% threshold compliance across all domains.
+
+### Verification Results
+- `npm run test`: 14 test files passed (100 tests).
+- `npm run test:coverage`: Met all coverage thresholds:
+  - `src/api/**`: Lines 98.01%, Funcs 100%, Branches 90.69%, Statements 98.01%
+  - `src/components/**`: Lines 95.42%, Funcs 100%, Branches 88.73%, Statements 95.42%
+  - `src/composables/**`: Lines 99.09%, Funcs 100%, Branches 75.47%, Statements 99.09%
+- `npm run build`: `vue-tsc && vite build` built cleanly.
+- `npm run container`: Built Docker image `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest`.
+- `npm run service` (`mh down && mh up mentor`): Started db + mentor_api + mentor_spa + welcome stack.
+- `curl -i http://localhost:8392/health`: returned `200 OK` `healthy`.
+- `curl -i http://localhost:8392/mentor/runtime-config.js`: returned `200 OK` `Cache-Control: no-store` with injected runtime config.
+- `curl -i http://localhost:8392/mentor/`: returned `200 OK` `Cache-Control: no-store` with HTML shell.
+- `curl -i http://localhost:8392/mentor/api/config`: returned `401 Unauthorized` JSON from `mentor_api`.
+- `npm run cypress:run`: All 6 test specs and 19 tests passed headlessly against the containerized stack:
+  - `encounter.cy.ts`: 3 passed
+  - `navigation.cy.ts`: 3 passed
+  - `path.cy.ts`: 2 passed
+  - `plan.cy.ts`: 3 passed
+  - `profile.cy.ts`: 6 passed
+  - `resource.cy.ts`: 2 passed
+
+### Follow-ups
+- As noted in source issues, this repository has no `npm run lint` script defined in `package.json` (`vue-tsc` acts as type gate).

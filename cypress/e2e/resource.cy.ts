@@ -4,7 +4,7 @@ describe('Resource Domain', () => {
   })
 
   it('should create a new resource', () => {
-    cy.visit('/resources/new')
+    cy.visit('/mentor/resources/new')
     
     const timestamp = Date.now()
     const itemName = `test-resource-${timestamp}`
@@ -14,8 +14,8 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-new-submit-button"]').click()
     
     // Should redirect to edit page after creation
-    cy.url().should('include', '/resources/')
-    cy.url().should('not.include', '/resources/new')
+    cy.url().should('include', '/mentor/resources/')
+    cy.url().should('not.include', '/mentor/resources/new')
     
     // Verify the resource name is displayed on edit page
     cy.get('[data-automation-id="resource-edit-name-input"]').find('input').should('have.value', itemName)
@@ -23,7 +23,7 @@ describe('Resource Domain', () => {
 
   it('should update a resource and have a Browse Resources link to Discovery', () => {
     // First create a resource
-    cy.visit('/resources/new')
+    cy.visit('/mentor/resources/new')
     const timestamp = Date.now()
     const itemName = `test-resource-update-${timestamp}`
     const updatedName = `updated-resource-${timestamp}`
@@ -33,7 +33,7 @@ describe('Resource Domain', () => {
     cy.get('[data-automation-id="resource-new-submit-button"]').click()
     
     // Wait for redirect to edit page
-    cy.url().should('include', '/resources/')
+    cy.url().should('include', '/mentor/resources/')
     
     // Update the name field (auto-save on blur)
     cy.get('[data-automation-id="resource-edit-name-input"]').find('input').clear().type(updatedName)

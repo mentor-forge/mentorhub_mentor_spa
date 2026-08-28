@@ -9,8 +9,16 @@ vi.mock('@/api/client', () => ({
 }))
 
 describe('useConfig', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks()
+    vi.mocked(api.getConfig).mockResolvedValueOnce({
+      config_items: [],
+      versions: [],
+      enumerators: [],
+      token: {}
+    } as any)
+    const { loadConfig } = useConfig()
+    await loadConfig()
   })
 
   describe('loadConfig', () => {
@@ -51,7 +59,9 @@ describe('useConfig', () => {
       const mockConfig = {
         config_items: [],
         versions: [
-          { collection_name: 'TestCollection', current_version: '0.1.0.1' }
+          { collection_name: 'TestCollection', current_version: '0.1.0.1' },
+          { name: 'AltCollection', version: '0.2.0.2' },
+          null as any,
         ],
         enumerators: [],
         token: {}
@@ -62,34 +72,25 @@ describe('useConfig', () => {
       const { loadConfig, findCollectionVersion } = useConfig()
       await loadConfig()
 
-      const version = findCollectionVersion('TestCollection')
-      expect(version).toBe('0.1.0.1')
+      expect(findCollectionVersion('TestCollection')).toBe('0.1.0.1')
+      expect(findCollectionVersion('AltCollection')).toBe('0.2.0.2')
+      expect(findCollectionVersion('NonExistent')).toBeNull()
     })
 
-    it('should return null for non-existent collection', async () => {
-      const mockConfig = {
-        config_items: [],
-        versions: [],
-        enumerators: [],
-        token: {}
-      }
-
-      vi.mocked(api.getConfig).mockResolvedValueOnce(mockConfig)
-
-      const { loadConfig, findCollectionVersion } = useConfig()
-      await loadConfig()
-
-      const version = findCollectionVersion('NonExistent')
-      expect(version).toBeNull()
+    it('should return null for non-existent collection with empty config', () => {
+      const { findCollectionVersion } = useConfig()
+      expect(findCollectionVersion('TestCollection')).toBeNull()
     })
   })
 
   describe('getEnumeratorValues', () => {
-    it('should get enumerator values for collection', async () => {
+    it('should get enumerator values for collection with numeric and string versions', async () => {
       const mockConfig = {
         config_items: [],
         versions: [
-          { collection_name: 'TestCollection', current_version: '0.1.0.1' }
+          { collection_name: 'TestCollection', current_version: '0.1.0.1' },
+          { collection_name: 'StringVerCollection', current_version: '0.1.0.2' },
+          { collection_name: 'BadVerCollection', current_version: 'invalid' },
         ],
         enumerators: [
           {
@@ -101,9 +102,23 @@ describe('useConfig', () => {
                   { value: 'active', description: 'Active status' },
                   { value: 'inactive', description: 'Inactive status' }
                 ]
+              },
+              {
+                name: 'empty_values',
+                values: null as any,
+              },
+            ]
+          },
+          {
+            version: '2' as any,
+            enumerators: [
+              {
+                name: 'type',
+                values: [{ value: 'custom', description: 'Custom' }]
               }
             ]
-          }
+          },
+          null as any,
         ],
         token: {}
       }
@@ -113,28 +128,22 @@ describe('useConfig', () => {
       const { loadConfig, getEnumeratorValues } = useConfig()
       await loadConfig()
 
-      const values = getEnumeratorValues('TestCollection', 'status')
-      expect(values).toEqual([
+      expect(getEnumeratorValues('TestCollection', 'status')).toEqual([
         { value: 'active', description: 'Active status' },
         { value: 'inactive', description: 'Inactive status' }
       ])
+      expect(getEnumeratorValues('StringVerCollection', 'type')).toEqual([
+        { value: 'custom', description: 'Custom' }
+      ])
+      expect(getEnumeratorValues('TestCollection', 'nonexistent')).toEqual([])
+      expect(getEnumeratorValues('TestCollection', 'empty_values')).toEqual([])
+      expect(getEnumeratorValues('BadVerCollection', 'status')).toEqual([])
+      expect(getEnumeratorValues('NonExistent', 'status')).toEqual([])
     })
 
-    it('should return empty array for non-existent enumerator', async () => {
-      const mockConfig = {
-        config_items: [],
-        versions: [],
-        enumerators: [],
-        token: {}
-      }
-
-      vi.mocked(api.getConfig).mockResolvedValueOnce(mockConfig)
-
-      const { loadConfig, getEnumeratorValues } = useConfig()
-      await loadConfig()
-
-      const values = getEnumeratorValues('TestCollection', 'status')
-      expect(values).toEqual([])
+    it('should return empty array for non-existent enumerator without matching config', () => {
+      const { getEnumeratorValues } = useConfig()
+      expect(getEnumeratorValues('TestCollection', 'status')).toEqual([])
     })
   })
 
