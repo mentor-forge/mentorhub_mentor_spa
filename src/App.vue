@@ -15,15 +15,6 @@
       v-model="drawer"
       temporary
     >
-      <v-list density="compact" nav>
-        <v-list-item
-          to="/plans"
-          prepend-icon="mdi-clipboard-list-outline"
-          title="Encounter Plans"
-          data-automation-id="nav-encounter-plans-link"
-        />
-      </v-list>
-
       <template v-slot:append>
         <v-divider />
         <v-list density="compact" nav>

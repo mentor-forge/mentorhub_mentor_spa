@@ -39,9 +39,9 @@ const router = createRouter({
     
     // Control domain: Plan
     {
-      path: '/plans',
-      name: 'Plans',
-      component: () => import('@/pages/PlansListPage.vue'),
+      path: '/plans/new',
+      name: 'PlanNew',
+      component: () => import('@/pages/PlanNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {

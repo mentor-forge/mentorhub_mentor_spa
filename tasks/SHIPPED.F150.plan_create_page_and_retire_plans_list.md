@@ -1,6 +1,6 @@
 # F150 – Add the Plan create page, retire the Plans CardGrid dashboard
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F149_retire_list_pages_and_forward_to_discovery`  
 **Description**: Plan creation currently lives **on** the plans list dashboard, so the plans list cannot be deleted until create has its own route. Add `PlanNewPage.vue` at `/plans/new` (mirroring the kept path and resource create pages), then delete `PlansListPage.vue`, the `/plans` list route, and the dashboard-only components it was the last consumer of. Repoint the plan edit page's two "Back to List" actions to Discovery. `api.getPlans` stays — the New Encounter plan picker needs it.
@@ -109,4 +109,20 @@ Do not change `src/api/client.ts`, `src/api/types.ts`, `src/components/dashboard
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Created `src/pages/PlanNewPage.vue` create page at `/plans/new` mirroring `PathNewPage.vue`.
+- Updated `src/router/index.ts` to register `/plans/new` ahead of `/plans/:id` and removed `/plans` list route.
+- Deleted `PlansListPage.vue`, `NamePromptDialog.vue`, and `DashboardPageLayout.vue`.
+- Updated `src/components/dashboard/index.ts` to export only `PlanSelectDialog`.
+- Updated `PlanEditPage.vue` to replace "Back to List" buttons with `plan-edit-browse-plans-link` and `plan-edit-checklist-browse-plans-link` pointing to Discovery (`/discovery/plans`).
+- Updated `src/App.vue` to remove `nav-encounter-plans-link` drawer row.
+- Updated `cypress/e2e/plan.cy.ts` to create plans via `/plans/new`, removed list page / dialog assertions, and added Discovery browse link assertion.
+- Verified grep for `NamePromptDialog` and `DashboardPageLayout` across `src/` and `cypress/` returned 0 matches.
+- Updated `README.md` Encounter Plans section.
+
+### Test Results
+- `npm run test`: 14 test files passed (85 tests).
+- `npm run build`: `vue-tsc && vite build` built cleanly with 0 errors.
+
+### Follow-ups
+- F151 will adopt spa_utils `PageFrame` and remove local App.vue chrome.

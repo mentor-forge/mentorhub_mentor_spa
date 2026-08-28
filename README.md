@@ -121,17 +121,20 @@ with `BreadcrumbDisplay`. "Browse Paths" and "Browse Resources" actions link to 
 
 E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 
-## Encounter Plans Dashboard
+## Encounter Plans
 
 | Route | Page | API |
 |-------|------|-----|
-| `/plans` | `PlansListPage` — encounter plan cards with name, description, and step count | `GET /api/plan` |
-| `/plans/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}` |
+| `/plans/new` | `PlanNewPage` — create plan form | `POST /api/plan` |
+| `/plans/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
 
-**PlansListPage** shows all plans as clickable cards (no search or pagination). **New Plan** opens a dialog to enter a plan name, creates the plan via `POST /api/plan`, and navigates to the edit page.
+Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the New Encounter plan picker.
+
+**PlanNewPage** creates a plan via `POST /api/plan` and navigates to the edit page.
 
 **PlanEditPage** renders plan metadata in a shared `DataCard` with type-aligned
 `WordEditor`, `SentenceEditor`, and runtime-configured `EnumEditor` controls.
+"Browse Plans" actions link to Discovery.
 The **Steps** section uses shared `MhCard` chrome for the ordered `checklist`
 array:
 
