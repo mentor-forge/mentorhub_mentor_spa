@@ -1,6 +1,6 @@
 # F148 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.0`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: _(none — first task in this wave)_  
 **Description**: This repo owns the Mentor SPA **1.0.0 pin** (issue F-RS16). Replace the caret range `^0.5.7` with an exact **`1.0.0`** pin, refresh the lockfile from CodeArtifact, and fix any residual compile or test breakage. Do **not** adopt `PageFrame` (F151), do not delete pages or routes (F149/F150), and do not touch the `/mentor/` base path (F152–F153).
@@ -87,4 +87,22 @@ Do not change `src/App.vue` chrome, `src/router/index.ts`, `vite.config.ts`, `ng
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Pinned `@mentor-forge/mentorhub_spa_utils` to exact `1.0.0` in `package.json` and resolved in `package-lock.json`.
+- Verified `npm ls @mentor-forge/mentorhub_spa_utils` reports `1.0.0`.
+- Grepped `src/`, `cypress/`, `tests/` for `useInfiniteScroll`, `InfiniteScroll`, `after_id`, `has_more`, `next_cursor`:
+  - No imports of any of these from `@mentor-forge/mentorhub_spa_utils`.
+  - Local-only hits found in `src/api/types.ts` (`InfiniteScrollParams`, `InfiniteScrollResponse`), `src/api/client.ts` (`getEvents`), and `src/api/Event.client.test.ts`. These will be cleaned up in F149.
+  - Zero occurrences in `cypress/` and `tests/`.
+- Checked Cypress subpath imports (`cypress/jwtDefaults`, `cypress/registerJwtSignTask`, `cypress/registerAuthCommands`) — all resolved correctly under 1.0.0.
+- Updated stale comment in `vitest.config.ts`.
+- Updated `README.md` to reference `1.0.0`.
+
+### Test Results
+- `npm run test`: 14 test files passed (93 tests).
+- `src/api/**` coverage threshold passed (lines: 98.42%, functions: 100%, branches: 78.26%, statements: 98.42%).
+- `npm run build`: `vue-tsc && vite build` built cleanly with 0 errors.
+
+### Follow-ups
+- F149 will delete dead Event cursor surface and `useOffsetList`.
+- Note: repo does not define `npm run lint`; `npm run build` serves as type check gate.
