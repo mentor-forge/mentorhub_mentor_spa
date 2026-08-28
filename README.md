@@ -20,8 +20,11 @@ npm run dev
 | Service | Port | URL |
 |---------|------|-----|
 | Developer Edition login (IdP) | **8080** | `http://127.0.0.1:8080/login.html` |
-| Mentor SPA (Vite dev or container) | **8392** | `http://localhost:8392` |
-| Mentor API | **8391** | proxied via SPA at `/api` |
+| Mentor SPA (Vite dev or container) | **8392** | `http://localhost:8392/mentor/` |
+| Mentor API | **8391** | proxied via SPA at `/mentor/api` and `/api` |
+
+> [!WARNING]
+> `npm run dev` and `npm run service` both bind host port **8392** and cannot run at the same time.
 
 ## Developer Commands
 
@@ -41,7 +44,7 @@ npm run build
 ## preview production build locally
 npm run preview
 
-## run Vite dev server on http://localhost:8392 (requires mentor-api profile)
+## run Vite dev server on http://localhost:8392/mentor/ (requires mentor-api profile)
 npm run api
 npm run dev
 
@@ -69,7 +72,7 @@ npm run api
 ## Developer Edition: stop stack, start db + api + spa container, open browser
 npm run service
 
-## open SPA in browser (http://localhost:8392)
+## open SPA in browser (http://localhost:8392/mentor/)
 npm run open
 
 ## build SPA docker container locally
@@ -79,9 +82,24 @@ npm run container
 ### Typical local development workflow
 
 1. Start the API stack: `npm run api`
-2. Start the Vite dev server: `npm run dev`
+2. Start the Vite dev server: `npm run dev` (served at `http://localhost:8392/mentor/`)
 3. Sign in via Developer Edition login (`http://127.0.0.1:8080/login.html`) when prompted
-4. This SPA has no default landing page; collection browsing lives on Discovery (`/discovery/`). Unmatched routes forward to the Discovery dashboard.
+4. This SPA has no default landing page; collection browsing lives on Discovery (`http://<host>:8080/discovery/`). Root `/mentor/` and unmatched paths forward to the Discovery dashboard.
+
+### In-App Route Table
+
+| Browser URL | Vue Path | Page | Description |
+|---|---|---|---|
+| `/mentor/` (and unmatched) | `/:pathMatch(.*)*` | `DiscoveryRedirectPage` | Forwards to `http://<host>:8080/discovery/` |
+| `/mentor/profiles/:id` | `/profiles/:id` | `ProfileEditPage` | Mentee detail (profile, notes, encounters) |
+| `/mentor/encounters/:id` | `/encounters/:id` | `EncounterEditPage` | Encounter detail editor |
+| `/mentor/resources/new` | `/resources/new` | `ResourceNewPage` | Create learning resource |
+| `/mentor/resources/:id` | `/resources/:id` | `ResourceEditPage` | Edit learning resource |
+| `/mentor/paths/new` | `/paths/new` | `PathNewPage` | Create learning path |
+| `/mentor/paths/:id` | `/paths/:id` | `PathEditPage` | Edit learning path |
+| `/mentor/plans/new` | `/plans/new` | `PlanNewPage` | Create encounter plan |
+| `/mentor/plans/:id` | `/plans/:id` | `PlanEditPage` | Edit encounter plan and checklist |
+| `/mentor/admin` | `/admin` | `AdminPage` | Runtime config viewer (`admin` role required) |
 
 ## Profile Edit
 

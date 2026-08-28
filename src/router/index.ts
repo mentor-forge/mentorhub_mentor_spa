@@ -7,7 +7,7 @@ import {
 import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     // Control domain: Resource
     {
@@ -89,7 +89,9 @@ router.beforeEach((to, _from, next) => {
   
   // Check authentication
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    redirectToIdpLogin(window.location.origin + to.fullPath)
+    const returnUrl = window.location.origin + import.meta.env.BASE_URL + to.fullPath.replace(/^\//, '')
+    redirectToIdpLogin(returnUrl)
+    next(false)
     return
   }
   

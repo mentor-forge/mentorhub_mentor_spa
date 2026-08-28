@@ -1,6 +1,6 @@
 # F152 – Vite `base` `/mentor/`, router `BASE_URL`, and base-aware runtime config
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F151_adopt_page_frame`  
 **Description**: Mount the app at Vite `base: '/mentor/'` with `createWebHistory(import.meta.env.BASE_URL)` so browser URLs are `/mentor/...` and never `/mentor/mentor/...`. Make the existing runtime-config injection base-aware, build a base-aware IdP return URL, and add a prefixed dev proxy. Route `path` strings stay unchanged. Do not change `nginx.conf.template`, the `Dockerfile`, or `src/api/client.ts` — that is F153.
@@ -76,4 +76,20 @@ Do not change `nginx.conf.template`, `Dockerfile`, `package.json`, `cypress.conf
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Set `base: '/mentor/'` in `vite.config.ts`.
+- Made `injectRuntimeConfig()` in `vite.config.ts` base-aware to inject `<script src="${base}runtime-config.js"></script>`.
+- Added dev server proxy for `/mentor/api` -> `http://localhost:8391` with rewrite stripping `/mentor`, alongside direct `/api` proxy.
+- Updated `src/router/index.ts` to use `createWebHistory(import.meta.env.BASE_URL)`, construct base-aware IdP return URLs (`window.location.origin + import.meta.env.BASE_URL + to.fullPath.replace(/^\//, '')`), and cancel pending navigation with `next(false)`.
+- Updated `index.html`: set title to `Mentor` and deleted the dead `/vite.svg` favicon link.
+- Updated `README.md` to document the `/mentor/` prefix for `npm run dev`, list in-app route table, and note the port-8392 conflict between dev and service.
+
+### Packaging / Cypress Gate
+- As noted in the task description, Cypress e2e is not run as a gate in this task because container nginx serves `/` until F153 and specs are re-pointed in F154.
+
+### Test Results
+- `npm run test`: 14 test files passed (85 tests).
+- `npm run build`: `vue-tsc && vite build` built cleanly; confirmed `dist/index.html` references `/mentor/` asset and runtime-config URLs without `/mentor/mentor/` duplication.
+
+### Follow-ups
+- F153 will update container `nginx.conf.template` and API client base.
