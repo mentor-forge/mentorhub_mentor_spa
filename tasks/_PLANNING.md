@@ -15,8 +15,6 @@ This folder contains coding tasks that an orchestration agent can execute, based
 - ./tasks/_ORCHESTRATE.md
 - ./tasks/_PLANNING.md (this file)
 
-
-
 ## Task File Layout
 
 Each task file must contain the following sections under H1 and H2 headings.
