@@ -13,78 +13,6 @@ describe('API Client - Resource Endpoints', () => {
     localStorage.setItem('access_token', 'test-token')
   })
 
-  it('should get all resources', async () => {
-    const mockResources = [
-      {
-        _id: '507f1f77bcf86cd799439011',
-        name: 'test-resource',
-        description: 'Test description',
-        status: 'active' as const,
-        created: {
-          from_ip: '127.0.0.1',
-          by_user: 'user1',
-          at_time: '2024-01-01T00:00:00Z',
-          correlation_id: 'corr-123'
-        },
-        saved: {
-          from_ip: '127.0.0.1',
-          by_user: 'user1',
-          at_time: '2024-01-01T00:00:00Z',
-          correlation_id: 'corr-123'
-        }
-      }
-    ]
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockResources
-    })
-
-    const result = await api.getResources()
-
-    expect(result).toEqual(mockResources)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          offset: '0',
-          size: '20',
-        }),
-      })
-    )
-  })
-
-  it('should get resources with pagination headers and filter query parameters', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => []
-    })
-
-    await api.getResources({
-      offset: 20,
-      size: 10,
-      sort_by: 'name',
-      order: 'desc',
-      name: 'test',
-      description: 'guide',
-      status: 'active,draft',
-    })
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource?sort_by=name&order=desc&name=test&description=guide&status=active%2Cdraft',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          offset: '20',
-          size: '10',
-        }),
-      })
-    )
-  })
-
   it('should get a single resource', async () => {
     const mockResource = {
       _id: '507f1f77bcf86cd799439011',
@@ -203,12 +131,12 @@ describe('API Client - Resource Endpoints', () => {
       json: async () => ({ error: 'Unauthorized' })
     })
 
-    await expect(api.getResources()).rejects.toThrow('Unauthorized')
+    await expect(api.getResource('507f1f77bcf86cd799439011')).rejects.toThrow('Unauthorized')
   })
 
   it('should handle network errors', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
-    await expect(api.getResources()).rejects.toThrow('Network error')
+    await expect(api.getResource('507f1f77bcf86cd799439011')).rejects.toThrow('Network error')
   })
 })

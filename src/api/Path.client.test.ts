@@ -13,78 +13,6 @@ describe('API Client - Path Endpoints', () => {
     localStorage.setItem('access_token', 'test-token')
   })
 
-  it('should get all paths', async () => {
-    const mockPaths = [
-      {
-        _id: '507f1f77bcf86cd799439011',
-        name: 'test-path',
-        description: 'Test description',
-        status: 'active' as const,
-        created: {
-          from_ip: '127.0.0.1',
-          by_user: 'user1',
-          at_time: '2024-01-01T00:00:00Z',
-          correlation_id: 'corr-123'
-        },
-        saved: {
-          from_ip: '127.0.0.1',
-          by_user: 'user1',
-          at_time: '2024-01-01T00:00:00Z',
-          correlation_id: 'corr-123'
-        }
-      }
-    ]
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockPaths
-    })
-
-    const result = await api.getPaths()
-
-    expect(result).toEqual(mockPaths)
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          offset: '0',
-          size: '20',
-        }),
-      })
-    )
-  })
-
-  it('should get paths with pagination headers and list query parameters', async () => {
-    const mockPaths: never[] = []
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockPaths
-    })
-
-    await api.getPaths({
-      offset: 20,
-      size: 10,
-      sort_by: 'name',
-      order: 'desc',
-      name: 'test',
-    })
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path?sort_by=name&order=desc&name=test',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          offset: '20',
-          size: '10',
-        }),
-      })
-    )
-  })
-
   it('should get a single path', async () => {
     const mockPath = {
       _id: '507f1f77bcf86cd799439011',
@@ -203,12 +131,12 @@ describe('API Client - Path Endpoints', () => {
       json: async () => ({ error: 'Unauthorized' })
     })
 
-    await expect(api.getPaths()).rejects.toThrow('Unauthorized')
+    await expect(api.getPath('507f1f77bcf86cd799439011')).rejects.toThrow('Unauthorized')
   })
 
   it('should handle network errors', async () => {
     mockFetch.mockRejectedValueOnce(new Error('Network error'))
 
-    await expect(api.getPaths()).rejects.toThrow('Network error')
+    await expect(api.getPath('507f1f77bcf86cd799439011')).rejects.toThrow('Network error')
   })
 })

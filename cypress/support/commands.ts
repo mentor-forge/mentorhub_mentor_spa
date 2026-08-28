@@ -1,7 +1,7 @@
 // Mentor SPA Cypress commands (extends spa_utils auth).
 // Base `cy.login` comes from registerAuthCommands in e2e.ts.
 
-const defaultVisitPath = '/'
+const defaultVisitPath = '/paths/new'
 
 /** Seed JWT via shared spa_utils task, then visit a path (optional `sub` claim). */
 function seedAuthAndVisit(
@@ -40,6 +40,37 @@ Cypress.Commands.add('loginAndVisit', (path: string, roles: string[] = ['admin']
   seedAuthAndVisit(roles, path)
 })
 
+/** Fetch first mentee profile id for the seeded mentor. */
+Cypress.Commands.add('mentorMenteeProfileId', () => {
+  const mentorUser = Cypress.env('MENTOR_DASHBOARD_USER') as string
+  const secret = Cypress.env('JWT_SECRET') as string
+
+  return cy
+    .task<{ token: string; expiresAt: string }>('signCypressJwt', {
+      roles: ['mentor', 'admin'],
+      secret,
+      sub: mentorUser,
+    })
+    .then(({ token }) => {
+      return cy
+        .request({
+          method: 'GET',
+          url: '/api/profile',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        .then((response) => {
+          expect(response.status).to.eq(200)
+          expect(response.body).to.be.an('array')
+          if (!response.body.length || !response.body[0]._id) {
+            throw new Error(`Seeded mentor '${mentorUser}' has no mentees returned from GET /api/profile`)
+          }
+          return response.body[0]._id as string
+        })
+    })
+})
+
 Cypress.Commands.add('openNavDrawer', () => {
   cy.get('[data-automation-id="nav-drawer-toggle"]')
     .should('be.visible')
@@ -63,6 +94,7 @@ declare global {
     interface Chainable {
       loginAsMentor(visitPath?: string): Chainable<void>
       loginAndVisit(path: string, roles?: string[]): Chainable<void>
+      mentorMenteeProfileId(): Chainable<string>
       openNavDrawer(): Chainable<void>
       closeNavDrawer(): Chainable<void>
     }

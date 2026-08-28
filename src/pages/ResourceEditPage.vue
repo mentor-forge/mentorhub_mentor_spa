@@ -66,11 +66,11 @@
 
           <template #actions>
             <v-btn
-              @click="router.push('/resources')"
+              :href="browseResourcesHref"
               variant="text"
-              data-automation-id="resource-edit-back-button"
+              data-automation-id="resource-edit-browse-resources-link"
             >
-              Back to List
+              Browse Resources
             </v-btn>
           </template>
         </DataCard>
@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import {
@@ -94,14 +94,15 @@ import {
   DataCard,
   SentenceEditor,
   WordEditor,
+  buildJourneyUrl,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { ResourceUpdate } from '@/api/types'
 
 const routeLocation = useRoute()
-const router = useRouter()
 const queryClient = useQueryClient()
 
+const browseResourcesHref = buildJourneyUrl('discovery', 'resources')
 const resourceId = computed(() => routeLocation.params.id as string)
 
 const { data: resource, isLoading, error: queryError } = useQuery({

@@ -1,6 +1,6 @@
 # F149 – Retire the Resource, Path, and Mentor Dashboard list pages; forward unmatched routes to Discovery
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F148_pin_spa_utils_1_0_0`  
 **Description**: Delete `ResourcesListPage.vue`, `PathsListPage.vue`, and `ProfilesListPage.vue` (the Mentor Dashboard, now served by Discovery), their `/resources`, `/paths`, and `/profiles` routes, the local `useOffsetList` composable, the `getResources` / `getPaths` / `getProfiles` client methods, the dead Event-domain cursor surface, their Cypress coverage, and their drawer rows. This SPA keeps only **detail / edit / create** pages that Discovery cards deep-link into, so it no longer has a default route: `/` and any unmatched path forward out to the Discovery dashboard. Repoint every "Back to List" / "Back to Dashboard" action to Discovery with `buildJourneyUrl` (available now that F148 pinned 1.0.0). Plans are **F150**; route `path` strings stay unprefixed — Vite `base` is F152.
@@ -196,4 +196,25 @@ Do not change `package.json`, `package-lock.json`, `vite.config.ts`, `nginx.conf
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Created `src/composables/useDiscoveryRedirect.ts` and unit test `src/composables/useDiscoveryRedirect.test.ts`.
+- Created `src/pages/DiscoveryRedirectPage.vue` catch-all page.
+- Deleted `ResourcesListPage.vue`, `PathsListPage.vue`, `ProfilesListPage.vue`, `useOffsetList.ts`, `Event.client.test.ts`, and `cypress/e2e/navigation.cy.ts`.
+- Updated `src/router/index.ts` to remove list routes and legacy redirects, add `/:pathMatch(.*)*` catch-all route, and redirect unassigned roles to Discovery.
+- Updated `src/App.vue` to remove deleted list links from the drawer.
+- Updated `src/api/client.ts` to remove `getResources`, `getPaths`, `getProfiles`, and Event methods while keeping `getPlans` and list helpers.
+- Updated `src/api/types.ts` to remove `ResourceListParams`, dashboard profile types, and Event/cursor types.
+- Updated `ResourceEditPage.vue`, `PathEditPage.vue`, and `ProfileEditPage.vue` to link to Discovery via `buildJourneyUrl`.
+- Updated `EncounterEditPage.vue` `goBack()` to forward to Discovery when no mentee is present.
+- Updated Cypress configuration and support (`cypress/support/e2e.ts`, `cypress/support/commands.ts`) to default visit to `/paths/new` and added `mentorMenteeProfileId` command.
+- Updated `profile.cy.ts`, `encounter.cy.ts`, `resource.cy.ts`, and `path.cy.ts` for direct route visits and Discovery link checks.
+- Verified grep for `after_id`, `has_more`, `next_cursor`, `InfiniteScroll`, and `useOffsetList` across `src/`, `cypress/`, `tests/` returned 0 matches.
+- Updated `README.md` to reflect the retired list pages and Discovery forward behavior.
+
+### Test Results
+- `npm run test`: 14 test files passed (85 tests).
+- `npm run build`: `vue-tsc && vite build` passed cleanly.
+
+### Follow-ups
+- F150 will add `/plans/new` create page and retire `PlansListPage.vue`.
+- Note: Outbound forward to Discovery on :8080 is verified by unit test `useDiscoveryRedirect.test.ts`; Cypress runs against `:8392`.

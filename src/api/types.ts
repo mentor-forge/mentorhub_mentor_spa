@@ -126,22 +126,6 @@ export interface EncounterUpdate {
 }
 
 
-// Event Domain
-export interface Event {
-  _id: string
-  name: string
-  description?: string
-  status?: string
-  created: Breadcrumb
-}
-
-export interface EventInput {
-  name: string
-  description?: string
-  status?: string
-}
-
-
 // Profile Domain
 export interface ProfileExperienceRole {
   title?: string
@@ -210,28 +194,6 @@ export interface ProfileDetail {
   profile: Profile
   mentee: Mentee
   encounters: Encounter[]
-}
-
-export interface JourneyProgress {
-  library: number
-  now: number
-  next: number
-}
-
-export interface RecentEncounterSummary {
-  _id: string
-  date?: string
-  tldr?: string
-  summary?: string
-}
-
-/** Mentee card on the Mentor Dashboard (GET /api/Profile). */
-export interface MentorDashboardProfile {
-  _id: string
-  name: string
-  description?: string
-  progress: JourneyProgress
-  last_encounter?: RecentEncounterSummary | null
 }
 
 export interface StatusSummary {
@@ -306,25 +268,4 @@ export interface ListParams {
   sort_by?: string
   order?: 'asc' | 'desc'
   name?: string
-}
-
-export interface ResourceListParams extends ListParams {
-  description?: string
-  status?: string
-}
-
-// Legacy cursor pagination used only by Event endpoints.
-export interface InfiniteScrollParams {
-  name?: string
-  after_id?: string
-  limit?: number
-  sort_by?: string
-  order?: 'asc' | 'desc'
-}
-
-export interface InfiniteScrollResponse<T> {
-  items: T[]
-  limit: number
-  has_more: boolean
-  next_cursor: string | null
 }

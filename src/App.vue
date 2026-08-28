@@ -17,24 +17,6 @@
     >
       <v-list density="compact" nav>
         <v-list-item
-          to="/profiles"
-          prepend-icon="mdi-view-dashboard"
-          title="Dashboard"
-          data-automation-id="nav-dashboard-link"
-        />
-        <v-list-item
-          to="/resources"
-          prepend-icon="mdi-book-open-page-variant"
-          title="Resources"
-          data-automation-id="nav-resources-link"
-        />
-        <v-list-item
-          to="/paths"
-          prepend-icon="mdi-map-marker-path"
-          title="Learning Paths"
-          data-automation-id="nav-learning-paths-link"
-        />
-        <v-list-item
           to="/plans"
           prepend-icon="mdi-clipboard-list-outline"
           title="Encounter Plans"

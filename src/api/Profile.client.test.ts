@@ -12,34 +12,6 @@ describe('API Client - Profile Endpoints', () => {
     localStorage.setItem('access_token', 'test-token')
   })
 
-  it('should get mentor dashboard profiles', async () => {
-    const mockProfiles = [
-      {
-        _id: '507f1f77bcf86cd799439011',
-        name: 'test-mentee',
-        description: 'Test description',
-        progress: { library: 2, now: 1, next: 3 },
-        last_encounter: {
-          _id: '507f1f77bcf86cd799439012',
-          date: '2024-01-15T10:00:00Z',
-          tldr: 'Quick check-in',
-        },
-      },
-    ]
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockProfiles,
-    })
-
-    const result = await api.getProfiles()
-
-    expect(result).toEqual(mockProfiles)
-    expect(mockFetch).toHaveBeenCalledWith('/api/profile', expect.any(Object))
-  })
-
   it('should get composite profile detail', async () => {
     const mockProfileDetail = {
       profile: {

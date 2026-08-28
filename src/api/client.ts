@@ -15,21 +15,14 @@ import type {
   EncounterInput,
   EncounterUpdate,
 
-  Event,
-  EventInput,
-
   ProfileDetail,
   ProfilePropertiesResponse,
   Mentee,
   MenteeUpdate,
-  MentorDashboardProfile,
 
   ConfigResponse,
   Error,
-  ListParams,
-  ResourceListParams,
-  InfiniteScrollParams,
-  InfiniteScrollResponse
+  ListParams
 } from './types'
 import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
@@ -119,18 +112,6 @@ export const api = {
 
   // Control endpoints
 
-  async getResources(params?: ResourceListParams): Promise<Resource[]> {
-    const queryParams = new URLSearchParams()
-    appendListQuery(queryParams, params)
-    if (params?.description) queryParams.append('description', params.description)
-    if (params?.status) queryParams.append('status', params.status)
-    
-    const query = queryParams.toString()
-    return request<Resource[]>(`/resource${query ? `?${query}` : ''}`, {
-      headers: listHeaders(params),
-    })
-  },
-
   async getResource(resourceId: string): Promise<Resource> {
     return request<Resource>(`/resource/${resourceId}`)
   },
@@ -149,16 +130,6 @@ export const api = {
     })
   },
 
-
-  async getPaths(params?: ListParams): Promise<Path[]> {
-    const queryParams = new URLSearchParams()
-    appendListQuery(queryParams, params)
-
-    const query = queryParams.toString()
-    return request<Path[]>(`/path${query ? `?${query}` : ''}`, {
-      headers: listHeaders(params),
-    })
-  },
 
   async getPath(pathId: string): Promise<Path> {
     return request<Path>(`/path/${pathId}`)
@@ -228,39 +199,7 @@ export const api = {
 
 
 
-  // Create endpoints
-
-  async getEvents(params?: InfiniteScrollParams): Promise<InfiniteScrollResponse<Event>> {
-    const queryParams = new URLSearchParams()
-    if (params?.name) queryParams.append('name', params.name)
-    if (params?.after_id) queryParams.append('after_id', params.after_id)
-    if (params?.limit) queryParams.append('limit', String(params.limit))
-    if (params?.sort_by) queryParams.append('sort_by', params.sort_by)
-    if (params?.order) queryParams.append('order', params.order)
-    
-    const query = queryParams.toString()
-    return request<InfiniteScrollResponse<Event>>(`/event${query ? `?${query}` : ''}`)
-  },
-
-  async getEvent(eventId: string): Promise<Event> {
-    return request<Event>(`/event/${eventId}`)
-  },
-
-  async createEvent(data: EventInput): Promise<{ _id: string }> {
-    return request<{ _id: string }>('/event', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-  },
-
-
-
   // Consume endpoints
-
-  /** Mentor Dashboard — assigned mentee cards for the current user (GET /api/Profile). */
-  async getProfiles(): Promise<MentorDashboardProfile[]> {
-    return request<MentorDashboardProfile[]>('/profile')
-  },
 
   async getProfile(profileId: string): Promise<ProfileDetail> {
     return request<ProfileDetail>(`/profile/${profileId}`)
@@ -280,7 +219,6 @@ export const api = {
       body: JSON.stringify(data),
     })
   },
-
 
 }
 

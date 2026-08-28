@@ -4,22 +4,12 @@ import {
   redirectToIdpLogin,
   useAuth,
 } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    {
-      path: '/',
-      redirect: '/profiles'
-    },
-    
     // Control domain: Resource
-    {
-      path: '/resources',
-      name: 'Resources',
-      component: () => import('@/pages/ResourcesListPage.vue'),
-      meta: { requiresAuth: true }
-    },
     {
       path: '/resources/new',
       name: 'ResourceNew',
@@ -34,12 +24,6 @@ const router = createRouter({
     },
     
     // Control domain: Path
-    {
-      path: '/paths',
-      name: 'Paths',
-      component: () => import('@/pages/PathsListPage.vue'),
-      meta: { requiresAuth: true }
-    },
     {
       path: '/paths/new',
       name: 'PathNew',
@@ -69,24 +53,13 @@ const router = createRouter({
     
     // Encounter detail (created from Profile Detail)
     {
-      path: '/encounters',
-      redirect: '/profiles',
-    },
-    {
       path: '/encounters/:id',
       name: 'EncounterEdit',
       component: () => import('@/pages/EncounterEditPage.vue'),
       meta: { requiresAuth: true }
     },
     
-    
     // Consume domain: Profile
-    {
-      path: '/profiles',
-      name: 'Profiles',
-      component: () => import('@/pages/ProfilesListPage.vue'),
-      meta: { requiresAuth: true }
-    },
     {
       path: '/profiles/:id',
       name: 'ProfileEdit',
@@ -100,6 +73,13 @@ const router = createRouter({
       name: 'Admin',
       component: () => import('@/pages/AdminPage.vue'),
       meta: { requiresAuth: true, requiresRole: 'admin' }
+    },
+
+    // Catch-all route forwarding to Discovery
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'DiscoveryRedirect',
+      component: () => import('@/pages/DiscoveryRedirectPage.vue')
     }
   ]
 })
@@ -116,8 +96,8 @@ router.beforeEach((to, _from, next) => {
   // Check role-based authorization
   const requiredRole = to.meta.requiresRole as string | undefined
   if (requiredRole && !hasStoredRole(requiredRole)) {
-    // Redirect to default page if user doesn't have required role
-    next({ name: 'Profiles' })
+    redirectToDiscoveryDashboard()
+    next(false)
     return
   }
   
