@@ -1,6 +1,6 @@
 # F151 – Adopt spa_utils `PageFrame` and delete the local chrome
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F150_plan_create_page_and_retire_plans_list`  
 **Description**: Replace this SPA's local app bar, navigation drawer, and logout handler with the imported `PageFrame`, keeping the app-bar title `Mentor`. The mentor-role hamburger rows now point at Discovery, which is exactly where F149 and F150 sent collection browsing. Route paths keep the shape F149/F150 locked; the `/mentor/` base path is F152.
@@ -103,4 +103,19 @@ Do not change `src/router/index.ts`, `src/composables/**`, `src/pages/**`, `src/
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Adopted `PageFrame` from `@mentor-forge/mentorhub_spa_utils` in `src/App.vue` (`<PageFrame page-title="Mentor">`), removing local app bar, navigation drawer, logout handler, and outer `v-main`/`v-container` wrappers.
+- Preserved `provideEditorConfig` and `loadConfig` on mount in `src/App.vue`.
+- Updated `src/App.test.ts` to stub `PageFrame` and remove obsolete router/roles mocks.
+- Verified that `openNavDrawer` and `closeNavDrawer` in `cypress/support/commands.ts` target `nav-drawer-toggle` and `.v-navigation-drawer--active`, matching `PageFrame`.
+- Updated `README.md` to document `PageFrame` shell and spa_utils automation ids.
+
+### Known Limitations
+- `PageFrame`'s built-in logout returns to `${window.location.origin}/` (welcome root) rather than `/mentor/`, as compiled in spa_utils. This will be addressed as a follow-up for a base-aware logout URL in spa_utils.
+
+### Test Results
+- `npm run test`: 14 test files passed (85 tests).
+- `npm run build`: `vue-tsc && vite build` passed with zero errors.
+
+### Follow-ups
+- F152 will configure Vite `base: '/mentor/'`, router `BASE_URL`, and base-aware runtime config.

@@ -203,19 +203,20 @@ src/
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils`:
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
+- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. For mentors, hamburger rows (Learning Resources, Learning Paths, Encounter Plans) open Discovery.
 - **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
   `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
-  prefer `CardGrid` + `MhCard` for list dashboards and `DataCard` + typed editors
-  for view/edit forms. `AutoSaveField` is a compatibility wrapper for legacy
-  pages, and `AutoSaveSelect` remains available where runtime enumerators have
-  not yet migrated
+  prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a
+  compatibility wrapper for legacy pages, and `AutoSaveSelect` remains available
+  where runtime enumerators have not yet migrated
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `useDiscoveryRedirect`
 - **Utilities**: `formatDate`, `validationRules`
 
 See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation and usage examples.
 
 ### Component Architecture
+- **Shell**: `PageFrame` from `spa_utils` wraps the application in `App.vue`, owning the app bar, drawer, and `v-main`.
 - **Pages**: Own routing, data fetching, and mutations. Pass data + callbacks to components.
 - **Components**: App-specific components (admin components). Reusable components come from `spa_utils`.
 - **Composables**: App-specific logic (authentication, config). Reusable composables come from `spa_utils`.

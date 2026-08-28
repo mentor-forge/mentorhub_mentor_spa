@@ -5,14 +5,9 @@ import { provideEditorConfig } from '@mentor-forge/mentorhub_spa_utils'
 import App from './App.vue'
 
 const mocks = vi.hoisted(() => ({
-  afterEach: vi.fn(),
   config: undefined as ReturnType<typeof ref> | undefined,
   isAuthenticated: undefined as ReturnType<typeof ref> | undefined,
   loadConfig: vi.fn(),
-}))
-
-vi.mock('vue-router', () => ({
-  useRouter: () => ({ afterEach: mocks.afterEach }),
 }))
 
 vi.mock('@/composables/useConfig', () => ({
@@ -22,19 +17,16 @@ vi.mock('@/composables/useConfig', () => ({
   }),
 }))
 
-vi.mock('@/composables/useRoles', () => ({
-  useRoles: () => ({
-    hasRole: () => ref(false),
-  }),
-}))
-
 vi.mock('@mentor-forge/mentorhub_spa_utils', () => {
   return {
+    PageFrame: {
+      name: 'PageFrame',
+      props: ['pageTitle'],
+      template: '<div class="page-frame-stub"><slot /></div>',
+    },
     provideEditorConfig: vi.fn(),
-    redirectToIdpLogin: vi.fn(),
     useAuth: () => ({
       isAuthenticated: mocks.isAuthenticated,
-      logout: vi.fn(),
     }),
   }
 })
@@ -44,12 +36,18 @@ describe('App editor config boundary', () => {
     mocks.config = ref(null)
     mocks.isAuthenticated = ref(false)
     mocks.loadConfig.mockReset()
-    mocks.afterEach.mockReset()
     vi.mocked(provideEditorConfig).mockReset()
   })
 
   it('provides reactive config for loading and unknown enumerator states', () => {
-    shallowMount(App)
+    shallowMount(App, {
+      global: {
+        stubs: {
+          'v-app': { template: '<div><slot /></div>' },
+          'router-view': true,
+        },
+      },
+    })
 
     expect(provideEditorConfig).toHaveBeenCalledOnce()
     const providedConfig = vi.mocked(provideEditorConfig).mock.calls[0][0]
