@@ -1,6 +1,6 @@
 # F153 – SPA nginx `/mentor/` prefix and prefixed API client
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F152_vite_base_and_router_prefix`  
 **Description**: Teach container nginx to serve the `/mentor/` prefix (assets, Vue history fallback, prefixed API proxy, prefixed `runtime-config.js`) and switch the API client to the prefixed `/mentor/api` base so calls from the welcome origin reach `mentor_api` through this SPA's nginx. Keep direct-port `/api/` and `/runtime-config.js` for debugging.
@@ -93,4 +93,27 @@ Do not change `vite.config.ts`, `src/router/index.ts`, `src/App.vue`, `cypress.c
 
 ## Execution Notes
 
-_Reserved for the task execution agent: plan, commands run, test results, follow-ups._
+### Summary
+- Updated `nginx.conf.template` with `/mentor/` locations:
+  - `location /mentor/api/` proxying to `http://${API_HOST}:${API_PORT}/api/`
+  - `location = /` redirecting 302 to `/mentor/`
+  - `location = /mentor/runtime-config.js` with `Cache-Control: no-store`
+  - `location /mentor/` mapping prefix to dist root with history fallback
+  - `location ~* ^/mentor/(...)` caching prefixed static assets (`public, immutable`)
+  - Direct root paths `/api/`, `/runtime-config.js`, `/health`, and `/` maintained for debugging.
+- Updated `src/api/client.ts` `API_BASE` to `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api`.
+- Set `base: '/mentor/'` in `vitest.config.ts`.
+- Updated all API client unit tests (`client.test.ts`, `Profile.client.test.ts`, `Path.client.test.ts`, `Resource.client.test.ts`, `Plan.client.test.ts`, `Encounter.client.test.ts`) to assert `/mentor/api/...`.
+- Updated `package.json` `open` script to `http://localhost:8392/mentor/`.
+
+### Packaging / Cypress Gate
+- Ran `npm run container` (`scripts/docker-build.sh`), building `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` successfully.
+- As noted in task description, Cypress e2e is not run in this task as specs are updated to prefixed URLs in F154.
+
+### Test Results
+- `npm run test`: 14 test files passed (85 tests).
+- `npm run build`: `vue-tsc && vite build` passed cleanly.
+- `npm run container`: docker build succeeded.
+
+### Follow-ups
+- F154 will update Cypress specs to test the `/mentor/` prefix, PageFrame hamburger navigation, and verify end-to-end against the container stack.

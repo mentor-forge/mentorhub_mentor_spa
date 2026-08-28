@@ -64,7 +64,7 @@ describe('API Client - Path Endpoints', () => {
 
     expect(result).toEqual(mockResponse)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path',
+      '/mentor/api/path',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(input)
@@ -104,7 +104,7 @@ describe('API Client - Path Endpoints', () => {
 
     expect(result).toEqual(mockPath)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/path/507f1f77bcf86cd799439011',
+      '/mentor/api/path/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(update)

@@ -52,7 +52,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(mockProfileDetail)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/profile/507f1f77bcf86cd799439011',
+      '/mentor/api/profile/507f1f77bcf86cd799439011',
       expect.any(Object),
     )
   })
@@ -87,7 +87,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(updatedMentee)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/mentee/507f1f77bcf86cd799439013',
+      '/mentor/api/mentee/507f1f77bcf86cd799439013',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ notes: 'Updated notes' }),
@@ -140,7 +140,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(mockProperties)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/profile/507f1f77bcf86cd799439011/properties',
+      '/mentor/api/profile/507f1f77bcf86cd799439011/properties',
       expect.any(Object),
     )
   })
@@ -175,7 +175,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(mockMentee)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/mentee/507f1f77bcf86cd799439011',
+      '/mentor/api/mentee/507f1f77bcf86cd799439011',
       expect.any(Object),
     )
   })

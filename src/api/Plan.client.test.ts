@@ -47,7 +47,7 @@ describe('API Client - Plan Endpoints', () => {
 
     expect(result).toEqual(mockPlans)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan',
+      '/mentor/api/plan',
       expect.objectContaining({
         headers: expect.objectContaining({
           offset: '0',
@@ -74,7 +74,7 @@ describe('API Client - Plan Endpoints', () => {
     })
 
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan?sort_by=created.at_time&order=asc&name=intro',
+      '/mentor/api/plan?sort_by=created.at_time&order=asc&name=intro',
       expect.objectContaining({
         headers: expect.objectContaining({
           offset: '40',
@@ -114,6 +114,10 @@ describe('API Client - Plan Endpoints', () => {
     const result = await api.getPlan('507f1f77bcf86cd799439011')
 
     expect(result).toEqual(mockPlan)
+    expect(mockFetch).toHaveBeenCalledWith(
+      '/mentor/api/plan/507f1f77bcf86cd799439011',
+      expect.any(Object)
+    )
   })
 
   it('should create a plan', async () => {
@@ -137,7 +141,7 @@ describe('API Client - Plan Endpoints', () => {
 
     expect(result).toEqual(mockResponse)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan',
+      '/mentor/api/plan',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(input)
@@ -180,7 +184,7 @@ describe('API Client - Plan Endpoints', () => {
 
     expect(result.checklist).toEqual(['First step', 'Second step', 'Third step'])
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan/507f1f77bcf86cd799439011',
+      '/mentor/api/plan/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(update),
@@ -221,7 +225,7 @@ describe('API Client - Plan Endpoints', () => {
 
     expect(result.checklist).toEqual([])
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan/507f1f77bcf86cd799439011',
+      '/mentor/api/plan/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ checklist: [] }),
@@ -262,7 +266,7 @@ describe('API Client - Plan Endpoints', () => {
 
     expect(result).toEqual(mockPlan)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/plan/507f1f77bcf86cd799439011',
+      '/mentor/api/plan/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(update)

@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig({
+  base: '/mentor/',
   plugins: [vue()],
   test: {
     // spa_utils 1.0.0 side-effect-imports CSS; inline so Vitest transforms it.

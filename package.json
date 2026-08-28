@@ -19,7 +19,7 @@
     "service": "mh down && mh up mentor && npm run open",
     "container": "sh scripts/docker-build.sh",
     "push": "docker push ghcr.io/mentor-forge/mentorhub_mentor_spa:latest",
-    "open": "open -a 'Google Chrome' 'http://localhost:8392' || google-chrome 'http://localhost:8392' || exg-open 'localhost:8392'",
+    "open": "open -a 'Google Chrome' 'http://localhost:8392/mentor/' || google-chrome 'http://localhost:8392/mentor/' || exg-open 'localhost:8392/mentor/'",
     "build-publish": "npm install --include=dev && npm run container && npm run push",
     "build-package": "npm install --include=dev && npx cypress install && npm run container",
     "publish-package": "npm run push",

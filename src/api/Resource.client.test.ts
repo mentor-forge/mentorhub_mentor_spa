@@ -64,7 +64,7 @@ describe('API Client - Resource Endpoints', () => {
 
     expect(result).toEqual(mockResponse)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource',
+      '/mentor/api/resource',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(input)
@@ -104,7 +104,7 @@ describe('API Client - Resource Endpoints', () => {
 
     expect(result).toEqual(mockResource)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/resource/507f1f77bcf86cd799439011',
+      '/mentor/api/resource/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(update)

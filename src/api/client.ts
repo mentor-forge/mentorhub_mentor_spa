@@ -26,7 +26,7 @@ import type {
 } from './types'
 import { redirectToIdpLogin, useAuth } from '@mentor-forge/mentorhub_spa_utils'
 
-const API_BASE = '/api'
+const API_BASE = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/api`
 const DEFAULT_LIST_OFFSET = 0
 const DEFAULT_LIST_SIZE = 20
 
