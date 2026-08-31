@@ -70,11 +70,16 @@ Each task file must contain the following sections under H1 and H2 headings.
     - `npm run service` — run db + API + SPA containers
     - `npm run cypress:run` — E2E tests against the containerized SPA (or `npm run cypress:run:spec` for a single spec when appropriate)
   - All test files should be identified in **Outputs** (below).
+  - Testing expectations should verify architectural boundaries, not only happy-path feature behavior. When applicable, require tests that attempt to prove the implementation wrong: use least-privileged as well as privileged roles, verify the actual browser/network path rather than only final UI state, test negative authorization cases, and verify runtime configuration, routing, caching, or cross-SPA navigation at the layer that owns the behavior. Consider how the implementation could appear correct while actually bypassing the intended boundary, and include a test for that failure mode.
+
+
 - Under an **Outputs** H2 header:
   - A list of the files that will be created/updated/moved/renamed/etc.
   - `file_name.vue` / `file_name.ts` will be updated to support `<Goal>`
   - List all files including new files to be created.
   - The agent will not update files not listed.
+  - Outputs should reflect the smallest coherent change necessary to achieve the Goals. Do not include unrelated refactoring. When the planned change makes existing local code obsolete, explicitly include its deletion rather than leaving duplicate or dead implementations behind.
+
 - Under an **Execution Notes** H2 header:
   - Reserved for the task execution agent to record plan, commands run, test results, and follow-ups.
 
