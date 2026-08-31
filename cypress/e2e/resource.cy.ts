@@ -4,7 +4,7 @@ describe('Resource Domain', () => {
   })
 
   it('should create a new resource', () => {
-    cy.visit('/mentor/resources/new')
+    cy.visitPrefixed('/mentor/resources/new')
     
     const timestamp = Date.now()
     const itemName = `test-resource-${timestamp}`
@@ -23,7 +23,7 @@ describe('Resource Domain', () => {
 
   it('should update a resource and have a Browse Resources link to Discovery', () => {
     // First create a resource
-    cy.visit('/mentor/resources/new')
+    cy.visitPrefixed('/mentor/resources/new')
     const timestamp = Date.now()
     const itemName = `test-resource-update-${timestamp}`
     const updatedName = `updated-resource-${timestamp}`

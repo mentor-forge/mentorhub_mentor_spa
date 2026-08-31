@@ -4,7 +4,7 @@ describe('Path Domain', () => {
   })
 
   it('should create a new path', () => {
-    cy.visit('/mentor/paths/new')
+    cy.visitPrefixed('/mentor/paths/new')
     
     const timestamp = Date.now()
     const itemName = `test-path-${timestamp}`
@@ -23,7 +23,7 @@ describe('Path Domain', () => {
 
   it('should update a path and have a Browse Paths link to Discovery', () => {
     // First create a path
-    cy.visit('/mentor/paths/new')
+    cy.visitPrefixed('/mentor/paths/new')
     const timestamp = Date.now()
     const itemName = `test-path-update-${timestamp}`
     const updatedName = `updated-path-${timestamp}`

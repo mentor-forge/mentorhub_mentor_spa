@@ -4,7 +4,7 @@ describe('Plan Domain', () => {
   })
 
   it('should create a new plan via /mentor/plans/new and open edit page', () => {
-    cy.visit('/mentor/plans/new')
+    cy.visitPrefixed('/mentor/plans/new')
 
     const timestamp = Date.now()
     const itemName = `test-plan-${timestamp}`
@@ -20,7 +20,7 @@ describe('Plan Domain', () => {
   })
 
   it('should update a plan from edit page and have a Browse Plans link to Discovery', () => {
-    cy.visit('/mentor/plans/new')
+    cy.visitPrefixed('/mentor/plans/new')
 
     const timestamp = Date.now()
     const itemName = `test-plan-update-${timestamp}`
@@ -57,7 +57,7 @@ describe('Plan Domain', () => {
   })
 
   it('should manage checklist steps on edit page', () => {
-    cy.visit('/mentor/plans/new')
+    cy.visitPrefixed('/mentor/plans/new')
 
     const timestamp = Date.now()
     const itemName = `test-plan-steps-${timestamp}`

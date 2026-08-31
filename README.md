@@ -20,11 +20,16 @@ npm run dev
 | Service | Port | URL |
 |---------|------|-----|
 | Developer Edition login (IdP) | **8080** | `http://127.0.0.1:8080/login.html` |
-| Mentor SPA (Vite dev or container) | **8392** | `http://localhost:8392/mentor/` |
-| Mentor API | **8391** | proxied via SPA at `/mentor/api` and `/api` |
+| Mentor SPA (welcome / ALB — **supported browser entry**) | **8080** | `http://<host>:8080/mentor/` |
+| Mentor SPA (Vite dev or container — **direct-port debugging only**) | **8392** | `http://localhost:8392/mentor/` |
+| Mentor API | **8391** | this SPA's nginx at `/mentor/api/` (and `/api/` for direct-port debug) |
 
 > [!WARNING]
 > `npm run dev` and `npm run service` both bind host port **8392** and cannot run at the same time.
+
+The supported browser entry is `http://<host>:8080/mentor/` through Developer Edition welcome / ALB. `http://localhost:8392/mentor/` is for Cypress, OpenAPI, and debugging only. API calls from the app use `/mentor/api/` and reach `mentor_api` through this SPA's nginx.
+
+`npm run dev` serves the app at `http://localhost:8392/mentor/`.
 
 ## Developer Commands
 
@@ -88,9 +93,11 @@ npm run container
 
 ### In-App Route Table
 
+Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the browser URL. There is no Vue route whose path is `/mentor` — that would produce `/mentor/mentor/...`.
+
 | Browser URL | Vue Path | Page | Description |
 |---|---|---|---|
-| `/mentor/` (and unmatched) | `/:pathMatch(.*)*` | `DiscoveryRedirectPage` | Forwards to `http://<host>:8080/discovery/` |
+| `/mentor/` (and unmatched) | `/:pathMatch(.*)*` | `DiscoveryRedirectPage` | Forwards to `http://<host>:8080/discovery/` via `buildJourneyUrl` |
 | `/mentor/profiles/:id` | `/profiles/:id` | `ProfileEditPage` | Mentee detail (profile, notes, encounters) |
 | `/mentor/encounters/:id` | `/encounters/:id` | `EncounterEditPage` | Encounter detail editor |
 | `/mentor/resources/new` | `/resources/new` | `ResourceNewPage` | Create learning resource |
@@ -100,6 +107,8 @@ npm run container
 | `/mentor/plans/new` | `/plans/new` | `PlanNewPage` | Create encounter plan |
 | `/mentor/plans/:id` | `/plans/:id` | `PlanEditPage` | Edit encounter plan and checklist |
 | `/mentor/admin` | `/admin` | `AdminPage` | Runtime config viewer (`admin` role required) |
+
+**Prohibited:** CardGrid list dashboards for resources, paths, plans, or mentee profiles in this SPA. Collection browsing lives on Discovery. Do not reintroduce list pages or hard-code journey prefixes / ALB origins in application code — use `buildJourneyUrl` from spa_utils.
 
 ## Profile Edit
 
@@ -187,16 +196,38 @@ E2E coverage: `cypress/e2e/encounter.cy.ts`, `cypress/e2e/profile.cy.ts`.
 
 ```
 src/
-  api/              # API client layer (types.ts, client.ts)
-  components/       # App-specific UI components (admin components)
-  pages/            # Route-level components (List, New, Edit/View pages)
-  composables/      # App wrappers (useAuth re-exports spa_utils; useConfig; useRoles; useDiscoveryRedirect)
+  api/              # Mentor domain API client (profile, mentee, path, resource, plan, encounter)
+  components/       # Journey-specific UI (PlanChecklistEditor, PlanSelectDialog, admin)
+  pages/            # Detail/create pages only (no collection list dashboards)
+  composables/      # useAuth (spa_utils re-export), useConfig, useRoles, useDiscoveryRedirect
   stores/           # Pinia stores (UI state only)
-  router/           # Vue Router configuration
-  plugins/          # Vuetify plugin configuration
+  router/           # Auth + role guards; BASE_URL history; Discovery catch-all
+  plugins/          # Vuetify
 ```
 
-**Note**: This template uses `@mentor-forge/mentorhub_spa_utils@1.0.0` for reusable components, composables, and utilities. See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for complete documentation on available components (`AutoSaveField`, `AutoSaveSelect`, `ListPageSearch`), composables (`useResourceList`, `useErrorHandler`, `useRoles`), and utilities (`formatDate`, `validationRules`).
+### Ownership Boundaries
+
+| Layer | Owns |
+|-------|------|
+| **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / plan-select presentation |
+| **`spa_utils` 1.0.0** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
+| **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
+| **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
+| **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
+
+Uses `@mentor-forge/mentorhub_spa_utils` **1.0.0** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. Cross-SPA drawer hrefs are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.).
+
+### Deployment Prefix & Runtime Config Invariants
+
+- Browser document and assets load under `/mentor/` (Vite `base` + nginx rewrite onto a flat dist root).
+- HTML and `/mentor/runtime-config.js` / `/runtime-config.js` are `Cache-Control: no-store` (never `immutable`).
+- Fingerprinted `/mentor/assets/*` may be `public, immutable`.
+- `location ^~ /mentor/api/` wins over the static-asset regex so `/mentor/api/*.js` cannot be cached as an asset.
+- Prefixed and root `runtime-config.js` serve the **same** container-generated file for this image. The Mentor SPA must not silently consume another journey's runtime config; the HTML shell must request `/mentor/runtime-config.js`.
+- Runtime config is injected at container start from compose `IDP_LOGIN_URI` — it is not baked into the immutable build artifact.
+- Direct-port `/` and `/mentor` redirect to `/mentor/`; `/api/` remains for direct-port debugging only.
+
+**Note**: See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for `PageFrame`, `DataCard`, typed editors, `useResourceList`, `useErrorHandler`, `useRoles`, and related contracts.
 
 ## Key Implementation Patterns
 
@@ -250,12 +281,13 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Coverage report: `npm run test:coverage`
 
 ### E2E Tests
-- Uses Cypress for end-to-end testing
-- Tests cover main user flows: `PageFrame` navigation, CRUD operations per domain, and Profile/Encounter detail
-- Specs visit prefixed routes starting at `/mentor/...` (e.g. `/mentor/paths/new`) and **never visit the root `/mentor/`** (which forwards out to Discovery)
-- `cy.login()` and `cy.loginAsMentor()` seed auth on `/mentor/paths/new`
-- `cy.mentorMenteeProfileId()` fetches mentee profile ID dynamically via `GET /mentor/api/profile`
-- Requires containerized service stack (`npm run service`) to be running (do **not** run `npm run dev` concurrently, as both bind port 8392)
+- Cypress against the packaged SPA on `http://localhost:8392` (`npm run service` must be running; do not run `npm run dev` at the same time — both bind **8392**)
+- Prefer `cy.visitPrefixed(...)` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
+- Specs visit prefixed routes such as `/mentor/paths/new` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
+- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/paths/new`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows
+- `cy.mentorMenteeProfileId()` fetches mentee profile ID via `GET /mentor/api/profile`
+- Specs cover detail CRUD, spa_utils `PageFrame` chrome (mentor vs admin roles + Discovery ALB hrefs), and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
+- UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
 
@@ -277,12 +309,22 @@ When adding a new resource or feature:
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
 
+Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
+
+- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
+- Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
+- Role-gated (`admin`): `nav-products-link`, `nav-settings-link`
+
+Do not define host `nav-*` or `app-bar-title` ids in this SPA.
+
 ## CI
 
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
 
 ## Configuration
-- Runtime configuration available at `/api/config` endpoint
-- Use enumerator values from config, not hardcoded in OpenAPI spec
+- **Supported browser entry**: `http://<host>:8080/mentor/` via Developer Edition welcome / ALB
+- **Direct-port debugging only**: `http://localhost:8392/mentor/`; `http://localhost:8392/` and `/mentor` redirect to `/mentor/`
+- **API proxy**: client calls `/mentor/api/` (derived from Vite `base`); container nginx proxies to `http://${API_HOST}:${API_PORT}/api/` on `mentor_api` (**8391**). Direct-port `/api/` kept for debugging
+- Runtime enumerators come from `GET /mentor/api/config` (or `/api/config` on the direct port), not from OpenAPI
 - **Dev server**: `.env.development` sets `VITE_IDP_LOGIN_URI` for login/logout redirects (matches Dockerfile default: `http://127.0.0.1:8080/login.html`)
-- **Container**: `API_HOST` and `API_PORT` environment variables configure the NGINX API proxy; listens on port 80 internally (map host port to container port 80, e.g. `8392:80` in docker-compose)
+- **Container**: `API_HOST`, `API_PORT`, and `IDP_LOGIN_URI` at startup; same image every environment; listens on port 80 internally (e.g. `8392:80`)
