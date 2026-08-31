@@ -12,34 +12,6 @@ describe('API Client - Profile Endpoints', () => {
     localStorage.setItem('access_token', 'test-token')
   })
 
-  it('should get mentor dashboard profiles', async () => {
-    const mockProfiles = [
-      {
-        _id: '507f1f77bcf86cd799439011',
-        name: 'test-mentee',
-        description: 'Test description',
-        progress: { library: 2, now: 1, next: 3 },
-        last_encounter: {
-          _id: '507f1f77bcf86cd799439012',
-          date: '2024-01-15T10:00:00Z',
-          tldr: 'Quick check-in',
-        },
-      },
-    ]
-
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      headers: { get: (name: string) => name === 'content-length' ? '100' : null },
-      json: async () => mockProfiles,
-    })
-
-    const result = await api.getProfiles()
-
-    expect(result).toEqual(mockProfiles)
-    expect(mockFetch).toHaveBeenCalledWith('/api/profile', expect.any(Object))
-  })
-
   it('should get composite profile detail', async () => {
     const mockProfileDetail = {
       profile: {
@@ -80,7 +52,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(mockProfileDetail)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/profile/507f1f77bcf86cd799439011',
+      '/mentor/api/profile/507f1f77bcf86cd799439011',
       expect.any(Object),
     )
   })
@@ -115,7 +87,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(updatedMentee)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/mentee/507f1f77bcf86cd799439013',
+      '/mentor/api/mentee/507f1f77bcf86cd799439013',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify({ notes: 'Updated notes' }),
@@ -168,7 +140,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(mockProperties)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/profile/507f1f77bcf86cd799439011/properties',
+      '/mentor/api/profile/507f1f77bcf86cd799439011/properties',
       expect.any(Object),
     )
   })
@@ -203,7 +175,7 @@ describe('API Client - Profile Endpoints', () => {
 
     expect(result).toEqual(mockMentee)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/mentee/507f1f77bcf86cd799439011',
+      '/mentor/api/mentee/507f1f77bcf86cd799439011',
       expect.any(Object),
     )
   })

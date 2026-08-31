@@ -3,49 +3,34 @@ describe('Plan Domain', () => {
     cy.login()
   })
 
-  it('should display plans list page as card dashboard', () => {
-    cy.visit('/plans')
-    cy.get('[data-automation-id="plan-list-heading"]').should('be.visible').and('contain', 'Plans')
-    cy.get('[data-automation-id="plan-list-new-button"]').should('be.visible')
-    cy.get('table').should('not.exist')
-    cy.get('[data-automation-id="plan-list-search"]').should('not.exist')
-    cy.get('[data-automation-id="plan-list-grid"]').should('be.visible')
-    cy.get('[data-automation-id="plan-list-card"]').first().within(() => {
-      cy.get('.mh-card__title').should('not.be.empty')
-      cy.get('.mh-card__body').should('not.be.empty')
-      cy.get('.v-chip').should('not.exist')
-    })
-  })
-
-  it('should create a new plan via dialog and open edit page', () => {
-    cy.visit('/plans')
+  it('should create a new plan via /mentor/plans/new and open edit page', () => {
+    cy.visitPrefixed('/mentor/plans/new')
 
     const timestamp = Date.now()
     const itemName = `test-plan-${timestamp}`
 
-    cy.get('[data-automation-id="plan-list-new-button"]').click()
-    cy.get('[data-automation-id="plan-list-new-name-input"]').find('input').type(itemName)
-    cy.get('[data-automation-id="plan-list-new-submit-button"]').click()
+    cy.get('[data-automation-id="plan-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="plan-new-description-input"]').type('Test description for plan')
+    cy.get('[data-automation-id="plan-new-submit-button"]').click()
 
-    cy.url().should('include', '/plans/')
-    cy.url().should('not.include', '/plans/new')
+    cy.url().should('match', /\/mentor\/plans\/[a-f0-9]{24}$/)
+    cy.url().should('not.include', '/mentor/plans/new')
 
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', itemName)
   })
 
-  it('should update a plan from edit page', () => {
-    cy.visit('/plans')
+  it('should update a plan from edit page and have a Browse Plans link to Discovery', () => {
+    cy.visitPrefixed('/mentor/plans/new')
 
     const timestamp = Date.now()
     const itemName = `test-plan-update-${timestamp}`
     const updatedName = `updated-plan-${timestamp}`
 
-    cy.get('[data-automation-id="plan-list-new-button"]').click()
-    cy.get('[data-automation-id="plan-list-new-name-input"]').find('input').type(itemName)
-    cy.get('[data-automation-id="plan-list-new-submit-button"]').click()
+    cy.get('[data-automation-id="plan-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="plan-new-description-input"]').type('Original description')
+    cy.get('[data-automation-id="plan-new-submit-button"]').click()
 
-    cy.url().should('include', '/plans/')
-    cy.url().should('not.include', '/plans/new')
+    cy.url().should('match', /\/mentor\/plans\/[a-f0-9]{24}$/)
 
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').clear().type(updatedName)
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').blur()
@@ -61,32 +46,26 @@ describe('Plan Domain', () => {
     cy.get('.v-overlay--active .v-list-item').contains('Soft Delete Indicator').click()
     cy.wait(1000)
 
-    cy.get('[data-automation-id="plan-edit-back-button"]').click()
-    cy.url().should('include', '/plans')
-
-    cy.get('[data-automation-id="plan-list-card"]').contains(updatedName).should('be.visible')
-  })
-
-  it('should navigate to plan edit from a card action', () => {
-    cy.visit('/plans')
-
-    cy.get('[data-automation-id="plan-list-card-open-button"]').first().click()
-    cy.url().should('match', /\/plans\/[a-f0-9]{24}$/)
-    cy.get('[data-automation-id="plan-edit-fields-section"]')
+    cy.get('[data-automation-id="plan-edit-browse-plans-link"]')
       .should('be.visible')
-      .and('have.class', 'mh-card')
-    cy.get('[data-automation-id="plan-edit-name-input"]').should('be.visible')
+      .and('have.attr', 'href')
+      .and('match', /:8080\/discovery\/plans$/)
+
+    cy.reload()
+    cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', updatedName)
+    cy.get('[data-automation-id="plan-edit-description-input"]').find('input').should('have.value', 'Updated description')
   })
 
   it('should manage checklist steps on edit page', () => {
-    cy.visit('/plans')
+    cy.visitPrefixed('/mentor/plans/new')
 
     const timestamp = Date.now()
     const itemName = `test-plan-steps-${timestamp}`
 
-    cy.get('[data-automation-id="plan-list-new-button"]').click()
-    cy.get('[data-automation-id="plan-list-new-name-input"]').find('input').type(itemName)
-    cy.get('[data-automation-id="plan-list-new-submit-button"]').click()
+    cy.get('[data-automation-id="plan-new-name-input"]').type(itemName)
+    cy.get('[data-automation-id="plan-new-submit-button"]').click()
+
+    cy.url().should('match', /\/mentor\/plans\/[a-f0-9]{24}$/)
 
     cy.get('[data-automation-id="plan-edit-checklist-section"]')
       .should('be.visible')

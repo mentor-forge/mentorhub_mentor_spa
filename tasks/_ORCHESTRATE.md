@@ -1,6 +1,6 @@
 # SPA Task Automation Framework - Orchestration
 
-This folder contains coding tasks that an orchestration agent can execute, based on the context and instructions in each task file. All of these tasks will only make changes in this SPA repo (`mentorhub_mentor_spa`). Paths are relative to the repository root that contains `package.json`. The agent will first help to plan tasks (see `_PLANNING.md`), and then orchestrate execution of all Pending Tasks to implement a Feature.
+This folder contains coding tasks that an orchestration agent can execute, based on the context and instructions in each task file. All of these tasks will only make changes in this SPA repo. The agent will first help to plan tasks, and then orchestrate execution of all Pending Tasks to implement a Feature.
 
 ## Orchestration model: Feature Workflow
 
@@ -11,15 +11,15 @@ Now orchestrate all Pending Tasks as outlined below. Use an **orchestration agen
 1. **Orchestrator** discovers all tasks, respects dependencies, and determines execution order.
    - **Task Selection**: Select only `PENDING.*` tasks.
    - **Execution order**: Review all PENDING tasks and order dependencies first.
-   - Schedule **concurrent** agents if no dependencies exist.
-2. **For each task**, the orchestrator launches a new agent with:
+   - **Concurrent** all tasks should be executed serially
+2. **For each task**, the orchestrator selects an appropriate model, many tasks will not need high reasoning models. Never use GROK models. Then, launch a new agent with:
    - The task file path
-   - Any outputs from prior tasks (e.g. "R130 complete; encounter notes section added in PlanView.vue")
+   - Any outputs from prior tasks (e.g. "L010 complete; Profile schema updated in openapi.yaml")
 3. **Sub-agent** executes only that task: read context, implement, test, update task notes.
-4. **Orchestrator Confirmation**: The orchestrator should re-run the task's **Testing Expectations** as outlined in the task (typically `npm run test` / `npm run build`, and packaging/E2E when specified: `npm run container`, `npm run service`, `npm run cypress:run`).
-5. **Commit Changes**: The orchestrator is responsible for a commit, with a meaningful message, and a push.
-6. **Mark Shipped** by updating the task status, and renaming the task file like `SHIPPED.R130.add_encounter_notes_section.md`.
-7. **Orchestrator** after the commit, moves to the next task.
+4. **Orchestrator Confirmation**: The orchestrator should repeat drop/config testing as outlined in the task.
+4. **Commit Changes**: The orchestrator is responsible for a commit, with a meaningful message, and a push.
+5. **Mark Shipped** by updating the task status, and renaming the task file like `SHIPPED.T010_update_profile_data.md`.
+6. **Orchestrator** after the commit, moves to the next task.
 
 **Task Failure Case**: In the event a task fails, execution should halt and the developer should receive a summary of the current state and error condition that caused the failure.
 
@@ -27,17 +27,16 @@ Now orchestrate all Pending Tasks as outlined below. Use an **orchestration agen
 
 ## Implementation Details
 - **Recommended filename pattern**:
-  - `STATUS.RNNN.short_task_name.md` where R is the SPA task series prefix and NNN is a serial task number (see `_PLANNING.md`). Use `D` for defects (e.g. `PENDING.D001.example_defect.md`). Use `F` for features (e.g. `PENDING.F001.example_feature.md`).
+  - `STATUS.LNNN.short_task_name.md`
   - Examples:
-    - `PENDING.F130.add_encounter_notes_section.md`
-    - `PENDING.F131.sync_plan_client_types.md`
-    - `PENDING.F132.plan_edit_checklist_e2e.md`
-    - `SHIPPED.F130.add_encounter_notes_section.md`
+    - `AS_NEEDED.T998.example_update_openapi.md`
+    - `PENDING.L010.update_profile_openapi.md`
+    - `RUNNING.L020.add_profile_field_tests.md`
+    - `SHIPPED.L010.update_profile_openapi.md`
 
 - **External prerequisites**
-  - Task execution in this SPA may use only these sibling repos for input context: `../mentorhub` (e.g. `DeveloperEdition/standards/spa_standards.md`), `../mentorhub_spa_utils`, and `../mentorhub_mentor_api` OpenAPI when a task must sync types or clients.
-  - Work in other repositories (MongoDB dictionary, other domain APIs/SPAs, CloudFormation) is **not** orchestrated from this folder and must not be linked from task **Context** or **Goals**.
-  - Record external preconditions under **Context** as prose, or set **Status** to `Blocked` until a human confirms they are satisfied.
+  - Work in other repositories (MongoDB dictionary changes, API) is **not** orchestrated from this folder.
+  - Record external preconditions under **Context** or set **Status** to `Blocked` until a human confirms they are satisfied.
   - **Depends On** references only tasks in **this repo's** `tasks/` folder.
 
 ## Task execution workflow
@@ -45,20 +44,16 @@ Now orchestrate all Pending Tasks as outlined below. Use an **orchestration agen
 The steps below apply to the agent that executes a task.
 
 1. **Review the current tasks**
-   - Each task is a markdown file in this repo's `tasks/` folder (e.g. `PENDING.F130.add_encounter_notes_section.md`).
+   - Each task is a markdown file in this repo's `tasks/` folder (e.g. `PENDING.L010.update_profile_openapi.md`).
    - For each task, read the entire file before starting work.
-   - Task shape follows `_PLANNING.md`: Status, Type, Depends On, Description, Context, Goals, Testing Expectations, Outputs, Execution Notes.
-   - Context should always include `../mentorhub/DeveloperEdition/standards/spa_standards.md` and `README.md`.
 
 2. **Change control for each task**
    For every task, the agent should:
    - **Review Context and Goals**: Read all referenced input/context files.
    - **Plan changes**: Summarize the planned approach in the **Execution Notes** section of the task file.
-   - **Implement changes**: Update Vue/TS sources, tests, docs, etc., as required — only files listed under **Outputs**.
-   - **OpenAPI / types** (when the task depends on the mentor API contract): start the API if needed (`npm run api`), then use the live OpenAPI (`curl -X GET "http://localhost:8391/docs/openapi.yaml"`) or `../mentorhub_mentor_api/docs/openapi.yaml`. If the contract is unavailable, set **Status** to `Blocked` and stop.
-   - **Dependencies**: If `package.json` or `package-lock.json` changes, run `mh` if needed for CodeArtifact, then `npm install --include=dev`.
-   - **Testing**: Follow the instructions in the task file's **Testing Expectations** section (SPA unit/build and packaging/E2E as specified — not API drop/config testing).
+   - **Implement changes**: Update configuration, docs, etc., as required — only files listed under **Outputs**.
+   - **Testing**: Follow the instructions in the task file's **Testing Expectations** section.
 
 3. **Completion and documentation**
    - After successful testing, update **Execution Notes** with summary and test results.
-   - Rename the task file to `SHIPPED.RNNN....md` and update in-file **Status** to `Shipped` after the orchestrator commits.
+   - The sub agent does not need to commit changes, that will be done by the orchestration agent.

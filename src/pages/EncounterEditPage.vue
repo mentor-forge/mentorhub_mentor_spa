@@ -263,6 +263,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
+import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
 import {
   DataCard,
   DateTimeEditor,
@@ -418,6 +419,6 @@ function goBack() {
     router.push(`/profiles/${menteeId.value}`)
     return
   }
-  router.push('/profiles')
+  redirectToDiscoveryDashboard()
 }
 </script>

@@ -207,9 +207,9 @@
       <v-row class="mt-4">
         <v-col>
           <v-btn
+            :href="dashboardHref"
             variant="text"
-            data-automation-id="profile-edit-back-button"
-            @click="router.push('/profiles')"
+            data-automation-id="profile-edit-dashboard-link"
           >
             Back to Dashboard
           </v-btn>
@@ -243,12 +243,15 @@ import {
   MhCard,
   SentenceEditor,
   UsPhoneEditor,
+  buildJourneyUrl,
   formatDate,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { PlanSelectDialog } from '@/components/dashboard'
 import { api } from '@/api/client'
 import type { Encounter, EncounterInput, MenteeUpdate, ProfileExperience } from '@/api/types'
+
+const dashboardHref = buildJourneyUrl('discovery')
 
 const routeLocation = useRoute()
 const router = useRouter()

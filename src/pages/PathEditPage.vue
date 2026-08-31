@@ -66,11 +66,11 @@
 
           <template #actions>
             <v-btn
-              @click="router.push('/paths')"
+              :href="browsePathsHref"
               variant="text"
-              data-automation-id="path-edit-back-button"
+              data-automation-id="path-edit-browse-paths-link"
             >
-              Back to List
+              Browse Paths
             </v-btn>
           </template>
         </DataCard>
@@ -85,7 +85,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import {
@@ -94,14 +94,15 @@ import {
   DataCard,
   SentenceEditor,
   WordEditor,
+  buildJourneyUrl,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import type { PathUpdate } from '@/api/types'
 
 const routeLocation = useRoute()
-const router = useRouter()
 const queryClient = useQueryClient()
 
+const browsePathsHref = buildJourneyUrl('discovery', 'paths')
 const pathId = computed(() => routeLocation.params.id as string)
 
 const { data: path, isLoading, error: queryError } = useQuery({

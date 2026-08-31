@@ -19,7 +19,7 @@
     "service": "mh down && mh up mentor && npm run open",
     "container": "sh scripts/docker-build.sh",
     "push": "docker push ghcr.io/mentor-forge/mentorhub_mentor_spa:latest",
-    "open": "open -a 'Google Chrome' 'http://localhost:8392' || google-chrome 'http://localhost:8392' || exg-open 'localhost:8392'",
+    "open": "open -a 'Google Chrome' 'http://localhost:8392/mentor/' || google-chrome 'http://localhost:8392/mentor/' || exg-open 'localhost:8392/mentor/'",
     "build-publish": "npm install --include=dev && npm run container && npm run push",
     "build-package": "npm install --include=dev && npx cypress install && npm run container",
     "publish-package": "npm run push",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
-    "@mentor-forge/mentorhub_spa_utils": "^0.5.7",
+    "@mentor-forge/mentorhub_spa_utils": "1.0.0",
     "@tanstack/vue-query": "^5.59.0",
     "pinia": "^2.2.6",
     "vue": "^3.5.13",

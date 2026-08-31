@@ -46,7 +46,7 @@ describe('API Client - Encounter Endpoints', () => {
 
     expect(result).toEqual(mockEncounter)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/encounter/507f1f77bcf86cd799439011',
+      '/mentor/api/encounter/507f1f77bcf86cd799439011',
       expect.any(Object),
     )
   })
@@ -72,7 +72,7 @@ describe('API Client - Encounter Endpoints', () => {
 
     expect(result).toEqual(mockResponse)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/encounter',
+      '/mentor/api/encounter',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify(input),
@@ -112,7 +112,7 @@ describe('API Client - Encounter Endpoints', () => {
 
     expect(result).toEqual(mockEncounter)
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/encounter/507f1f77bcf86cd799439011',
+      '/mentor/api/encounter/507f1f77bcf86cd799439011',
       expect.objectContaining({
         method: 'PATCH',
         body: JSON.stringify(update),

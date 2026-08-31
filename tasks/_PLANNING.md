@@ -7,8 +7,8 @@ This folder contains coding tasks that an orchestration agent can execute, based
   - Sibling repos must all be sibling folders under a common parent.
   - Standards: `../mentorhub/DeveloperEdition/standards/spa_standards.md`
   - In-repo: `README.md`, `src/...`, `cypress/...`, `tasks/...`
-
 - **Context** Before creating any task files you should review the following files for context:
+- ../mentorhub/DeveloperEdition/standards/ArchitecturePrinciples.md
 - ../mentorhub/DeveloperEdition/standards/spa_standards.md
 - ../mentorhub_spa_utils/README.md
 - ./README.md
@@ -36,18 +36,15 @@ Each task file must contain the following sections under H1 and H2 headings.
   - **Type**: `Feature` | `Defect` to describe why we are running this task
   - **Depends On**: `R129_sync_encounter_types` the required predecessor task **in this repo**, or `none` for parallel tasks
   - **Description**: A brief human description of the task.
-
 - Under a **Context** H2 header:
   - A list of context files. This list should always include:
     - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
     - `README.md`
   - Any other input files for the execution of the task.
   - `AS_NEEDED` tasks may include a **Parameters (edit before running)** subsection here for values to customize before promoting to `Pending`.
-
 - Under a **Goals** H2 header:
   - A list of desired outcomes for the task.
   - Each item should describe the outcome (e.g. "Profile edit page shows Full Name with `data-automation-id=\"profile-view-full-name-display\"`").
-
 - Under a **Testing Expectations** H2 header:
   - Can include the creation of new tests for new features.
   - Can include changing existing tests because of modified features.
@@ -64,17 +61,18 @@ Each task file must contain the following sections under H1 and H2 headings.
     - `npm run service` — run db + API + SPA containers
     - `npm run cypress:run` — E2E tests against the containerized SPA (or `npm run cypress:run:spec` for a single spec when appropriate)
   - All test files should be identified in **Outputs** (below).
-
 - Under an **Outputs** H2 header:
   - A list of the files that will be created/updated/moved/renamed/etc.
   - `file_name.vue` / `file_name.ts` will be updated to support `<Goal>`
   - List all files including new files to be created.
   - The agent will not update files not listed.
-
 - Under an **Execution Notes** H2 header:
   - Reserved for the task execution agent to record plan, commands run, test results, and follow-ups.
 
+
+
 ## Naming Conventions
+
 - **Recommended filename pattern**:
   - `STATUS.RNNN.short_task_name.md` where R is the SPA task series prefix and NNN is a serial task number. When planning, create only PENDING status tasks. 
   - Examples:
@@ -83,14 +81,18 @@ Each task file must contain the following sections under H1 and H2 headings.
     - `PENDING.R132.plan_edit_checklist_e2e.md`
     - `PENDING.D001.example_defect.md`
 
+
+
 ## External repository boundaries
 
 Task planning and execution in **this SPA repo** (`mentorhub_mentor_spa`) must not read or depend on other sibling repositories for input context, except:
 
-- **`../mentorhub`** — platform standards and shared documentation (e.g. `DeveloperEdition/standards/spa_standards.md`).
-- **`../mentorhub_spa_utils`** — shared Vue components, composables, and auth helpers (e.g. `AutoSaveField`, `useAuth`, `README.md`).
+- `../mentorhub` — platform standards and shared documentation (e.g. `DeveloperEdition/standards/spa_standards.md`).
+- `../mentorhub_spa_utils` — shared Vue components, composables, and auth helpers (e.g. `AutoSaveField`, `useAuth`, `README.md`).
 - **Reusable Components** - Prefer the use of spa_util editor components to implement all forms. If new editors are needed, create them with the intent of moving them to spa_utils after they are tested and verified locally.
 Do **not** reference paths under `mentorhub_mongodb_api`, other domain API or SPA repos, or CloudFormation repos in task **Context** or **Goals**. If work in another repository is a prerequisite, describe it as an **external prerequisite** in prose (e.g. “Mentor API OpenAPI must include field X”) and set **Status** to `Blocked` until a human confirms it — do not link to or read files in that repo.
+
+
 
 ## Backing API OpenAPI schemas
 
@@ -123,3 +125,4 @@ Task **Testing Expectations** and **Goals** should call out `npm install` whenev
 For a complete example of a well‑formed `Run as needed` task, see:
 
 - `AS_NEEDED.T999.example_add_fields.md`
+

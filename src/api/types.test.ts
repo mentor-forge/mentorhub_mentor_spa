@@ -9,8 +9,7 @@ import type {
   CreateInput,
   Consume,
   ConfigResponse,
-  ListParams,
-  ResourceListParams
+  ListParams
 } from './types'
 
 describe('API Types', () => {
@@ -272,21 +271,6 @@ describe('API Types', () => {
       }
       
       expect(params.order).toBe('desc')
-    })
-  })
-
-  describe('ResourceListParams', () => {
-    it('should include OpenAPI resource filters', () => {
-      const params: ResourceListParams = {
-        offset: 0,
-        size: 20,
-        name: 'typescript',
-        description: 'guide',
-        status: 'active,draft',
-      }
-
-      expect(params.description).toBe('guide')
-      expect(params.status).toBe('active,draft')
     })
   })
 })

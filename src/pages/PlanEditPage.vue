@@ -82,11 +82,11 @@
 
             <div class="plan-edit-column-actions">
               <v-btn
-                @click="router.push('/plans')"
+                :href="browsePlansHref"
                 variant="text"
-                data-automation-id="plan-edit-back-button"
+                data-automation-id="plan-edit-browse-plans-link"
               >
-                Back to List
+                Browse Plans
               </v-btn>
             </div>
           </div>
@@ -99,11 +99,11 @@
 
             <div class="plan-edit-column-actions">
               <v-btn
-                @click="router.push('/plans')"
+                :href="browsePlansHref"
                 variant="text"
-                data-automation-id="plan-edit-checklist-back-button"
+                data-automation-id="plan-edit-checklist-browse-plans-link"
               >
-                Back to List
+                Browse Plans
               </v-btn>
             </div>
           </div>
@@ -119,7 +119,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import {
@@ -127,6 +127,7 @@ import {
   EnumEditor,
   SentenceEditor,
   WordEditor,
+  buildJourneyUrl,
   formatDate,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
@@ -135,11 +136,11 @@ import PlanChecklistEditor from '@/components/PlanChecklistEditor.vue'
 import { useRoles } from '@/composables/useRoles'
 
 const routeLocation = useRoute()
-const router = useRouter()
 const queryClient = useQueryClient()
 const { hasRole } = useRoles()
 const hasAdminRole = hasRole('admin')
 
+const browsePlansHref = buildJourneyUrl('discovery', 'plans')
 const planId = computed(() => routeLocation.params.id as string)
 
 const { data: plan, isLoading, error: queryError } = useQuery({

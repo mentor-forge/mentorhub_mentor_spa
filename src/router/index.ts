@@ -4,22 +4,12 @@ import {
   redirectToIdpLogin,
   useAuth,
 } from '@mentor-forge/mentorhub_spa_utils'
+import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      redirect: '/profiles'
-    },
-    
     // Control domain: Resource
-    {
-      path: '/resources',
-      name: 'Resources',
-      component: () => import('@/pages/ResourcesListPage.vue'),
-      meta: { requiresAuth: true }
-    },
     {
       path: '/resources/new',
       name: 'ResourceNew',
@@ -35,12 +25,6 @@ const router = createRouter({
     
     // Control domain: Path
     {
-      path: '/paths',
-      name: 'Paths',
-      component: () => import('@/pages/PathsListPage.vue'),
-      meta: { requiresAuth: true }
-    },
-    {
       path: '/paths/new',
       name: 'PathNew',
       component: () => import('@/pages/PathNewPage.vue'),
@@ -55,9 +39,9 @@ const router = createRouter({
     
     // Control domain: Plan
     {
-      path: '/plans',
-      name: 'Plans',
-      component: () => import('@/pages/PlansListPage.vue'),
+      path: '/plans/new',
+      name: 'PlanNew',
+      component: () => import('@/pages/PlanNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {
@@ -69,24 +53,13 @@ const router = createRouter({
     
     // Encounter detail (created from Profile Detail)
     {
-      path: '/encounters',
-      redirect: '/profiles',
-    },
-    {
       path: '/encounters/:id',
       name: 'EncounterEdit',
       component: () => import('@/pages/EncounterEditPage.vue'),
       meta: { requiresAuth: true }
     },
     
-    
     // Consume domain: Profile
-    {
-      path: '/profiles',
-      name: 'Profiles',
-      component: () => import('@/pages/ProfilesListPage.vue'),
-      meta: { requiresAuth: true }
-    },
     {
       path: '/profiles/:id',
       name: 'ProfileEdit',
@@ -100,6 +73,13 @@ const router = createRouter({
       name: 'Admin',
       component: () => import('@/pages/AdminPage.vue'),
       meta: { requiresAuth: true, requiresRole: 'admin' }
+    },
+
+    // Catch-all route forwarding to Discovery
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'DiscoveryRedirect',
+      component: () => import('@/pages/DiscoveryRedirectPage.vue')
     }
   ]
 })
@@ -109,15 +89,17 @@ router.beforeEach((to, _from, next) => {
   
   // Check authentication
   if (to.meta.requiresAuth && !isAuthenticated.value) {
-    redirectToIdpLogin(window.location.origin + to.fullPath)
+    const returnUrl = window.location.origin + import.meta.env.BASE_URL + to.fullPath.replace(/^\//, '')
+    redirectToIdpLogin(returnUrl)
+    next(false)
     return
   }
   
   // Check role-based authorization
   const requiredRole = to.meta.requiresRole as string | undefined
   if (requiredRole && !hasStoredRole(requiredRole)) {
-    // Redirect to default page if user doesn't have required role
-    next({ name: 'Profiles' })
+    redirectToDiscoveryDashboard()
+    next(false)
     return
   }
   

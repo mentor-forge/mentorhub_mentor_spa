@@ -38,7 +38,23 @@ http {
         add_header X-XSS-Protection "1; mode=block";
         add_header Access-Control-Allow-Origin *;
 
-        # API proxy
+        # Mentor API proxy for the prefixed origin. Welcome nginx and the cloud ALB
+        # forward `/mentor/...` unchanged, so the prefix is stripped here.
+        # `^~` keeps nginx from evaluating the regex locations below, so the prefixed
+        # asset cache can never swallow an API call.
+        location ^~ /mentor/api/ {
+            proxy_pass http://${API_HOST}:${API_PORT}/api/;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_cache_bypass $http_upgrade;
+        }
+
+        # API proxy for direct-port debugging (http://localhost:8392/api/...)
         # Using direct variable substitution for runtime DNS resolution
         location /api/ {
             proxy_pass http://${API_HOST}:${API_PORT}/api/;
@@ -59,18 +75,66 @@ http {
             add_header Content-Type text/plain;
         }
 
-        # Runtime IdP URL — generated at container start; must not be immutable-cached
+        # Runtime IdP URL — generated at container start; must not be immutable-cached.
+        # Exact matches win over every regex, so neither of these can fall into the
+        # asset cache below. Prefixed and root paths serve the same generated file —
+        # this SPA must not silently resolve another journey's config.
+        location = /mentor/runtime-config.js {
+            add_header Cache-Control "no-store";
+            rewrite ^ /runtime-config.js break;
+            try_files $uri =404;
+        }
+
         location = /runtime-config.js {
             add_header Cache-Control "no-store";
             try_files $uri =404;
         }
 
-        # Handle Vue Router history mode
+        # Vite `base` prefixes asset URLs only — the docroot stays flat — so the
+        # `/mentor/` prefix is mapped onto it with an internal rewrite. The shell is
+        # never cached: a stale one carries the wrong hashed asset URLs.
+        location = /mentor/ {
+            add_header Cache-Control "no-store";
+            try_files /index.html =404;
+        }
+
+        # Vue Router history mode under the journey prefix. The trailing `=404` keeps
+        # `/index.html` a non-last try_files entry so it is served in this location and
+        # keeps `no-store`; as the last entry it would internally redirect into
+        # `location /` and lose the header.
+        location /mentor/ {
+            add_header Cache-Control "no-store";
+            rewrite ^/mentor/(.*)$ /$1 break;
+            try_files $uri /index.html =404;
+        }
+
+        # `absolute_redirect off` because the container listens on 80 behind a published
+        # host port; an absolute Location would drop the port and send 8392 to :80.
+        location = /mentor {
+            absolute_redirect off;
+            return 302 /mentor/;
+        }
+
+        # Direct-port root still reaches the app
+        location = / {
+            absolute_redirect off;
+            return 302 /mentor/;
+        }
+
+        # Handle Vue Router history mode for direct-port debugging
         location / {
             try_files $uri $uri/ /index.html;
         }
 
-        # Cache static assets
+        # Cache static assets under the journey prefix. This regex must stay ahead of
+        # the root-path one so it wins for `/mentor/assets/...`.
+        location ~* ^/mentor/.+\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+            rewrite ^/mentor/(.*)$ /$1 break;
+            expires 1y;
+            add_header Cache-Control "public, immutable";
+        }
+
+        # Cache static assets for direct-port debugging
         location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
             expires 1y;
             add_header Cache-Control "public, immutable";
