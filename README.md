@@ -285,9 +285,9 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Cypress against the packaged SPA on `http://localhost:8392` (`npm run service` must be running; do not run `npm run dev` at the same time — both bind **8392**)
 - Prefer `cy.visitPrefixed(...)` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
 - Specs visit prefixed routes such as `/mentor/paths/new` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
-- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/paths/new`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows
+- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/paths/new`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows and `cy.login(['mentee'])` for the least-privileged Home + Events catalog
 - `cy.mentorMenteeProfileId()` fetches mentee profile ID via `GET /mentor/api/profile`
-- Specs cover detail CRUD, spa_utils `PageFrame` chrome (mentor vs admin roles + Discovery ALB hrefs), and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
+- Specs cover detail CRUD, spa_utils **1.0.1** `PageFrame` chrome (Events for authenticated users; Notifications + Settings **admin-only**; Settings `href` is hosting `http://localhost:8392/mentor/config`, not welcome `:8080` or `/admin/settings`; Products / Customer / Customer Members absent; Discovery ALB hrefs for Home/Events/collections), Token tab claims, the `/mentor/config` admin gate, logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
 - UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
@@ -314,7 +314,9 @@ Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
 
 - Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-events-link`, `nav-logout-link`
 - Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
-- Role-gated (`admin`): `nav-notifications-link`, `nav-settings-link`
+- Role-gated (`admin` only): `nav-notifications-link`, `nav-settings-link` — Settings `href` is hosting `/mentor/config` (this origin, no `:8080` rewrite)
+- Token tab (AdminPage): `admin-tab-token`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`
+- Absent for every role: `nav-products-link`, `nav-customer-link`, `nav-customer-members-link`
 
 Do not define host `nav-*` or `app-bar-title` ids in this SPA.
 

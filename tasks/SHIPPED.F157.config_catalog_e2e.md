@@ -1,6 +1,6 @@
 # F157 – 1.0.1 catalog, `/mentor/config` Cypress and packaging
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F156_host_admin_page_at_config`  
 **Description**: Point Cypress at the spa_utils **1.0.1** hamburger catalog, prove Settings opens this SPA’s `/mentor/config`, cover Token claims, admin-gate `/config`, and verify logout `return_to=/discovery/`. Run the packaged SPA as the acceptance gate for F-RS17.
@@ -88,4 +88,62 @@ Do not restore a local drawer. Do not change the spa_utils pin. Do not add an Ev
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Planned approach
+
+Rewrite `cypress/e2e/navigation.cy.ts` from the 1.0.0 catalog to spa_utils 1.0.1, following Discovery’s Cypress patterns without copying Discovery Events page visits.
+
+- Keep prefix / API / drawer-close / unauthenticated-deep-link / runtime-config coverage.
+- Mentor-only (`cy.login(['mentor'])`): ordered Home, Events, Resources, Paths, Plans; ALB `:8080` hrefs; no Notifications/Settings.
+- Admin-only (`cy.login(['admin'])`): ordered Home, Events, Notifications, Settings; no mentor browse rows. Settings `href` asserted on `http://localhost:8392/mentor/config` (includes `:8392`, not `:8080`, not `/admin/settings`, not `/mentor/mentor`) before click; click stays on this SPA.
+- Least-privileged (`cy.login(['mentee'])`): Home + Events only.
+- Removed ids `nav-products-link`, `nav-customer-link`, `nav-customer-members-link` absent for admin, mentor, and mentee.
+- Token tab: intercept `GET **/mentor/api/config` with `token: { profile_id, customer_id, mentor_id }`; open Settings → `admin-tab-token`; assert the three display inputs.
+- Config gate: mentor-only `cy.visit('/mentor/config')` (plain visit — guard `location.replace`s to `:8080/discovery/`); prove pathname is no longer `/mentor/config` and AdminPage chrome is absent. Admin `loginAndVisit('/mentor/config')` stays. No local Home fallback.
+- Logout: `return_to` is `http://localhost:8080/discovery/` (not `127.0.0.1`, not bare `/`, not `/mentor/`). Delete the F151/F154 “root origin” comment.
+- README Testing / Automation Support: 1.0.1 ids, Settings host, removed Products/Customer/Members.
+- Do not change spa_utils pin, router, or other repos. No `npm run lint` script. Rebuild container (`npm run container` + `npm run service`) before `cypress:run` so 8392 is the new image.
+
+### Summary
+
+Rewrote `cypress/e2e/navigation.cy.ts` for the spa_utils **1.0.1** hamburger catalog and updated README Testing / Automation Support. Settings is asserted on hosting `http://localhost:8392/mentor/config` (not `:8080`, not `/admin/settings`). Token tab claims are stubbed via `GET **/mentor/api/config`. Non-admin `/mentor/config` is proven to unload toward `:8080/discovery/` via `cy.origin` (no local Home fallback). Logout `return_to` is `http://localhost:8080/discovery/`. Packaged Cypress gate is green.
+
+### Files changed
+
+- `cypress/e2e/navigation.cy.ts` — 1.0.1 catalog (mentor / admin / mentee), Settings hosting href + Token tab, `/mentor/config` role gate, logout `return_to=/discovery/`
+- `README.md` — Testing / Automation Support 1.0.1 ids, Settings host, removed Products/Customer/Members, Token tab ids
+- `tasks/PENDING.F157.config_catalog_e2e.md` — this Execution Notes section
+
+No changes to `deployment.cy.ts`, detail specs, Cypress support, fixtures, spa_utils pin, or router.
+
+### Command results
+
+| Command | Result |
+|---------|--------|
+| `npm run test` | **pass** — 15 files, 104 tests |
+| `npm run test:coverage` | **pass** — 15 files, 104 tests |
+| `npm run build` | **pass** — `vue-tsc` + Vite |
+| `npm run container` | **pass** — `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` |
+| `npm run service` | **pass** — `mh down && mh up mentor` (welcome + mongodb + mentor_api + mentor_spa on 8392) |
+| `npm run cypress:run` | **pass** — 7 specs, **35/35** tests |
+
+Cypress spec counts:
+
+- `deployment.cy.ts` — 8
+- `encounter.cy.ts` — 3
+- `navigation.cy.ts` — 11
+- `path.cy.ts` — 2
+- `plan.cy.ts` — 3
+- `profile.cy.ts` — 6
+- `resource.cy.ts` — 2
+
+First `cypress:run` failed 1/10 in navigation (non-admin config gate: Cypress stayed on `:8392` commands after `location.replace` to `:8080`). Split admin-stay vs non-admin-leave; used `cy.origin('http://localhost:8080')` to prove unload to `/discovery/` and absent AdminPage chrome. Rerun: 35/35.
+
+### Follow-ups
+
+- This repo has **no** `npm run lint` script. `npm run build` (`vue-tsc`) is the type gate. Do not add a lint script; record the gap from issue acceptance criteria.
+
+### Orchestrator confirmation
+
+- `npm run test:coverage` — **pass** (15 files, 104 tests)
+- `npm run build` — **pass** (`vue-tsc` clean)
+- `npm run cypress:run` against packaged `npm run service` stack — **pass** (7 specs, 35/35)

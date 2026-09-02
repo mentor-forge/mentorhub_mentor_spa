@@ -1,23 +1,42 @@
 /**
- * Navigation chrome coverage for the spa_utils `PageFrame` shell under the `/mentor/` base.
+ * Navigation chrome coverage for the spa_utils `PageFrame` 1.0.1 catalog under `/mentor/`.
  *
  * Every automation id asserted here is compiled into `@mentor-forge/mentorhub_spa_utils`
  * (`nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`,
- * `nav-resources-link`, `nav-paths-link`, `nav-plans-link`, `nav-notifications-link`,
- * `nav-products-link`, `nav-settings-link`, `nav-logout-link`).
+ * `nav-events-link`, `nav-resources-link`, `nav-paths-link`, `nav-plans-link`,
+ * `nav-notifications-link`, `nav-settings-link`, `nav-logout-link`).
  * This SPA defines no `nav-*` id of its own.
  *
- * Role-gated rows are asserted as an exact, ordered id list read from the DOM rather than
- * by naming every absent row, because `cy.login()` with no argument seeds an **admin**
- * token: a bare `cy.login()` would show Products and Settings too.
+ * Removed hamburger ids (`nav-products-link`, `nav-customer-link`,
+ * `nav-customer-members-link`) must stay absent for every role checked.
  *
  * Never visit `/mentor/` in browser specs: the catch-all forwards to Discovery on `:8080`.
  * Auth seeding and chrome checks use the stable in-app page `/mentor/paths/new`.
+ * This SPA does not host Events — assert `nav-events-link` href only.
  */
 describe('Navigation (spa_utils PageFrame)', () => {
   const APP_ORIGIN = Cypress.config('baseUrl') as string
   const PATHS_NEW_PATHNAME = '/mentor/paths/new'
+  const CONFIG_PATHNAME = '/mentor/config'
   const IDP_STUB_PATHNAME = '/login.html'
+  const SETTINGS_HREF = `${APP_ORIGIN}${CONFIG_PATHNAME}`
+
+  const removedCatalogIds = [
+    'nav-products-link',
+    'nav-customer-link',
+    'nav-customer-members-link',
+  ]
+
+  const adminConfigBody = {
+    config_items: [],
+    versions: [],
+    enumerators: [],
+    token: {
+      profile_id: 'profile-e2e',
+      customer_id: 'customer-e2e',
+      mentor_id: 'mentor-e2e',
+    },
+  }
 
   /** Point the container's IdP at a same-origin stub: the real value is a cross-origin
    *  Tailscale MagicDNS host, and `runtime-config.js` is the highest-priority source. */
@@ -49,6 +68,12 @@ describe('Navigation (spa_utils PageFrame)', () => {
       .then(($rows) => [...$rows].map((row) => row.getAttribute('data-automation-id') ?? ''))
   }
 
+  function assertRemovedCatalogRows() {
+    removedCatalogIds.forEach((automationId) => {
+      cy.get(`[data-automation-id="${automationId}"]`).should('not.exist')
+    })
+  }
+
   function assertAlbHref(automationId: string, expectedPath: string) {
     cy.get(`[data-automation-id="${automationId}"]`)
       .should('match', 'a')
@@ -60,6 +85,22 @@ describe('Navigation (spa_utils PageFrame)', () => {
         expect(String(href)).not.to.include(':8392')
         expect(String(href)).not.to.include('/mentor/mentor')
       })
+  }
+
+  function assertHostingSettingsHref() {
+    cy.get('[data-automation-id="nav-settings-link"]')
+      .should('have.attr', 'href', SETTINGS_HREF)
+      .and(($link) => {
+        const href = $link.attr('href') ?? ''
+        expect(href).to.include(':8392')
+        expect(href).not.to.include(':8080')
+        expect(href).not.to.include('/admin/settings')
+        expect(href).not.to.include('/mentor/mentor')
+      })
+  }
+
+  function stubAdminConfig() {
+    cy.intercept('GET', '**/mentor/api/config', adminConfigBody).as('getAdminConfig')
   }
 
   beforeEach(() => {
@@ -104,33 +145,98 @@ describe('Navigation (spa_utils PageFrame)', () => {
     openDrawer()
     drawerCatalogIds().should('deep.equal', [
       'nav-home-link',
+      'nav-events-link',
       'nav-resources-link',
       'nav-paths-link',
       'nav-plans-link',
-      'nav-notifications-link',
     ])
     assertAlbHref('nav-home-link', '/discovery/')
+    assertAlbHref('nav-events-link', '/discovery/events')
     assertAlbHref('nav-resources-link', '/discovery/resources')
     assertAlbHref('nav-paths-link', '/discovery/paths')
     assertAlbHref('nav-plans-link', '/discovery/plans')
-    assertAlbHref('nav-notifications-link', '/discovery/notifications')
+    cy.get('[data-automation-id="nav-notifications-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-settings-link"]').should('not.exist')
+    assertRemovedCatalogRows()
     cy.get('[data-automation-id="nav-logout-link"]').scrollIntoView().should('be.visible')
   })
 
-  it('should show only admin catalog rows for an admin token (no mentor browse rows)', () => {
+  it('should show only admin catalog rows and host Settings at /mentor/config', () => {
+    stubAdminConfig()
     cy.login(['admin'])
 
     openDrawer()
     drawerCatalogIds().should('deep.equal', [
       'nav-home-link',
-      'nav-products-link',
+      'nav-events-link',
       'nav-notifications-link',
       'nav-settings-link',
     ])
     assertAlbHref('nav-home-link', '/discovery/')
-    assertAlbHref('nav-products-link', '/discovery/products')
+    assertAlbHref('nav-events-link', '/discovery/events')
     assertAlbHref('nav-notifications-link', '/discovery/notifications')
-    assertAlbHref('nav-settings-link', '/admin/settings')
+    cy.get('[data-automation-id="nav-resources-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-paths-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-plans-link"]').should('not.exist')
+    assertRemovedCatalogRows()
+    assertHostingSettingsHref()
+
+    cy.get('[data-automation-id="nav-settings-link"]').click()
+    cy.wait('@getAdminConfig')
+    cy.location('origin').should('eq', APP_ORIGIN)
+    cy.location('pathname').should('eq', CONFIG_PATHNAME)
+    cy.url().should('not.include', '/mentor/mentor')
+
+    cy.get('[data-automation-id="admin-tab-token"]').click()
+    cy.get('[data-automation-id="admin-token-profile-id-display"]')
+      .find('input')
+      .should('have.value', 'profile-e2e')
+    cy.get('[data-automation-id="admin-token-customer-id-display"]')
+      .find('input')
+      .should('have.value', 'customer-e2e')
+    cy.get('[data-automation-id="admin-token-mentor-id-display"]')
+      .find('input')
+      .should('have.value', 'mentor-e2e')
+  })
+
+  it('should show only Home and Events for a mentee-only login', () => {
+    cy.login(['mentee'])
+
+    openDrawer()
+    drawerCatalogIds().should('deep.equal', ['nav-home-link', 'nav-events-link'])
+    assertAlbHref('nav-home-link', '/discovery/')
+    assertAlbHref('nav-events-link', '/discovery/events')
+    cy.get('[data-automation-id="nav-notifications-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-settings-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-resources-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-paths-link"]').should('not.exist')
+    cy.get('[data-automation-id="nav-plans-link"]').should('not.exist')
+    assertRemovedCatalogRows()
+  })
+
+  it('should keep an admin on /mentor/config', () => {
+    stubAdminConfig()
+    cy.loginAndVisit(CONFIG_PATHNAME, ['admin'])
+
+    cy.location('origin').should('eq', APP_ORIGIN)
+    cy.location('pathname').should('eq', CONFIG_PATHNAME)
+    cy.url().should('not.include', '/mentor/mentor')
+    cy.get('[data-automation-id="admin-tab-token"]').should('be.visible')
+  })
+
+  it('should not keep a non-admin on /mentor/config showing AdminPage', () => {
+    cy.login(['mentor'])
+    // Plain `cy.visit`: the guard `location.replace`s to `:8080/discovery/`.
+    // Cypress cannot follow that the way Discovery follows same-origin Home —
+    // prove the unload at the origin boundary.
+    cy.visit(CONFIG_PATHNAME)
+
+    cy.origin('http://localhost:8080', () => {
+      cy.location('href', { timeout: 10000 }).should('include', '/discovery/')
+      cy.location('pathname').should('not.eq', '/mentor/config')
+      cy.get('[data-automation-id="admin-tab-token"]').should('not.exist')
+      cy.get('[data-automation-id="admin-tab-config"]').should('not.exist')
+    })
   })
 
   it('should close the drawer when the toggle is clicked again', () => {
@@ -150,10 +256,20 @@ describe('Navigation (spa_utils PageFrame)', () => {
     openDrawer()
     cy.get('[data-automation-id="nav-logout-link"]').should('be.visible').click()
 
-    // `PageFrame` returns to the ROOT origin, not `/mentor/` (recorded spa_utils limitation),
-    // so only the IdP pathname and the presence of `return_to` are asserted.
     cy.location('pathname', { timeout: 10000 }).should('eq', IDP_STUB_PATHNAME)
-    cy.location('search').should('include', 'return_to=')
+    cy.location('search').then((search) => {
+      const returnTo = new URLSearchParams(search).get('return_to')
+      expect(returnTo, 'logout return_to').not.to.equal(null)
+      const returnUrl = new URL(returnTo!)
+      expect(returnUrl.href).to.equal('http://localhost:8080/discovery/')
+      expect(returnUrl.hostname).to.equal('localhost')
+      expect(returnUrl.port).to.equal('8080')
+      expect(returnUrl.pathname).to.equal('/discovery/')
+      expect(returnUrl.href).not.to.include('127.0.0.1')
+      expect(returnUrl.pathname).not.to.equal('/')
+      expect(returnUrl.pathname).not.to.equal('/mentor/')
+      expect(returnUrl.href).not.to.include('/mentor/')
+    })
     cy.window().then((win) => {
       expect(win.localStorage.getItem('access_token')).to.equal(null)
       expect(win.localStorage.getItem('user_roles')).to.equal(null)
