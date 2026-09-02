@@ -1,6 +1,6 @@
 # F156 – Host packaged `AdminPage` at `/mentor/config`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F155_pin_spa_utils_1_0_1`  
 **Description**: Register Vue `path: '/config'` under the existing journey `base` so Settings (`hostingConfigHref()`) lands on **this** SPA at `/mentor/config`. Reuse the existing packaged `AdminPage` wrapper. Gate the route with the **admin** role; non-admins redirect away. Keep existing detail/edit/create pages. Do not pass nav config into `PageFrame`.
@@ -69,4 +69,39 @@ Do not add Events or list pages. Do not pass disallowed `PageFrame` props. Do no
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Planned approach (before implementation)
+
+1. **Router** — Register Vue `path: '/config'` (name `Admin`) loading the existing `src/pages/AdminPage.vue` wrapper, with `requiresAuth` + `requiresRole: 'admin'`, **before** the `/:pathMatch(.*)*` catch-all. Keep `/admin` as a Vue Router **`alias`** of `/config` (one record, one component, one gate) so F154 bookmarks still resolve. Unauthenticated callers keep `redirectToIdpLogin`; authenticated non-admins keep `redirectToDiscoveryDashboard()` then `next(false)`.
+2. **AdminPage.vue** — No change. It already hosts packaged `{ AdminPage }` from spa_utils 1.0.1.
+3. **README** — Add `/mentor/config` as the Settings / AdminPage host (Token / Config Items / Versions / Enumerators). List `/mentor/admin` as an alias. Note hamburger Settings stays on the hosting origin (no `:8080` rewrite). Drop “once F156 registers” future-tense in the 1.0.1 catalog prose.
+4. **Router unit test** — Add `src/router/index.test.ts`: `/config` resolves to the admin-gated host (not Discovery catch-all); `/admin` alias resolves the same record; admin can stay on `/config`; authenticated non-admin hits Discovery fallback and does not stay on `/config`.
+5. **Out of scope** — No Cypress rewrite, no spa_utils pin change, no Events/list dashboards, no `PageFrame` navItems/ALB/role tables.
+6. **Verify** — `npm run test`, `npm run test:coverage`, `npm run build`.
+
+### Summary
+
+Registered Vue `/config` (browser `/mentor/config`) as the Settings / AdminPage host, admin-gated with the existing `requiresAuth` + `requiresRole: 'admin'` guard, before the Discovery catch-all. `/admin` is a Vue Router **alias** of `/config` (same component, same gate). `AdminPage.vue` unchanged. README documents `/mentor/config` as the host and `/admin` as the alias. Colocated router unit test covers resolve + role gate.
+
+### Files changed
+
+- `src/router/index.ts` — `/config` + `/admin` alias
+- `src/router/index.test.ts` — new role-gate unit test
+- `README.md` — In-App Route Table + catalog prose
+- `tasks/PENDING.F156.host_admin_page_at_config.md` — Execution Notes only
+
+Unchanged: `src/pages/AdminPage.vue`, `src/App.vue`, spa_utils pin `1.0.1`, Cypress.
+
+### Commands / results
+
+- `npm run test` — 15 files, 104 tests passed (4 new router tests)
+- `npm run test:coverage` — passed; api/composables/components thresholds unchanged
+- `npm run build` — `vue-tsc` + Vite succeeded
+
+### Follow-ups
+
+F157 owns Cypress click-through, Token tab, catalog rows, logout `return_to`, non-admin redirect coverage, and packaging. Do not treat this task as E2E-complete.
+
+### Orchestrator confirmation
+
+- `npm run test:coverage` — **pass** (15 files, 104 tests)
+- `npm run build` — **pass** (`vue-tsc` clean)

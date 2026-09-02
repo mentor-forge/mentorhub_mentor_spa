@@ -67,9 +67,10 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     
-    // Admin route
+    // Settings / AdminPage host (hamburger hostingConfigHref → /mentor/config)
     {
-      path: '/admin',
+      path: '/config',
+      alias: '/admin',
       name: 'Admin',
       component: () => import('@/pages/AdminPage.vue'),
       meta: { requiresAuth: true, requiresRole: 'admin' }
