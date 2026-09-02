@@ -103,7 +103,7 @@ const { mutate: createPath, isPending } = useMutation<{ _id: string }, Error, Pa
   mutationFn: (data: PathInput) => api.createPath(data),
   onSuccess: (response: { _id: string }) => {
     queryClient.invalidateQueries({ queryKey: ['paths'] })
-    router.push(`/paths/${response._id}`)
+    router.push(`/path/${response._id}`)
     errorRef.value = null
   },
   onError: (error: Error) => {

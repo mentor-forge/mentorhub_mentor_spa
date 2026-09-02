@@ -103,7 +103,7 @@ const { mutate: createResource, isPending } = useMutation<{ _id: string }, Error
   mutationFn: (data: ResourceInput) => api.createResource(data),
   onSuccess: (response: { _id: string }) => {
     queryClient.invalidateQueries({ queryKey: ['resources'] })
-    router.push(`/resources/${response._id}`)
+    router.push(`/resource/${response._id}`)
     errorRef.value = null
   },
   onError: (error: Error) => {

@@ -7,6 +7,6 @@ import './commands'
 // so the first navigation must be prefixed: an un-prefixed visit is not a shape that
 // exists behind welcome nginx or the ALB. Never seed on `/mentor/` — the catch-all
 // forwards the browser to Discovery on `:8080`.
-registerAuthCommands({ visitPath: '/mentor/paths/new' })
+registerAuthCommands({ visitPath: '/mentor/path' })
 
 export {}

@@ -11,12 +11,12 @@
  * `nav-customer-members-link`) must stay absent for every role checked.
  *
  * Never visit `/mentor/` in browser specs: the catch-all forwards to Discovery on `:8080`.
- * Auth seeding and chrome checks use the stable in-app page `/mentor/paths/new`.
+ * Auth seeding and chrome checks use the stable in-app page `/mentor/path`.
  * This SPA does not host Events — assert `nav-events-link` href only.
  */
 describe('Navigation (spa_utils PageFrame)', () => {
   const APP_ORIGIN = Cypress.config('baseUrl') as string
-  const PATHS_NEW_PATHNAME = '/mentor/paths/new'
+  const PATHS_NEW_PATHNAME = '/mentor/path'
   const CONFIG_PATHNAME = '/mentor/config'
   const IDP_STUB_PATHNAME = '/login.html'
   const SETTINGS_HREF = `${APP_ORIGIN}${CONFIG_PATHNAME}`
@@ -280,12 +280,12 @@ describe('Navigation (spa_utils PageFrame)', () => {
     stubIdpLoginUri()
     // Plain `cy.visit`: the guard leaves for the IdP during bootstrap, so by the time
     // `cy.visitPrefixed` could read the navigation entry the document is the IdP stub.
-    cy.visit('/mentor/paths/path-1')
+    cy.visit('/mentor/path/path-1')
 
     cy.location('pathname', { timeout: 10000 }).should('eq', IDP_STUB_PATHNAME)
     cy.location('search').then((search) => {
       const returnTo = new URLSearchParams(search).get('return_to') ?? ''
-      expect(new URL(returnTo).pathname).to.equal('/mentor/paths/path-1')
+      expect(new URL(returnTo).pathname).to.equal('/mentor/path/path-1')
     })
   })
 

@@ -98,14 +98,14 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the b
 | Browser URL | Vue Path | Page | Description |
 |---|---|---|---|
 | `/mentor/` (and unmatched) | `/:pathMatch(.*)*` | `DiscoveryRedirectPage` | Forwards to `http://<host>:8080/discovery/` via `buildJourneyUrl` |
-| `/mentor/profiles/:id` | `/profiles/:id` | `ProfileEditPage` | Mentee detail (profile, notes, encounters) |
-| `/mentor/encounters/:id` | `/encounters/:id` | `EncounterEditPage` | Encounter detail editor |
-| `/mentor/resources/new` | `/resources/new` | `ResourceNewPage` | Create learning resource |
-| `/mentor/resources/:id` | `/resources/:id` | `ResourceEditPage` | Edit learning resource |
-| `/mentor/paths/new` | `/paths/new` | `PathNewPage` | Create learning path |
-| `/mentor/paths/:id` | `/paths/:id` | `PathEditPage` | Edit learning path |
-| `/mentor/plans/new` | `/plans/new` | `PlanNewPage` | Create encounter plan |
-| `/mentor/plans/:id` | `/plans/:id` | `PlanEditPage` | Edit encounter plan and checklist |
+| `/mentor/mentee/:id` | `/mentee/:id` | `ProfileEditPage` | Mentee detail (profile, notes, encounters) |
+| `/mentor/encounter/:id` | `/encounter/:id` | `EncounterEditPage` | Encounter detail editor |
+| `/mentor/resource` | `/resource` | `ResourceNewPage` | Create learning resource |
+| `/mentor/resource/:id` | `/resource/:id` | `ResourceEditPage` | Edit learning resource |
+| `/mentor/path` | `/path` | `PathNewPage` | Create learning path |
+| `/mentor/path/:id` | `/path/:id` | `PathEditPage` | Edit learning path |
+| `/mentor/plan` | `/plan` | `PlanNewPage` | Create encounter plan |
+| `/mentor/plan/:id` | `/plan/:id` | `PlanEditPage` | Edit encounter plan and checklist |
 | `/mentor/config` | `/config` | `AdminPage` | Settings host: Token / Config Items / Versions / Enumerators (`admin` role). Hamburger Settings stays on this origin via `hostingConfigHref()` (no `:8080` rewrite). |
 | `/mentor/admin` | `/admin` | `AdminPage` | Alias of `/config` for existing bookmarks |
 
@@ -115,7 +115,7 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the b
 
 | Route | Page | API |
 |-------|------|-----|
-| `/profiles/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
+| `/mentee/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
 
 Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
@@ -123,7 +123,7 @@ Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
 - **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
 - **Notes** — editable mentee notes via typed, blur-to-save editors and `PATCH /api/mentee/{mentee_id}`
-- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
+- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounter/{id}`
 
 API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
 
@@ -135,10 +135,10 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 
 | Route | Page | API |
 |-------|------|-----|
-| `/paths/new` | `PathNewPage` — create path form | `POST /api/path` |
-| `/paths/:id` | `PathEditPage` — path detail editor | `GET /api/path/{id}`, `PATCH /api/path/{id}` |
-| `/resources/new` | `ResourceNewPage` — create resource form | `POST /api/resource` |
-| `/resources/:id` | `ResourceEditPage` — resource detail editor | `GET /api/resource/{id}`, `PATCH /api/resource/{id}` |
+| `/path` | `PathNewPage` — create path form | `POST /api/path` |
+| `/path/:id` | `PathEditPage` — path detail editor | `GET /api/path/{id}`, `PATCH /api/path/{id}` |
+| `/resource` | `ResourceNewPage` — create resource form | `POST /api/resource` |
+| `/resource/:id` | `ResourceEditPage` — resource detail editor | `GET /api/resource/{id}`, `PATCH /api/resource/{id}` |
 
 Collection browsing for learning paths and resources lives on Discovery (`/discovery/paths`, `/discovery/resources`).
 
@@ -153,8 +153,8 @@ E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/plans/new` | `PlanNewPage` — create plan form | `POST /api/plan` |
-| `/plans/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
+| `/plan` | `PlanNewPage` — create plan form | `POST /api/plan` |
+| `/plan/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
 
 Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the New Encounter plan picker.
 
@@ -180,7 +180,7 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/encounters/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
+| `/encounter/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
 
 **Encounter Detail** page layout:
 
@@ -284,8 +284,8 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 ### E2E Tests
 - Cypress against the packaged SPA on `http://localhost:8392` (`npm run service` must be running; do not run `npm run dev` at the same time — both bind **8392**)
 - Prefer `cy.visitPrefixed(...)` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
-- Specs visit prefixed routes such as `/mentor/paths/new` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
-- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/paths/new`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows and `cy.login(['mentee'])` for the least-privileged Home + Events catalog
+- Specs visit prefixed routes such as `/mentor/path` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
+- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/path`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows and `cy.login(['mentee'])` for the least-privileged Home + Events catalog
 - `cy.mentorMenteeProfileId()` fetches mentee profile ID via `GET /mentor/api/profile`
 - Specs cover detail CRUD, spa_utils **1.0.2** `PageFrame` chrome (Home/Resources/Paths for authenticated users; Notifications, Events, and Settings **admin-only**; Settings `href` is hosting `http://localhost:8392/mentor/config`, not welcome `:8080` or `/admin/settings`; Products / Customer / Customer Members absent; Discovery ALB hrefs for Home/collections), Token tab claims, the `/mentor/config` admin gate, logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
 - UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`

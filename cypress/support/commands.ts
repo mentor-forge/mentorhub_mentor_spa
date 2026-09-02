@@ -1,16 +1,16 @@
 // Mentor SPA Cypress commands (extends spa_utils auth).
 // Base `cy.login` comes from registerAuthCommands in e2e.ts.
 
-const defaultVisitPath = '/mentor/paths/new'
+const defaultVisitPath = '/mentor/path'
 
 /**
  * Visit a browser URL under the `/mentor/` journey prefix and prove the document really
  * was fetched from that prefixed URL.
  *
- * A plain `cy.visit('/paths/new')` cannot be caught by `cy.location()`: vue-router's
+ * A plain `cy.visit('/path')` cannot be caught by `cy.location()`: vue-router's
  * `normalizeBase` trims the base to `/mentor`, `stripBase` leaves an un-prefixed pathname
  * untouched, and the bootstrap `history.replaceState` then rewrites the address bar to
- * `/mentor/paths/new`. The app therefore *looks* prefixed while the document was served by
+ * `/mentor/path`. The app therefore *looks* prefixed while the document was served by
  * nginx's un-prefixed `location /` debug fallback — a shape that does not exist behind
  * welcome nginx or the ALB. `PerformanceNavigationTiming.name` records the URL that was
  * actually fetched and is not rewritten by `replaceState`, so it is the honest check.

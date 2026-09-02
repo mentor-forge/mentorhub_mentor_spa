@@ -4,7 +4,7 @@ describe('Path Domain', () => {
   })
 
   it('should create a new path', () => {
-    cy.visitPrefixed('/mentor/paths/new')
+    cy.visitPrefixed('/mentor/path')
     
     const timestamp = Date.now()
     const itemName = `test-path-${timestamp}`
@@ -14,8 +14,7 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-new-submit-button"]').click()
     
     // Should redirect to edit page after creation
-    cy.url().should('include', '/mentor/paths/')
-    cy.url().should('not.include', '/mentor/paths/new')
+    cy.url().should('match', /\/mentor\/path\/[a-f0-9]{24}$/)
     
     // Verify the path name is displayed on edit page
     cy.get('[data-automation-id="path-edit-name-input"]').find('input').should('have.value', itemName)
@@ -23,7 +22,7 @@ describe('Path Domain', () => {
 
   it('should update a path and have a Browse Paths link to Discovery', () => {
     // First create a path
-    cy.visitPrefixed('/mentor/paths/new')
+    cy.visitPrefixed('/mentor/path')
     const timestamp = Date.now()
     const itemName = `test-path-update-${timestamp}`
     const updatedName = `updated-path-${timestamp}`
@@ -33,7 +32,7 @@ describe('Path Domain', () => {
     cy.get('[data-automation-id="path-new-submit-button"]').click()
     
     // Wait for redirect to edit page
-    cy.url().should('include', '/mentor/paths/')
+    cy.url().should('match', /\/mentor\/path\/[a-f0-9]{24}$/)
     
     // Update the name field (auto-save on blur)
     cy.get('[data-automation-id="path-edit-name-input"]').find('input').clear().type(updatedName)

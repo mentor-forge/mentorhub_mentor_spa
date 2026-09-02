@@ -416,7 +416,7 @@ async function toggleAgendaItem(index: number, checked: boolean | null) {
 
 function goBack() {
   if (menteeId.value) {
-    router.push(`/profiles/${menteeId.value}`)
+    router.push(`/mentee/${menteeId.value}`)
     return
   }
   redirectToDiscoveryDashboard()
