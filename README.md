@@ -254,7 +254,7 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.2** `PageFrame` as the navigation
 
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.2`:
-- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Home and Events are always present for authenticated users; Resources, Paths, and Plans are mentor rows that open Discovery; Notifications and Settings are admin-only. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`. Products / Customer / Customer Members are not hamburger rows.
+- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Catalog rows, role gates, and Discovery collection hrefs are owned by spa_utils. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`.
 - **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
   `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
   prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a
@@ -285,9 +285,9 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Cypress against the packaged SPA on `http://localhost:8392` (`npm run service` must be running; do not run `npm run dev` at the same time — both bind **8392**)
 - Prefer `cy.visitPrefixed(...)` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
 - Specs visit prefixed routes such as `/mentor/path` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
-- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/path`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows and `cy.login(['mentee'])` for the least-privileged Home + Events catalog
+- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/path`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor pages
 - `cy.mentorMenteeProfileId()` fetches mentee profile ID via `GET /mentor/api/profile`
-- Specs cover detail CRUD, spa_utils **1.0.2** `PageFrame` chrome (Home/Resources/Paths for authenticated users; Notifications, Events, and Settings **admin-only**; Settings `href` is hosting `http://localhost:8392/mentor/config`, not welcome `:8080` or `/admin/settings`; Products / Customer / Customer Members absent; Discovery ALB hrefs for Home/collections), Token tab claims, the `/mentor/config` admin gate, logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
+- Specs cover detail CRUD, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentor/config` Settings host and admin gate), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here.
 - UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
@@ -310,15 +310,15 @@ When adding a new resource or feature:
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
 
-Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
+Cypress targets spa_utils `PageFrame` ids for chrome, not local ones. Hamburger catalog
+role gates and collection hrefs are tested in spa_utils — this SPA only asserts host chrome
+and routes:
 
-- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-events-link`, `nav-logout-link`
-- Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
-- Role-gated (`admin` only): `nav-notifications-link`, `nav-settings-link` — Settings `href` is hosting `/mentor/config` (this origin, no `:8080` rewrite)
+- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`
+- This SPA hosts Settings at `/mentor/config` (`nav-settings-link`, admin-only)
 - Token tab (AdminPage): `admin-tab-token`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`
-- Absent for every role: `nav-products-link`, `nav-customer-link`, `nav-customer-members-link`
 
-Do not define host `nav-*` or `app-bar-title` ids in this SPA.
+Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 
 ## CI
 
