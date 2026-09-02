@@ -211,12 +211,12 @@ src/
 | Layer | Owns |
 |-------|------|
 | **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / plan-select presentation |
-| **`spa_utils` 1.0.1** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
+| **`spa_utils` 1.0.2** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
 | **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
 | **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
 
-Uses `@mentor-forge/mentorhub_spa_utils` **1.0.1** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Events, Resources, Paths, and Plans for authenticated mentors; Notifications and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
+Uses `@mentor-forge/mentorhub_spa_utils` **1.0.2** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 
 ### Deployment Prefix & Runtime Config Invariants
 
@@ -253,7 +253,7 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.1** `PageFrame` as the navigation
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.1`:
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.2`:
 - **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Home and Events are always present for authenticated users; Resources, Paths, and Plans are mentor rows that open Discovery; Notifications and Settings are admin-only. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`. Products / Customer / Customer Members are not hamburger rows.
 - **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
   `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
@@ -287,7 +287,7 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - Specs visit prefixed routes such as `/mentor/paths/new` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
 - `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/paths/new`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows and `cy.login(['mentee'])` for the least-privileged Home + Events catalog
 - `cy.mentorMenteeProfileId()` fetches mentee profile ID via `GET /mentor/api/profile`
-- Specs cover detail CRUD, spa_utils **1.0.1** `PageFrame` chrome (Events for authenticated users; Notifications + Settings **admin-only**; Settings `href` is hosting `http://localhost:8392/mentor/config`, not welcome `:8080` or `/admin/settings`; Products / Customer / Customer Members absent; Discovery ALB hrefs for Home/Events/collections), Token tab claims, the `/mentor/config` admin gate, logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
+- Specs cover detail CRUD, spa_utils **1.0.2** `PageFrame` chrome (Home/Resources/Paths for authenticated users; Notifications, Events, and Settings **admin-only**; Settings `href` is hosting `http://localhost:8392/mentor/config`, not welcome `:8080` or `/admin/settings`; Products / Customer / Customer Members absent; Discovery ALB hrefs for Home/collections), Token tab claims, the `/mentor/config` admin gate, logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
 - UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
