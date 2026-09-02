@@ -3,8 +3,8 @@ describe('Plan Domain', () => {
     cy.login()
   })
 
-  it('should create a new plan via /mentor/plans/new and open edit page', () => {
-    cy.visitPrefixed('/mentor/plans/new')
+  it('should create a new plan via /mentor/plan and open edit page', () => {
+    cy.visitPrefixed('/mentor/plan')
 
     const timestamp = Date.now()
     const itemName = `test-plan-${timestamp}`
@@ -13,14 +13,13 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-new-description-input"]').type('Test description for plan')
     cy.get('[data-automation-id="plan-new-submit-button"]').click()
 
-    cy.url().should('match', /\/mentor\/plans\/[a-f0-9]{24}$/)
-    cy.url().should('not.include', '/mentor/plans/new')
+    cy.url().should('match', /\/mentor\/plan\/[a-f0-9]{24}$/)
 
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').should('have.value', itemName)
   })
 
   it('should update a plan from edit page and have a Browse Plans link to Discovery', () => {
-    cy.visitPrefixed('/mentor/plans/new')
+    cy.visitPrefixed('/mentor/plan')
 
     const timestamp = Date.now()
     const itemName = `test-plan-update-${timestamp}`
@@ -30,7 +29,7 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-new-description-input"]').type('Original description')
     cy.get('[data-automation-id="plan-new-submit-button"]').click()
 
-    cy.url().should('match', /\/mentor\/plans\/[a-f0-9]{24}$/)
+    cy.url().should('match', /\/mentor\/plan\/[a-f0-9]{24}$/)
 
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').clear().type(updatedName)
     cy.get('[data-automation-id="plan-edit-name-input"]').find('input').blur()
@@ -57,7 +56,7 @@ describe('Plan Domain', () => {
   })
 
   it('should manage checklist steps on edit page', () => {
-    cy.visitPrefixed('/mentor/plans/new')
+    cy.visitPrefixed('/mentor/plan')
 
     const timestamp = Date.now()
     const itemName = `test-plan-steps-${timestamp}`
@@ -65,7 +64,7 @@ describe('Plan Domain', () => {
     cy.get('[data-automation-id="plan-new-name-input"]').type(itemName)
     cy.get('[data-automation-id="plan-new-submit-button"]').click()
 
-    cy.url().should('match', /\/mentor\/plans\/[a-f0-9]{24}$/)
+    cy.url().should('match', /\/mentor\/plan\/[a-f0-9]{24}$/)
 
     cy.get('[data-automation-id="plan-edit-checklist-section"]')
       .should('be.visible')

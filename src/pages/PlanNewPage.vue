@@ -103,7 +103,7 @@ const { mutate: createPlan, isPending } = useMutation<{ _id: string }, Error, Pl
   mutationFn: (data: PlanInput) => api.createPlan(data),
   onSuccess: (response: { _id: string }) => {
     queryClient.invalidateQueries({ queryKey: ['plans'] })
-    router.push(`/plans/${response._id}`)
+    router.push(`/plan/${response._id}`)
     errorRef.value = null
   },
   onError: (error: Error) => {

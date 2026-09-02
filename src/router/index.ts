@@ -11,13 +11,13 @@ const router = createRouter({
   routes: [
     // Control domain: Resource
     {
-      path: '/resources/new',
+      path: '/resource',
       name: 'ResourceNew',
       component: () => import('@/pages/ResourceNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/resources/:id',
+      path: '/resource/:id',
       name: 'ResourceEdit',
       component: () => import('@/pages/ResourceEditPage.vue'),
       meta: { requiresAuth: true }
@@ -25,13 +25,13 @@ const router = createRouter({
     
     // Control domain: Path
     {
-      path: '/paths/new',
+      path: '/path',
       name: 'PathNew',
       component: () => import('@/pages/PathNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/paths/:id',
+      path: '/path/:id',
       name: 'PathEdit',
       component: () => import('@/pages/PathEditPage.vue'),
       meta: { requiresAuth: true }
@@ -39,13 +39,13 @@ const router = createRouter({
     
     // Control domain: Plan
     {
-      path: '/plans/new',
+      path: '/plan',
       name: 'PlanNew',
       component: () => import('@/pages/PlanNewPage.vue'),
       meta: { requiresAuth: true }
     },
     {
-      path: '/plans/:id',
+      path: '/plan/:id',
       name: 'PlanEdit',
       component: () => import('@/pages/PlanEditPage.vue'),
       meta: { requiresAuth: true }
@@ -53,7 +53,7 @@ const router = createRouter({
     
     // Encounter detail (created from Profile Detail)
     {
-      path: '/encounters/:id',
+      path: '/encounter/:id',
       name: 'EncounterEdit',
       component: () => import('@/pages/EncounterEditPage.vue'),
       meta: { requiresAuth: true }
@@ -61,15 +61,16 @@ const router = createRouter({
     
     // Consume domain: Profile
     {
-      path: '/profiles/:id',
+      path: '/mentee/:id',
       name: 'ProfileEdit',
       component: () => import('@/pages/ProfileEditPage.vue'),
       meta: { requiresAuth: true }
     },
     
-    // Admin route
+    // Settings / AdminPage host (hamburger hostingConfigHref → /mentor/config)
     {
-      path: '/admin',
+      path: '/config',
+      alias: '/admin',
       name: 'Admin',
       component: () => import('@/pages/AdminPage.vue'),
       meta: { requiresAuth: true, requiresRole: 'admin' }

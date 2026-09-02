@@ -17,7 +17,7 @@
           :data-automation-id="`${automationPrefix}-empty`"
         >
           No encounter plans yet.
-          <router-link to="/plans">Create a plan</router-link>
+          <router-link to="/plan">Create a plan</router-link>
           to get started.
         </v-alert>
 

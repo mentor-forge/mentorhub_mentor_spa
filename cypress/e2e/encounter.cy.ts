@@ -1,7 +1,7 @@
 describe('Encounter Domain', () => {
   beforeEach(() => {
     cy.mentorMenteeProfileId().then((profileId) => {
-      cy.loginAsMentor(`/mentor/profiles/${profileId}`)
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
     })
   })
 
@@ -11,7 +11,7 @@ describe('Encounter Domain', () => {
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
 
-    cy.url().should('match', /\/mentor\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
     cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
     cy.get('[data-automation-id="encounter-detail-profile-section"]').should('be.visible')
     cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('be.visible')
@@ -28,7 +28,7 @@ describe('Encounter Domain', () => {
     cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
-    cy.url().should('match', /\/mentor\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
 
     const tldr = `Cypress encounter ${Date.now()}`
     cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').clear().type(tldr)
@@ -41,13 +41,13 @@ describe('Encounter Domain', () => {
     cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
     cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
-    cy.url().should('match', /\/mentor\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
 
     cy.get('[data-automation-id="encounter-detail-back-button"]').click()
-    cy.url().should('match', /\/mentor\/profiles\/[0-9a-fA-F]{24}$/)
+    cy.url().should('match', /\/mentor\/mentee\/[0-9a-fA-F]{24}$/)
 
     cy.get('[data-automation-id="profile-edit-encounter-item"]').first().click()
-    cy.url().should('match', /\/mentor\/encounters\/[0-9a-fA-F]{24}$/)
+    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
     cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
   })
 })

@@ -98,15 +98,16 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the b
 | Browser URL | Vue Path | Page | Description |
 |---|---|---|---|
 | `/mentor/` (and unmatched) | `/:pathMatch(.*)*` | `DiscoveryRedirectPage` | Forwards to `http://<host>:8080/discovery/` via `buildJourneyUrl` |
-| `/mentor/profiles/:id` | `/profiles/:id` | `ProfileEditPage` | Mentee detail (profile, notes, encounters) |
-| `/mentor/encounters/:id` | `/encounters/:id` | `EncounterEditPage` | Encounter detail editor |
-| `/mentor/resources/new` | `/resources/new` | `ResourceNewPage` | Create learning resource |
-| `/mentor/resources/:id` | `/resources/:id` | `ResourceEditPage` | Edit learning resource |
-| `/mentor/paths/new` | `/paths/new` | `PathNewPage` | Create learning path |
-| `/mentor/paths/:id` | `/paths/:id` | `PathEditPage` | Edit learning path |
-| `/mentor/plans/new` | `/plans/new` | `PlanNewPage` | Create encounter plan |
-| `/mentor/plans/:id` | `/plans/:id` | `PlanEditPage` | Edit encounter plan and checklist |
-| `/mentor/admin` | `/admin` | `AdminPage` | Runtime config viewer (`admin` role required) |
+| `/mentor/mentee/:id` | `/mentee/:id` | `ProfileEditPage` | Mentee detail (profile, notes, encounters) |
+| `/mentor/encounter/:id` | `/encounter/:id` | `EncounterEditPage` | Encounter detail editor |
+| `/mentor/resource` | `/resource` | `ResourceNewPage` | Create learning resource |
+| `/mentor/resource/:id` | `/resource/:id` | `ResourceEditPage` | Edit learning resource |
+| `/mentor/path` | `/path` | `PathNewPage` | Create learning path |
+| `/mentor/path/:id` | `/path/:id` | `PathEditPage` | Edit learning path |
+| `/mentor/plan` | `/plan` | `PlanNewPage` | Create encounter plan |
+| `/mentor/plan/:id` | `/plan/:id` | `PlanEditPage` | Edit encounter plan and checklist |
+| `/mentor/config` | `/config` | `AdminPage` | Settings host: Token / Config Items / Versions / Enumerators (`admin` role). Hamburger Settings stays on this origin via `hostingConfigHref()` (no `:8080` rewrite). |
+| `/mentor/admin` | `/admin` | `AdminPage` | Alias of `/config` for existing bookmarks |
 
 **Prohibited:** CardGrid list dashboards for resources, paths, plans, or mentee profiles in this SPA. Collection browsing lives on Discovery. Do not reintroduce list pages or hard-code journey prefixes / ALB origins in application code — use `buildJourneyUrl` from spa_utils.
 
@@ -114,7 +115,7 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the b
 
 | Route | Page | API |
 |-------|------|-----|
-| `/profiles/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
+| `/mentee/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
 
 Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
@@ -122,7 +123,7 @@ Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
 - **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
 - **Notes** — editable mentee notes via typed, blur-to-save editors and `PATCH /api/mentee/{mentee_id}`
-- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounters/{id}`
+- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounter/{id}`
 
 API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
 
@@ -134,10 +135,10 @@ For E2E tests, keep the dev server running on port `8392` and the API stack up, 
 
 | Route | Page | API |
 |-------|------|-----|
-| `/paths/new` | `PathNewPage` — create path form | `POST /api/path` |
-| `/paths/:id` | `PathEditPage` — path detail editor | `GET /api/path/{id}`, `PATCH /api/path/{id}` |
-| `/resources/new` | `ResourceNewPage` — create resource form | `POST /api/resource` |
-| `/resources/:id` | `ResourceEditPage` — resource detail editor | `GET /api/resource/{id}`, `PATCH /api/resource/{id}` |
+| `/path` | `PathNewPage` — create path form | `POST /api/path` |
+| `/path/:id` | `PathEditPage` — path detail editor | `GET /api/path/{id}`, `PATCH /api/path/{id}` |
+| `/resource` | `ResourceNewPage` — create resource form | `POST /api/resource` |
+| `/resource/:id` | `ResourceEditPage` — resource detail editor | `GET /api/resource/{id}`, `PATCH /api/resource/{id}` |
 
 Collection browsing for learning paths and resources lives on Discovery (`/discovery/paths`, `/discovery/resources`).
 
@@ -152,8 +153,8 @@ E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/plans/new` | `PlanNewPage` — create plan form | `POST /api/plan` |
-| `/plans/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
+| `/plan` | `PlanNewPage` — create plan form | `POST /api/plan` |
+| `/plan/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
 
 Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the New Encounter plan picker.
 
@@ -179,7 +180,7 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/encounters/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
+| `/encounter/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
 
 **Encounter Detail** page layout:
 
@@ -210,12 +211,12 @@ src/
 | Layer | Owns |
 |-------|------|
 | **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / plan-select presentation |
-| **`spa_utils` 1.0.0** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
+| **`spa_utils` 1.0.2** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
 | **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
 | **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
 
-Uses `@mentor-forge/mentorhub_spa_utils` **1.0.0** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. Cross-SPA drawer hrefs are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.).
+Uses `@mentor-forge/mentorhub_spa_utils` **1.0.2** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 
 ### Deployment Prefix & Runtime Config Invariants
 
@@ -252,8 +253,8 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.0** `PageFrame` as the navigation
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
-- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. For mentors, hamburger rows (Learning Resources, Learning Paths, Encounter Plans) open Discovery.
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.2`:
+- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Catalog rows, role gates, and Discovery collection hrefs are owned by spa_utils. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`.
 - **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
   `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
   prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a
@@ -283,10 +284,10 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 ### E2E Tests
 - Cypress against the packaged SPA on `http://localhost:8392` (`npm run service` must be running; do not run `npm run dev` at the same time — both bind **8392**)
 - Prefer `cy.visitPrefixed(...)` over raw `cy.visit` for in-app routes — it asserts `PerformanceNavigationTiming` so a Vue Router rewrite cannot mask an un-prefixed document fetch
-- Specs visit prefixed routes such as `/mentor/paths/new` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
-- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/paths/new`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor catalog rows
+- Specs visit prefixed routes such as `/mentor/path` and **never `cy.visit('/mentor/')`** (catch-all forwards the browser to Discovery on `:8080`). Shell checks for `/mentor/` use `cy.request` in `deployment.cy.ts` only
+- `cy.login()` / `cy.loginAsMentor()` seed auth on `/mentor/path`; `cy.login()` with no roles is an **admin** token — use `cy.login(['mentor'])` for mentor pages
 - `cy.mentorMenteeProfileId()` fetches mentee profile ID via `GET /mentor/api/profile`
-- Specs cover detail CRUD, spa_utils `PageFrame` chrome (mentor vs admin roles + Discovery ALB hrefs), and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy)
+- Specs cover detail CRUD, spa_utils `PageFrame` chrome (title, hamburger, this SPA’s `/mentor/config` Settings host and admin gate), logout `return_to=/discovery/`, and the nginx deployment boundary (`deployment.cy.ts`: redirects, history fallback, cache headers, runtime-config, authenticated mentor and unauthenticated `/mentor/api` proxy). Hamburger catalog role gates are tested in spa_utils, not here.
 - UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
@@ -309,13 +310,15 @@ When adding a new resource or feature:
 
 All interactive elements in this SPA include `data-automation-id` attributes following the `{domain}-{page}-{element}` naming convention.
 
-Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
+Cypress targets spa_utils `PageFrame` ids for chrome, not local ones. Hamburger catalog
+role gates and collection hrefs are tested in spa_utils — this SPA only asserts host chrome
+and routes:
 
-- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
-- Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
-- Role-gated (`admin`): `nav-products-link`, `nav-settings-link`
+- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`
+- This SPA hosts Settings at `/mentor/config` (`nav-settings-link`, admin-only)
+- Token tab (AdminPage): `admin-tab-token`, `admin-token-profile-id-display`, `admin-token-customer-id-display`, `admin-token-mentor-id-display`
 
-Do not define host `nav-*` or `app-bar-title` ids in this SPA.
+Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 
 ## CI
 

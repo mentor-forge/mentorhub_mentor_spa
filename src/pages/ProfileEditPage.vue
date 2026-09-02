@@ -182,7 +182,7 @@
                 <v-list-item
                   v-for="encounter in sortedEncounters"
                   :key="encounter._id"
-                  :to="`/encounters/${encounter._id}`"
+                  :to="`/encounter/${encounter._id}`"
                   data-automation-id="profile-edit-encounter-item"
                 >
                   <v-list-item-title>
@@ -306,7 +306,7 @@ const { mutate: createEncounter, isPending: isCreatingEncounter } = useMutation<
     queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
     showPlanDialog.value = false
     errorRef.value = null
-    router.push(`/encounters/${response._id}`)
+    router.push(`/encounter/${response._id}`)
   },
   onError: (error: Error) => {
     errorRef.value = error
