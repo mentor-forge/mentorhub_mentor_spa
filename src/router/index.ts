@@ -62,6 +62,7 @@ const router = createRouter({
     // Consume domain: Profile
     {
       path: '/profiles/:id',
+      alias: '/mentee/:id',
       name: 'ProfileEdit',
       component: () => import('@/pages/ProfileEditPage.vue'),
       meta: { requiresAuth: true }
