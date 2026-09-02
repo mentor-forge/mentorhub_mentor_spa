@@ -6,7 +6,7 @@ export default defineConfig({
   base: '/mentor/',
   plugins: [vue()],
   test: {
-    // spa_utils 1.0.0 side-effect-imports CSS; inline so Vitest transforms it.
+    // spa_utils 1.0.1 side-effect-imports CSS; inline so Vitest transforms it.
     server: {
       deps: {
         inline: ['@mentor-forge/mentorhub_spa_utils'],

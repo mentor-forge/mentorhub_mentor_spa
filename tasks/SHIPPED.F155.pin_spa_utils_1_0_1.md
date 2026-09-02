@@ -1,6 +1,6 @@
 # F155 – Pin `@mentor-forge/mentorhub_spa_utils@1.0.1`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: This repo owns the Mentor SPA **1.0.1 pin** (issue F-RS17 / GitHub #36). Bump `@mentor-forge/mentorhub_spa_utils` from exact `1.0.0` to exact **`1.0.1`**, refresh the lockfile from CodeArtifact, and fix any compile or unit-test breakage from the 1.0.1 catalog, logout `return_to=/discovery/`, Settings `hostingConfigHref`, and Token claims. Do **not** add `/config` in this task.
@@ -84,4 +84,45 @@ Do not add a `/config` route. Do not pass disallowed `PageFrame` props. Do not c
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Planned approach
+
+1. Confirm `@mentor-forge/mentorhub_spa_utils@1.0.1` is published on CodeArtifact (`mh` then `npm view`). If missing, mark this task Blocked and stop — do not stay on 1.0.0 or use a git URL.
+2. Pin `package.json` to exact `"1.0.1"` (no caret) and refresh `package-lock.json` with `npm install --include=dev`.
+3. Update `README.md` ownership / component notes to 1.0.1 and document the compiled hamburger catalog in prose (Home, Events, Resources, Paths, Plans; Notifications + Settings admin-only; Settings lands on `/config` once F156 ships). Do not add `/mentor/config` to the In-App Route Table. Do not invent a local nav config API.
+4. Correct the stale spa_utils version comment in `vitest.config.ts`. Leave coverage thresholds and the inline setting unchanged unless 1.0.1 forces a Vitest change.
+5. Keep `PageFrame` receiving only `pageTitle`. Do not add `/config`, a local logout handler, or Cypress catalog rewrites. Touch `cypress.config.ts` / `cypress/support/e2e.ts` only if 1.0.1 moved a Cypress subpath. Touch `src/**` only if import/type compile breakage appears.
+6. Verify with `npm ls`, `npm run test`, `npm run test:coverage`, and `npm run build`. Do not run Cypress or packaging.
+
+### Summary
+
+Pinned `@mentor-forge/mentorhub_spa_utils` to exact **1.0.1** from CodeArtifact. `PageFrame` still receives only `pageTitle`. No `/config` route, no local logout handler, no Cypress spec rewrites. Cypress subpaths (`cypress/jwtDefaults`, `cypress/registerJwtSignTask`, `cypress/registerAuthCommands`) are unchanged in 1.0.1, so `cypress.config.ts` and `cypress/support/e2e.ts` were left alone. No `src/**` import or type breakage.
+
+### Files changed
+
+- `package.json` — exact pin `"1.0.1"`
+- `package-lock.json` — resolved `1.0.1` from CodeArtifact
+- `README.md` — ownership / component notes and 1.0.1 hamburger catalog prose (In-App Route Table still lists `/mentor/admin` only)
+- `vitest.config.ts` — comment `1.0.0` → `1.0.1` (inline setting unchanged)
+
+### Commands / results
+
+- `mh` — CodeArtifact auth refreshed
+- `npm view @mentor-forge/mentorhub_spa_utils version` — **1.0.1** (published; not blocked)
+- `npm install --include=dev` — changed 1 package
+- `npm ls @mentor-forge/mentorhub_spa_utils` — `@mentor-forge/mentorhub_spa_utils@1.0.1`
+- `npm run test` — **pass** (14 files, 100 tests)
+- `npm run test:coverage` — **pass** (14 files, 100 tests); thresholds held (`src/api/**` 98.01% lines / 100% funcs / 90.69% branches; `src/composables/**` 99.09% / 100% / 75.47%; `src/components/**` 95.42% / 100% / 88.73%)
+- `npm run build` — **pass** (`vue-tsc` clean + Vite production build)
+
+### Follow-ups
+
+- **F156** owns Vue `/config` (host `AdminPage` at `/mentor/config`; In-App Route Table row).
+- **F157** owns Cypress catalog / Settings href / Token claims / logout `return_to=/discovery/` assertions and packaging.
+
+Status left **Pending** for the orchestrator to mark Shipped. No commit.
+
+### Orchestrator confirmation
+
+- `npm ls @mentor-forge/mentorhub_spa_utils` — `@mentor-forge/mentorhub_spa_utils@1.0.1`
+- `npm run test:coverage` — **pass** (14 files, 100 tests); thresholds held
+- `npm run build` — **pass** (`vue-tsc` clean)

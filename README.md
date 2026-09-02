@@ -210,12 +210,12 @@ src/
 | Layer | Owns |
 |-------|------|
 | **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / plan-select presentation |
-| **`spa_utils` 1.0.0** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
+| **`spa_utils` 1.0.1** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
 | **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
 | **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
 
-Uses `@mentor-forge/mentorhub_spa_utils` **1.0.0** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. Cross-SPA drawer hrefs are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.).
+Uses `@mentor-forge/mentorhub_spa_utils` **1.0.1** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Events, Resources, Paths, and Plans for authenticated mentors; Notifications and Settings are **admin-only**. Settings uses `hostingConfigHref()` and will land on this SPA’s `/config` once F156 registers that route — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 
 ### Deployment Prefix & Runtime Config Invariants
 
@@ -252,8 +252,8 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.0** `PageFrame` as the navigation
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.0`:
-- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. For mentors, hamburger rows (Learning Resources, Learning Paths, Encounter Plans) open Discovery.
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.1`:
+- **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Home and Events are always present for authenticated users; Resources, Paths, and Plans are mentor rows that open Discovery; Notifications and Settings are admin-only. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()` (route registration is F156). Products / Customer / Customer Members are not hamburger rows.
 - **Components**: `DataCard`, typed editors (`WordEditor`, `SentenceEditor`,
   `EnumEditor`, `BreadcrumbDisplay`), `CardGrid`, `MhCard`, and `ListPageSearch`;
   prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a
@@ -311,9 +311,9 @@ All interactive elements in this SPA include `data-automation-id` attributes fol
 
 Cypress targets spa_utils `PageFrame` ids for chrome, not local ones:
 
-- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-notifications-link`, `nav-logout-link`
+- Always present when authenticated: `nav-drawer-toggle`, `page-frame-title`, `nav-profile-link`, `nav-home-link`, `nav-events-link`, `nav-logout-link`
 - Role-gated (`mentor`): `nav-resources-link`, `nav-paths-link`, `nav-plans-link`
-- Role-gated (`admin`): `nav-products-link`, `nav-settings-link`
+- Role-gated (`admin`): `nav-notifications-link`, `nav-settings-link`
 
 Do not define host `nav-*` or `app-bar-title` ids in this SPA.
 
