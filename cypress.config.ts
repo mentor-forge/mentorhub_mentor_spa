@@ -15,8 +15,9 @@ export default defineConfig({
     screenshotOnRunFailure: true,
     env: {
       JWT_SECRET: e2eDefaultJwtSecret(),
-      /** Profile.name for the mentor dashboard seed user (Profile.0.1.0.0.json). */
+      /** Seeded mentor persona from welcome-auth.js / Profile test data. */
       MENTOR_DASHBOARD_USER: 'marti',
+      MENTOR_DASHBOARD_PROFILE_ID: 'A00000000000000000000006',
     },
     setupNodeEvents(on) {
       registerJwtSignTask(on)

@@ -16,8 +16,7 @@ describe('API Client - Profile Endpoints', () => {
     const mockProfileDetail = {
       profile: {
         _id: '507f1f77bcf86cd799439011',
-        name: 'test-profile',
-        full_name: 'Test Profile',
+        display_name: 'Test Profile',
         email: 'test@example.com',
         status: 'active',
       },

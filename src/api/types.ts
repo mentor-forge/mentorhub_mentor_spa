@@ -142,8 +142,7 @@ export interface ProfileExperience {
 
 export interface Profile {
   _id: string
-  name: string
-  full_name?: string
+  display_name: string
   description?: string
   email?: string
   email_verified?: boolean
