@@ -27,11 +27,12 @@ Cypress.Commands.add('visitPrefixed', (path: string, options?: Partial<Cypress.V
   })
 })
 
-/** Seed JWT via shared spa_utils task, then visit a path (optional `sub` claim). */
+/** Seed JWT via shared spa_utils task, then visit a path (optional `sub` / `profile_id`). */
 function seedAuthAndVisit(
   roles: string[],
   visitPath: string,
   sub?: string,
+  profileId?: string,
 ): void {
   const secret = Cypress.env('JWT_SECRET') as string
 
@@ -39,6 +40,7 @@ function seedAuthAndVisit(
     roles,
     secret,
     sub,
+    profile_id: profileId,
   }).then(({ token, expiresAt }) => {
     cy.visitPrefixed(visitPath, {
       onBeforeLoad(win) {
@@ -56,7 +58,8 @@ function seedAuthAndVisit(
 /** Login as seeded mentor profile (default user: marti) for dashboard tests. */
 Cypress.Commands.add('loginAsMentor', (visitPath = defaultVisitPath) => {
   const mentorUser = Cypress.env('MENTOR_DASHBOARD_USER') as string
-  seedAuthAndVisit(['mentor', 'admin'], visitPath, mentorUser)
+  const profileId = Cypress.env('MENTOR_DASHBOARD_PROFILE_ID') as string
+  seedAuthAndVisit(['mentor', 'admin'], visitPath, mentorUser, profileId)
 })
 
 /** Programmatic login then visit a path (skips `/` dashboard redirect). */
@@ -67,6 +70,7 @@ Cypress.Commands.add('loginAndVisit', (path: string, roles: string[] = ['admin']
 /** Fetch first mentee profile id for the seeded mentor. */
 Cypress.Commands.add('mentorMenteeProfileId', () => {
   const mentorUser = Cypress.env('MENTOR_DASHBOARD_USER') as string
+  const profileId = Cypress.env('MENTOR_DASHBOARD_PROFILE_ID') as string
   const secret = Cypress.env('JWT_SECRET') as string
 
   return cy
@@ -74,6 +78,7 @@ Cypress.Commands.add('mentorMenteeProfileId', () => {
       roles: ['mentor', 'admin'],
       secret,
       sub: mentorUser,
+      profile_id: profileId,
     })
     .then(({ token }) => {
       return cy

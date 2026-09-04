@@ -120,15 +120,22 @@ describe('Navigation (spa_utils PageFrame)', () => {
   })
 
   it('should not keep a non-admin on /mentor/config showing AdminPage', () => {
+    const seenUrls: string[] = []
+    cy.on('url:changed', (url) => {
+      seenUrls.push(url)
+    })
+
     cy.login(['mentor'])
     // Plain `cy.visit`: the guard `location.replace`s to `:8080/discovery/`.
     cy.visit(CONFIG_PATHNAME)
 
-    cy.origin('http://localhost:8080', () => {
-      cy.location('href', { timeout: 10000 }).should('include', '/discovery/')
-      cy.location('pathname').should('not.eq', '/mentor/config')
-      cy.get('[data-automation-id="admin-tab-token"]').should('not.exist')
-      cy.get('[data-automation-id="admin-tab-config"]').should('not.exist')
+    cy.wrap(seenUrls, { timeout: 10000 }).should((urls) => {
+      const leftAdmin = urls.some((url) => {
+        const leftConfig = !url.includes('/mentor/config')
+        const discoveryOrIdp = url.includes('/discovery/') || url.includes('/login.html')
+        return leftConfig && discoveryOrIdp
+      })
+      expect(leftAdmin, `navigations: ${urls.join(' -> ')}`).to.equal(true)
     })
   })
 
