@@ -272,7 +272,7 @@ const { data: profileDetail, isLoading, error: queryError } = useQuery({
 const displayName = computed(() => {
   const profile = profileDetail.value?.profile
   if (!profile) return 'Profile'
-  return profile.full_name || profile.name
+  return profile.display_name
 })
 
 const latestExperience = computed((): ProfileExperience | undefined => {
@@ -285,7 +285,7 @@ const profileCardModel = computed<Record<string, unknown>>(() => {
   const profile = profileDetail.value?.profile
   return {
     ...profile,
-    display_name: profile?.full_name || profile?.name,
+    display_name: profile?.display_name,
     start_date: latestRole.value?.start || profile?.created?.at_time,
     employer: latestExperience.value?.company,
     job_title: latestRole.value?.title,

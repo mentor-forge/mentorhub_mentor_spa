@@ -310,7 +310,7 @@ const { data: profileProperties } = useQuery({
 const menteeDisplayName = computed(() => {
   const profile = profileDetail.value?.profile
   if (!profile) return 'Encounter'
-  return profile.full_name || profile.name
+  return profile.display_name
 })
 
 const encounterDateDisplay = computed(() => {
