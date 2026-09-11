@@ -115,21 +115,19 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the b
 
 | Route | Page | API |
 |-------|------|-----|
-| `/mentee/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
+| `/mentee/:id` | `ProfileEditPage` — mentee detail with three DataCards: Name, Encounters, and Breadcrumbs | `GET /api/profile/{id}` → `ProfileDetail` |
 
 Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
-**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
+**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`) into three DataCards:
 
-- **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
-- **Notes** — editable mentee notes via typed, blur-to-save editors and `PATCH /api/mentee/{mentee_id}`
-- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounter/{id}`
+- **Mentee Name** — mentee display name with mailto link, minimal read-only goals and interests, editable mentee `summary` and `notes`, and action slot for starting encounters
+- **Encounters** — simple list of `{Date}: {TLDR}` filtered to `status = complete`, ordered by appointment date (most recent first), date linking to `/encounter/{id}`
+- **Breadcrumbs** — visible only to users with the `admin` role (`hasRole('admin')`), displaying mentee status and Created/Saved audit breadcrumbs
 
 API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
 
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
-
-For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
 ## Paths and Resources
 

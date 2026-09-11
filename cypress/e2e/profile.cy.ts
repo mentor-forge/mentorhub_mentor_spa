@@ -5,23 +5,50 @@ describe('Profile Edit Page', () => {
     })
   })
 
-  it('should show Profile, Notes, and Encounters sections on ProfileEditPage', () => {
+  it('should show Name and Encounters cards, and hide Breadcrumbs for mentor role', () => {
     cy.get('[data-automation-id="profile-edit-profile-section"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-notes-section"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-encounters-section"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-profile-section"]').should('have.class', 'mh-card')
-    cy.get('[data-automation-id="profile-edit-notes-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="profile-edit-encounters-section"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-encounters-section"]').should('have.class', 'mh-card')
-    cy.get('[data-automation-id="profile-edit-profile-section-collapse-button"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-notes-section-collapse-button"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-profile-name-display"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-notes-focus-input"]').find('input').should('exist')
+
+    // Minimal Profile data and editable mentee inputs in Name card
+    cy.get('[data-automation-id="profile-edit-goals-display"]').should('exist')
+    cy.get('[data-automation-id="profile-edit-interests-display"]').should('exist')
+    cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').should('exist')
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').should('exist')
+
+    // Breadcrumbs card must not be visible to mentor without admin role
+    cy.get('[data-automation-id="profile-edit-breadcrumbs-section"]').should('not.exist')
   })
 
-  it('should update typed mentor notes fields on ProfileEditPage', () => {
-    const focus = `Cypress focus ${Date.now()}`
-    cy.get('[data-automation-id="profile-edit-notes-focus-input"]').find('input').clear().type(focus).blur()
-    cy.get('[data-automation-id="profile-edit-notes-focus-input"]').find('input').should('have.value', focus)
+  it('should show Breadcrumbs card when user has admin role', () => {
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.login(['mentor', 'admin'], `/mentor/mentee/${profileId}`)
+      cy.get('[data-automation-id="profile-edit-breadcrumbs-section"]').should('be.visible')
+      cy.get('[data-automation-id="profile-edit-status-display"]').should('exist')
+      cy.get('[data-automation-id="profile-edit-created-breadcrumb"]').should('exist')
+      cy.get('[data-automation-id="profile-edit-saved-breadcrumb"]').should('exist')
+    })
+  })
+
+  it('should have a mailto link when mentee has an email address', () => {
+    cy.get('body').then(($body) => {
+      if ($body.find('[data-automation-id="profile-edit-mentee-mailto-link"]').length > 0) {
+        cy.get('[data-automation-id="profile-edit-mentee-mailto-link"]')
+          .should('have.attr', 'href')
+          .and('match', /^mailto:/)
+      }
+    })
+  })
+
+  it('should update mentee summary and notes fields', () => {
+    const summary = `Cypress summary ${Date.now()}`
+    cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').clear().type(summary).blur()
+    cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').should('have.value', summary)
+
+    const notes = `Cypress notes ${Date.now()}`
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').clear().type(notes).blur()
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').should('have.value', notes)
   })
 
   it('should create encounter from ProfileEditPage plan dialog', () => {

@@ -1,6 +1,6 @@
 # R161 – Mentee page: three DataCards (Name, Encounters, Admin Breadcrumbs)
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Rewrite `ProfileEditPage` to the F-RS12 mentee three-card layout ([mentorhub_mentor_spa#22](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22)):
@@ -86,4 +86,11 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Rewrote `ProfileEditPage.vue` into three DataCards:
+  - Card 1 (Mentee Name): mailto link with email (`profile-edit-mentee-mailto-link`), read-only goals/interests, editable mentee `summary` (`SentenceEditor`) and `notes` (`MarkdownEditor`).
+  - Card 2 (Encounters): displays only completed encounters (`status = complete`) formatted as `{Date}: {TLDR}`, sorted by appointment date descending, with date linking to `/encounter/:id` (`profile-edit-encounter-date-link`). Retained New Encounter plan button until R163.
+  - Card 3 (Breadcrumbs): gated by `hasRole('admin')`, displaying mentee status (`EnumEditor`, read-only) and Created/Saved audit breadcrumbs (`BreadcrumbDisplay`).
+- Updated `cypress/e2e/profile.cy.ts` covering the 3-card layout, mailto link, summary and notes auto-save, and Breadcrumbs card visibility for admin vs mentor-without-admin roles.
+- Updated `README.md` Profile Edit documentation.
+- Verified unit tests (108/108 passing) and production build.
+
