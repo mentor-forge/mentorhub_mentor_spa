@@ -92,11 +92,11 @@
             <template #actions>
               <v-btn
                 color="primary"
-                data-automation-id="profile-edit-new-encounter-button"
-                @click="showPlanDialog = true"
+                data-automation-id="profile-edit-schedule-encounters-button"
+                @click="showScheduleDialog = true"
               >
-                <v-icon start>mdi-plus</v-icon>
-                New Encounter
+                <v-icon start>mdi-calendar-clock</v-icon>
+                Schedule Encounters
               </v-btn>
               <v-btn
                 icon
@@ -196,18 +196,19 @@
       {{ errorMessage }}
     </v-snackbar>
 
-    <PlanSelectDialog
-      v-model="showPlanDialog"
-      automation-prefix="profile-edit-new-encounter-plan"
-      :loading="isCreatingEncounter"
-      @submit="handleCreateEncounter"
+    <ScheduleEncountersDialog
+      v-model="showScheduleDialog"
+      :loading="isScheduling"
+      :mentor-id="mentorId"
+      :mentee-id="profileId"
+      @submit="handleScheduleEncounters"
     />
   </v-container>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
   BreadcrumbDisplay,
@@ -220,15 +221,14 @@ import {
   formatDate,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
-import { PlanSelectDialog } from '@/components/dashboard'
+import { ScheduleEncountersDialog } from '@/components/dashboard'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
-import type { Encounter, EncounterInput, MenteeUpdate } from '@/api/types'
+import type { Encounter, ScheduleEncounterInput, MenteeUpdate } from '@/api/types'
 
 const dashboardHref = buildJourneyUrl('discovery')
 
 const routeLocation = useRoute()
-const router = useRouter()
 const queryClient = useQueryClient()
 const { hasRole } = useRoles()
 
@@ -236,7 +236,8 @@ const profileId = computed(() => routeLocation.params.id as string)
 
 const profileCollapsed = ref(false)
 const encountersCollapsed = ref(false)
-const showPlanDialog = ref(false)
+const showScheduleDialog = ref(false)
+const mentorId = computed(() => profileDetail.value?.profile?.mentor_id || '')
 
 const { data: profileDetail, isLoading, error: queryError } = useQuery({
   queryKey: ['profile', profileId],
@@ -313,31 +314,23 @@ async function updateMenteeField(field: string, value: unknown) {
   await updateMentee({ [field]: String(value ?? '') } as MenteeUpdate)
 }
 
-const { mutate: createEncounter, isPending: isCreatingEncounter } = useMutation<{ _id: string }, Error, EncounterInput>({
-  mutationFn: (payload: EncounterInput) => api.createEncounter(payload),
-  onSuccess: (response) => {
+const { mutate: scheduleEncounters, isPending: isScheduling } = useMutation<Encounter[], Error, ScheduleEncounterInput>({
+  mutationFn: (payload: ScheduleEncounterInput) => api.scheduleEncounters(payload),
+  onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
-    showPlanDialog.value = false
+    showScheduleDialog.value = false
     errorRef.value = null
-    router.push(`/encounter/${response._id}`)
   },
   onError: (error: Error) => {
     errorRef.value = error
   },
 })
 
-function handleCreateEncounter(planId: string) {
-  const mentorId = profileDetail.value?.profile.mentor_id
-  if (!mentorId) {
+function handleScheduleEncounters(payload: ScheduleEncounterInput) {
+  if (!payload.mentor_id) {
     errorRef.value = new Error('Mentor is not assigned to this profile.')
     return
   }
-
-  createEncounter({
-    mentor_id: mentorId,
-    mentee_id: profileId.value,
-    plan_id: planId,
-    status: 'active',
-  })
+  scheduleEncounters(payload)
 }
 </script>

@@ -154,7 +154,7 @@ E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 | `/plan` | `PlanNewPage` — create plan form | `POST /api/plan` |
 | `/plan/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
 
-Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the New Encounter plan picker.
+Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the Schedule Encounters dialog plan picker.
 
 **PlanNewPage** creates a plan via `POST /api/plan` and navigates to the edit page.
 
@@ -196,7 +196,7 @@ E2E coverage: `cypress/e2e/encounter.cy.ts`, `cypress/e2e/profile.cy.ts`.
 ```
 src/
   api/              # Mentor domain API client (profile, mentee, path, resource, plan, encounter)
-  components/       # Journey-specific UI (PlanChecklistEditor, PlanSelectDialog, admin)
+  components/       # Journey-specific UI (PlanChecklistEditor, ScheduleEncountersDialog, admin)
   pages/            # Detail/create pages only (no collection list dashboards)
   composables/      # useAuth (spa_utils re-export), useConfig, useRoles, useDiscoveryRedirect
   stores/           # Pinia stores (UI state only)
@@ -208,7 +208,7 @@ src/
 
 | Layer | Owns |
 |-------|------|
-| **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / plan-select presentation |
+| **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / schedule encounters presentation |
 | **`spa_utils` 1.0.5** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
 | **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |

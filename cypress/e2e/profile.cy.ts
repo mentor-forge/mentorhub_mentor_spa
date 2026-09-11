@@ -51,12 +51,20 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').should('have.value', notes)
   })
 
-  it('should create encounter from ProfileEditPage plan dialog', () => {
-    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-dialog"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
-    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
+  it('should open and cancel schedule encounters dialog', () => {
+    cy.get('[data-automation-id="profile-edit-schedule-encounters-button"]').click()
+    cy.get('[data-automation-id="profile-edit-schedule-encounters-dialog"]').should('be.visible')
+    cy.get('[data-automation-id="schedule-encounters-cancel-button"]').click()
+    cy.get('[data-automation-id="profile-edit-schedule-encounters-dialog"]').should('not.exist')
+  })
+
+  it('should open and submit schedule encounters dialog', () => {
+    cy.intercept('POST', '**/api/encounter/schedule').as('scheduleEncounters')
+    cy.get('[data-automation-id="profile-edit-schedule-encounters-button"]').click()
+    cy.get('[data-automation-id="profile-edit-schedule-encounters-dialog"]').should('be.visible')
+    cy.get('[data-automation-id="schedule-encounters-submit-button"]').should('not.be.disabled').click()
+    cy.wait('@scheduleEncounters')
+    cy.get('[data-automation-id="profile-edit-schedule-encounters-dialog"]').should('not.exist')
   })
 
   it('should have a Back to Dashboard link pointing to Discovery', () => {
