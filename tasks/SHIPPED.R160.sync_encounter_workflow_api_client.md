@@ -1,6 +1,6 @@
 # R160 – Sync Encounter and Mentee workflow types and mutations from live OpenAPI
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Align Mentor SPA types and API client with the live mentor API contract (`http://localhost:8391/docs/openapi.yaml`) for the Encounter Workflow ([mentorhub_mentor_spa#22](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22)): schedule recurring encounters (`POST /api/encounter/schedule`), start encounter (`POST /api/encounter/{EncounterId}/start`), and finish encounter (`POST /api/encounter/{EncounterId}/finish`), plus updated `Encounter` (status enum including `scheduled` and `complete`, `appointment`), and `Mentee` (`summary`, dropped legacy fields).
@@ -95,4 +95,8 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Aligned `src/api/types.ts` with live OpenAPI from `http://localhost:8391/docs/openapi.yaml`: added `EncounterAppointment`, updated `Encounter` (`appointment`, `mentee_name`, `mentor_name`, expanded `status` enum with `scheduled` and `complete`), added `ScheduleEncounterInput`, and added `Mentee.summary` / `MenteeUpdate.summary`.
+- Added `scheduleEncounters`, `startEncounter`, and `finishEncounter` methods to `src/api/client.ts`.
+- Added unit tests in `src/api/Encounter.client.test.ts` asserting exact POST endpoints, payloads, response serialization, and error handling.
+- Verified tests: `npm run test` (all 108 tests passing) and `npm run build` (successful compilation and bundling).
+

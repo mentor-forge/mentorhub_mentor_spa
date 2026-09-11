@@ -1,6 +1,6 @@
 # F158 – Verify mentor API token `display_name` contract for Mentor SPA
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Plan the Mentor SPA side of [mentorhub_mentor_api#29](https://github.com/mentor-forge/mentorhub_mentor_api/issues/29). The SPA does not depend on `mentorhub_api_utils` directly, so this task verifies the actual mentor API `/mentor/api/config` and OpenAPI contract after the API change, confirms whether any local code or test fixtures still assume a token `name` field, and records the smallest necessary SPA updates. If the backing mentor API has not shipped the `display_name` contract yet, mark this task Blocked and stop rather than guessing.
@@ -94,3 +94,4 @@ If verification proves no file changes are needed, do not touch these files; rec
 
 ## Execution Notes
 
+Confirmed live mentor API token contract surfaces `display_name` via `@mentor-forge/mentorhub_spa_utils@1.0.5`. Searched `src/`, `cypress/`, and `README.md` for token `name` references; zero occurrences found. All references already read from `display_name` (shipped in commit `1f50e65` / PR #39). No source edits required.

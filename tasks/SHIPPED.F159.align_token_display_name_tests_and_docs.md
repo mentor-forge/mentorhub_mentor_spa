@@ -1,6 +1,6 @@
 # F159 – Align Mentor SPA tests and docs to token `display_name`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: F158_verify_token_display_name_contract  
 **Description**: If F158 confirms that mentor API issue [#29](https://github.com/mentor-forge/mentorhub_mentor_api/issues/29) changes the token field surfaced to this SPA, update the smallest necessary Mentor SPA tests, stubs, and documentation from token `name` assumptions to token `display_name`. If F158 proves no SPA change is required, this task should be marked Shipped with a no-op summary and no source edits.
@@ -92,3 +92,4 @@ Skip untouched files rather than churning them. The agent must not update files 
 
 ## Execution Notes
 
+F158 proved that `mentorhub_mentor_spa` already uses `display_name` via `@mentor-forge/mentorhub_spa_utils@1.0.5` and has zero references to token `name` in source, tests, and documentation. No local code changes required. Shipped with no-op summary.
