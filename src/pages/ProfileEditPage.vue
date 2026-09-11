@@ -219,18 +219,6 @@
           </DataCard>
         </v-col>
       </v-row>
-
-      <v-row class="mt-4">
-        <v-col>
-          <v-btn
-            :href="dashboardHref"
-            variant="text"
-            data-automation-id="profile-edit-dashboard-link"
-          >
-            Back to Dashboard
-          </v-btn>
-        </v-col>
-      </v-row>
     </template>
 
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
@@ -268,8 +256,6 @@ import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
 import type { Encounter, ScheduleEncounterInput, MenteeUpdate } from '@/api/types'
-
-const dashboardHref = buildJourneyUrl('discovery')
 
 const routeLocation = useRoute()
 const router = useRouter()

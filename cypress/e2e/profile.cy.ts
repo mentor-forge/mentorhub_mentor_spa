@@ -107,7 +107,7 @@ describe('Profile Edit Page', () => {
   })
 
   it('should open and submit schedule encounters dialog', () => {
-    cy.intercept('POST', '**/api/encounter/schedule').as('scheduleEncounters')
+    cy.intercept('POST', '**/api/encounter/schedule', { statusCode: 200, body: [] }).as('scheduleEncounters')
     cy.get('[data-automation-id="profile-edit-schedule-encounters-button"]').click()
     cy.get('[data-automation-id="profile-edit-schedule-encounters-dialog"]').should('be.visible')
     cy.get('[data-automation-id="schedule-encounters-submit-button"]').should('not.be.disabled').click()
@@ -179,11 +179,8 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-start-encounter-button"]').should('not.exist')
   })
 
-  it('should have a Back to Dashboard link pointing to Discovery', () => {
-    cy.get('[data-automation-id="profile-edit-dashboard-link"]')
-      .should('be.visible')
-      .and('have.attr', 'href')
-      .and('match', /:8080\/discovery\/$/)
+  it('should not show a Back to Dashboard link on ProfileEditPage', () => {
+    cy.get('[data-automation-id="profile-edit-dashboard-link"]').should('not.exist')
   })
 
   it('should not have a new profile button (read-only)', () => {
