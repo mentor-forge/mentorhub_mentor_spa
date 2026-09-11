@@ -259,8 +259,10 @@ const { data: profileDetail, isLoading, error: queryError } = useQuery({
 
 const displayName = computed(() => {
   const profile = profileDetail.value?.profile
-  if (!profile) return 'Mentee'
-  return profile.display_name || 'Mentee'
+  if (!profile?.display_name) return 'Mentee'
+  return profile.display_name.startsWith('Mentee: ')
+    ? profile.display_name
+    : `Mentee: ${profile.display_name}`
 })
 
 const profileEmail = computed(() => profileDetail.value?.profile.email)

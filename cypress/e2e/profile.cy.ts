@@ -8,6 +8,7 @@ describe('Profile Edit Page', () => {
   it('should show Name and Encounters cards, and hide Breadcrumbs for mentor role', () => {
     cy.get('[data-automation-id="profile-edit-profile-section"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-profile-section"]').should('have.class', 'mh-card')
+    cy.get('[data-automation-id="profile-edit-profile-section"]').should('contain.text', 'Mentee:')
     cy.get('[data-automation-id="profile-edit-encounters-section"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-encounters-section"]').should('have.class', 'mh-card')
 
