@@ -1,9 +1,12 @@
-# R161 – Mentee page: three cards (name, encounters, admin breadcrumbs)
+# R161 – Mentee page: three DataCards (Name, Encounters, Admin Breadcrumbs)
 
 **Status**: Pending  
 **Type**: Feature  
 **Depends On**: none  
-**Description**: Rewrite `ProfileEditPage` to the F-RS12 mentee layout: three spa_utils cards — mentee name (mailto, minimal goals/interests, editable mentee notes), Encounters list (`Date: {TLDR}`, Next then recently updated, date links to detail), and admin-only Breadcrumbs (status, created, saved). Keep the existing **New Encounter** plan dialog until R163 replaces it with Schedule Encounters.
+**Description**: Rewrite `ProfileEditPage` to the F-RS12 mentee three-card layout ([mentorhub_mentor_spa#22](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22)):
+1. Mentee Name title with mailto link, minimal profile data (goals, interests), and editable mentee summary and notes;
+2. Encounters title with simple list of `{Date}: {TLDR}` filtered to `status = complete` and ordered by appointment date (most recent first), with date linking to encounter detail;
+3. Breadcrumbs title visible only when role contains admin (`hasRole('admin')`), displaying status and Created/Saved audit trails.
 
 ## Context
 
@@ -11,48 +14,47 @@ Always read these files before implementation:
 
 - `../mentorhub/DeveloperEdition/standards/spa_standards.md`
 - `README.md` — Profile Edit / mentee page
-- `../mentorhub_spa_utils/README.md` — `DataCard`, `MhCard`, typed editors, `BreadcrumbDisplay`, `EmailEditor` view-mode behavior
-- `src/pages/ProfileEditPage.vue` — current Profile + Notes + Encounters sections
-- `src/pages/PlanEditPage.vue` — `useRoles` / `hasRole('admin')` pattern for admin-only audit
+- `../mentorhub_spa_utils/README.md` — `DataCard`, `MhCard`, typed editors (`SentenceEditor`, `MarkdownEditor`, `EnumEditor`), `BreadcrumbDisplay`, `useRoles`
+- `src/pages/ProfileEditPage.vue` — current Profile + Notes + Encounters layout
 - `src/composables/useRoles.ts`
-- `src/api/types.ts` — `ProfileDetail`, `Profile.goals` / `interests`, `Mentee.notes`, `Encounter.date` / `tldr` / `status` / `saved`
-- `cypress/e2e/profile.cy.ts` — asserts Profile, Notes, and Encounters section ids and New Encounter
-- `cypress/e2e/encounter.cy.ts` — opens detail from `profile-edit-encounter-item` and New Encounter
+- `src/api/types.ts` — `ProfileDetail`, `Profile.goals` / `interests` / `display_name` / `email`, `Mentee.summary` / `notes`, `Encounter.appointment` / `status` / `tldr`
+- `cypress/e2e/profile.cy.ts`
 
 **Source issue**: [F-RS12: Encounter Workflow](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22) — Mentee Page Updates.
 
-`spa_utils` `MhCard` / `DataCard` render `title` as plain text (not an `<a>`). Do not patch spa_utils. Implement mailto as a title-bar control in the card `#actions` slot (and/or a linked name next to the title) so the mentee name remains the card title. Record a spa_utils harvest note in Execution Notes if a linked `title` would be the better long-term API.
-
 ## Goals
 
-- Remove the separate full-width Profile identity grid (employer, job title, phone, location, start date, etc.) and the standalone Notes card that edits description/focus/homework. Those fields are out of scope for this page layout.
-- **Card 1 — mentee name**
-  - `DataCard` title is the mentee display name (`profile.full_name || profile.name`).
-  - A `mailto:` control uses `profile.email` when present (`data-automation-id="profile-edit-mentee-mailto-link"`). If email is missing, the mailto control is omitted (name still shows).
-  - Body is **minimal**: read-only goals and interests from `ProfileDetail.profile` (chips or read-only array display; not editable).
-  - Editable **Notes** from the mentee collection (`mentee.notes`) via `MarkdownEditor` and existing `updateMentee` / `PATCH` notes path. `data-automation-id="profile-edit-notes-input"` stays stable if that element remains the notes field.
-  - Automation: `profile-edit-profile-section` remains on this card (or document a single breaking id change in README and Cypress in this task).
+- Remove obsolete profile identity fields (employer, job title, phone, location, start date) and obsolete mentee fields (`focus`, `homework`, legacy `description`).
+- **Card 1 — Mentee Name**
+  - `DataCard` with title matching the mentee's display name (`profile.display_name`).
+  - Title bar or action mailto link: `data-automation-id="profile-edit-mentee-mailto-link"`, pointing to `mailto:${profile.email}` when `profile.email` is present. If email is absent, omit the mailto control.
+  - Body contains **minimal** read-only profile data: Goals (`profile.goals`) and Interests (`profile.interests`) rendered as read-only chips or tag displays (`data-automation-id="profile-edit-goals-display"` and `data-automation-id="profile-edit-interests-display"`).
+  - Mentee collection editable fields from `mentee`:
+    - **Summary**: `SentenceEditor` with `field="summary"`, label="Summary", `data-automation-id="profile-edit-mentee-summary-input"`, auto-saving on blur via `api.updateMentee`.
+    - **Notes**: `MarkdownEditor` with `field="notes"`, label="Notes", `data-automation-id="profile-edit-mentee-notes-input"`, auto-saving on blur via `api.updateMentee`.
+  - Placeholder slot/location prepared for the Start Encounter button (to be wired in R164).
+  - Automation ID on card root: `data-automation-id="profile-edit-profile-section"`.
 - **Card 2 — Encounters**
-  - Title **Encounters**. Prefer `MhCard` (non-form list) with the same chrome as other cards.
-  - Each row: `{formatted date}: {tldr}` (fallback em dash or “Encounter” when tldr is empty).
-  - **Date** is the navigation link to `/encounter/{id}` (`data-automation-id="profile-edit-encounter-date-link"`). Do not make the entire row the only click target if that prevents a later Start button on the Next row (R164).
-  - Sort: the **Next** encounter first (soonest upcoming `encounter.date`, or the encounter matching `mentee.next_appointment` when that id/date is available), then remaining encounters by most recently updated (`saved.at_time`, then `date`).
-  - Mark the Next row for later Start wiring (`data-automation-id="profile-edit-encounter-next-item"`). Do **not** call start/schedule mutations in this task.
-  - Keep **New Encounter** (`profile-edit-new-encounter-button` + `PlanSelectDialog`) working unchanged so Cypress create-encounter flows stay green until R163.
-  - Empty state when there are no encounters.
-- **Card 3 — Breadcrumbs** (only when `hasRole('admin')` is true)
-  - Title **Breadcrumbs**. `data-automation-id="profile-edit-breadcrumbs-section"`.
-  - Show mentee/profile **status** (read-only `EnumEditor` with runtime `enums` from `/api/config`) and **Created** / **Saved** via `BreadcrumbDisplay` on the mentee (or profile, if mentee breadcrumbs are missing) documents.
-  - Non-admin users must not see this card (assert in Cypress with a mentor-only login, not only admin).
-- Drop the duplicate page `h1` if the first card title already shows the mentee name; keep `profile-edit-heading` only if Cypress or accessibility still needs a page heading — if removed, update Cypress in this task.
-- Preserve Back to Dashboard (`buildJourneyUrl('discovery')`).
+  - Card titled "Encounters", `data-automation-id="profile-edit-encounters-section"`.
+  - **Filter**: Render only encounters where `encounter.status === 'complete'`. Scheduled, active, or archived encounters are excluded from this completed list.
+  - **Order**: Sort by appointment date descending (most recent first), using `encounter.appointment?.from || encounter.date || encounter.created?.at_time`.
+  - **Row format**: Simple list of lines displaying `{formatted Date}: {tldr}` (fallback to `Encounter` if `tldr` is blank).
+  - **Link**: The formatted date (or row) is a link navigating to `/encounter/${encounter._id}` (`data-automation-id="profile-edit-encounter-date-link"`).
+  - **Empty state**: Display alert or empty state message when no complete encounters exist (`data-automation-id="profile-edit-encounters-empty"`).
+  - **Card actions**: Retain New Encounter or schedule button action placeholder (`profile-edit-new-encounter-button` / `PlanSelectDialog`) so create-encounter Cypress flows remain functional until R163.
+- **Card 3 — Breadcrumbs (Admin only)**
+  - Rendered only when `hasRole('admin')` is true. Non-admin users (e.g. mentor role only) must not see this card.
+  - Card title: "Breadcrumbs", `data-automation-id="profile-edit-breadcrumbs-section"`.
+  - Status display: read-only `EnumEditor` with `field="status"`, `enums="status"`, `data-automation-id="profile-edit-status-display"`.
+  - Audit trail: `BreadcrumbDisplay` showing Created and Saved breadcrumbs for the mentee/profile (`data-automation-id="profile-edit-created-breadcrumb"` and `data-automation-id="profile-edit-saved-breadcrumb"`).
+- Preserve the "Back to Dashboard" button linking to Discovery (`buildJourneyUrl('discovery')`).
 
 ### Craftsmanship Expectations
 
-- Reuse `DataCard` / `MhCard` / typed editors / `BreadcrumbDisplay` / `formatDate` / `useRoles` from spa_utils (via this SPA’s `useRoles` wrapper). Do not add local audit field textboxes like the older Plan edit metadata.
-- Do not introduce a local card chrome component.
-- Keep journey-specific sorting and mailto in this page; do not add mentee-page layout to spa_utils.
-- DRY: derive admin visibility from `hasRole('admin')`, not a copied role string table.
+- Reuse `DataCard`, `MhCard`, `SentenceEditor`, `MarkdownEditor`, `EnumEditor`, `BreadcrumbDisplay`, `formatDate`, and `useRoles` from `spa_utils`.
+- Do not introduce ad-hoc Vuetify inputs or custom audit components.
+- Derive admin visibility strictly from `hasRole('admin')`.
+- Keep Cypress tests updated to assert all 3 cards with least-privileged and privileged roles.
 
 ## Testing Expectations
 
@@ -65,21 +67,20 @@ Run all commands from **this SPA repository root**.
 - **Dev verification**
   - `npm run api`
   - `npm run dev`
-  - Open a mentee: name card shows goals/interests/notes; mailto works when email exists; encounters list shows `Date: TLDR` with date linking to detail; admin sees Breadcrumbs; a mentor-without-admin session does not.
-- **E2E**
+  - Open a mentee: Name card displays mailto link, goals/interests, and editable summary and notes; Encounters list displays only complete encounters ordered by date; Breadcrumbs section is visible to admin and hidden for non-admin mentor.
+- **E2E tests**
   - `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
-  - `npm run cypress:run:spec -- cypress/e2e/encounter.cy.ts`
+  - Add assertion verifying Breadcrumbs section is visible for admin session and absent for mentor session (`cy.login(['mentor'])`).
+  - Add assertion verifying mailto link has correct `mailto:` href.
+  - Add assertion verifying Encounters list shows completed encounter format `{Date}: {TLDR}` and links to `/encounter/:id`.
 - **Packaging verification**
   - `npm run container`
 
-Update Cypress in this task so existing specs match the new cards. Add at least one least-privileged (mentor, not admin) assertion that Breadcrumbs are absent, and an admin assertion that they are present.
-
 ## Outputs
 
-- `src/pages/ProfileEditPage.vue` — three-card mentee layout
-- `cypress/e2e/profile.cy.ts` — section, mailto, list format, admin vs non-admin breadcrumbs; keep New Encounter until R163
-- `cypress/e2e/encounter.cy.ts` — only if encounter-list selectors change
-- `README.md` — mentee page card outline (still mention New Encounter until R163)
+- `src/pages/ProfileEditPage.vue` — three-card mentee layout (Name, Encounters, Admin Breadcrumbs)
+- `cypress/e2e/profile.cy.ts` — updated Cypress tests for the three cards and role gating
+- `README.md` — updated Profile Edit section documentation
 
 The agent must not update files outside this list.
 
