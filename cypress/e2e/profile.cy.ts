@@ -42,6 +42,16 @@ describe('Profile Edit Page', () => {
     })
   })
 
+  it('should have a link on the Mentee card title that links to /customer/profile/:id', () => {
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
+      cy.get('[data-automation-id="profile-edit-customer-profile-link"]')
+        .should('be.visible')
+        .and('have.attr', 'href')
+        .and('match', new RegExp(`/customer/profile/${profileId}$`))
+    })
+  })
+
   it('should display completed encounters in Encounters card with date linking to detail page', () => {
     cy.intercept('GET', '**/api/profile/*', (req) => {
       req.continue((res) => {

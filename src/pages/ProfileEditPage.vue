@@ -10,37 +10,67 @@
       <!-- Card 1: Mentee Name -->
       <v-row>
         <v-col cols="12">
-          <DataCard
-            v-model:collapsed="profileCollapsed"
-            :title="displayName"
-            :model="menteeCardModel"
-            :on-save="updateMenteeField"
-            automation-id="profile-edit-profile-section"
+          <v-card
+            class="mh-card"
+            :class="{ 'mh-card--collapsed': profileCollapsed }"
+            variant="outlined"
+            rounded="lg"
+            elevation="2"
+            data-automation-id="profile-edit-profile-section"
           >
-            <template #actions>
+            <v-toolbar
+              color="primary"
+              density="comfortable"
+              class="mh-card__title-bar"
+              flat
+            >
+              <v-toolbar-title class="mh-card__title" data-automation-id="profile-edit-profile-section-title-display">
+                <a
+                  :href="customerProfileHref"
+                  class="text-white text-decoration-none mentee-title-link"
+                  data-automation-id="profile-edit-customer-profile-link"
+                >
+                  {{ displayName }}
+                </a>
+              </v-toolbar-title>
+
+              <div class="mh-card__actions" data-automation-id="profile-edit-profile-section-actions-display">
+                <v-btn
+                  v-if="profileEmail"
+                  :href="`mailto:${profileEmail}`"
+                  icon
+                  variant="text"
+                  size="small"
+                  data-automation-id="profile-edit-mentee-mailto-link"
+                  :title="profileEmail"
+                >
+                  <v-icon>mdi-email</v-icon>
+                </v-btn>
+                <v-btn
+                  v-if="canStartEncounter && nextScheduledEncounter"
+                  color="success"
+                  class="ml-2"
+                  :loading="isStartingEncounter"
+                  data-automation-id="profile-edit-start-encounter-button"
+                  @click="handleStartEncounter"
+                >
+                  <v-icon start>mdi-play</v-icon>
+                  Start Encounter
+                </v-btn>
+              </div>
+
               <v-btn
-                v-if="profileEmail"
-                :href="`mailto:${profileEmail}`"
                 icon
                 variant="text"
                 size="small"
-                data-automation-id="profile-edit-mentee-mailto-link"
-                :title="profileEmail"
+                data-automation-id="profile-edit-profile-section-collapse-button"
+                @click="profileCollapsed = !profileCollapsed"
               >
-                <v-icon>mdi-email</v-icon>
+                <v-icon>{{ profileCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
               </v-btn>
-              <v-btn
-                v-if="canStartEncounter && nextScheduledEncounter"
-                color="success"
-                class="ml-2"
-                :loading="isStartingEncounter"
-                data-automation-id="profile-edit-start-encounter-button"
-                @click="handleStartEncounter"
-              >
-                <v-icon start>mdi-play</v-icon>
-                Start Encounter
-              </v-btn>
-            </template>
+            </v-toolbar>
+
+            <v-card-text v-show="!profileCollapsed" class="mh-card__body">
 
             <!-- Minimal Profile data: Goals and Interests -->
             <div class="mb-4">
@@ -88,7 +118,8 @@
               class="mt-4"
               automation-id="profile-edit-mentee-notes-input"
             />
-          </DataCard>
+          </v-card-text>
+        </v-card>
         </v-col>
       </v-row>
 
@@ -229,6 +260,7 @@ import {
   SentenceEditor,
   buildJourneyUrl,
   formatDate,
+  provideDataCardContext,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { ScheduleEncountersDialog } from '@/components/dashboard'
@@ -246,6 +278,7 @@ const { hasRole } = useRoles()
 const hasAdminRole = hasRole('admin')
 
 const profileId = computed(() => routeLocation.params.id as string)
+const customerProfileHref = computed(() => buildJourneyUrl('customer', `profile/${profileId.value}`))
 
 const profileCollapsed = ref(false)
 const encountersCollapsed = ref(false)
@@ -340,6 +373,11 @@ async function updateMenteeField(field: string, value: unknown) {
   await updateMentee({ [field]: String(value ?? '') } as MenteeUpdate)
 }
 
+provideDataCardContext({
+  model: () => menteeCardModel.value,
+  onSave: updateMenteeField,
+})
+
 const { mutate: scheduleEncounters, isPending: isScheduling } = useMutation<Encounter[], Error, ScheduleEncounterInput>({
   mutationFn: (payload: ScheduleEncounterInput) => api.scheduleEncounters(payload),
   onSuccess: () => {
@@ -377,3 +415,9 @@ function handleStartEncounter() {
   startEncounterMutation(nextScheduledEncounter.value._id)
 }
 </script>
+
+<style scoped>
+.mentee-title-link:hover {
+  text-decoration: underline !important;
+}
+</style>
