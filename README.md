@@ -115,21 +115,19 @@ Vue route `path` strings stay unprefixed. Vite `base: '/mentor/'` prefixes the b
 
 | Route | Page | API |
 |-------|------|-----|
-| `/mentee/:id` | `ProfileEditPage` — mentee detail with Profile, Notes, and Encounters sections | `GET /api/profile/{id}` → `ProfileDetail` |
+| `/mentee/:id` | `ProfileEditPage` — mentee detail with three DataCards: Name, Encounters, and Breadcrumbs | `GET /api/profile/{id}` → `ProfileDetail` |
 
 Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
-**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`):
+**ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`) into three DataCards:
 
-- **Profile** — read-only mentee contact and experience fields from `ProfileDetail.profile`
-- **Notes** — editable mentee notes via typed, blur-to-save editors and `PATCH /api/mentee/{mentee_id}`
-- **Encounters** — read-only list from `ProfileDetail.encounters`; **New Encounter** opens a plan-selection dialog, creates the encounter (server auto-fills `agenda` from plan), and navigates to `/encounter/{id}`
+- **Mentee Name** — mentee display name with mailto link, minimal read-only goals and interests, editable mentee `summary` and `notes`, and a **Start Encounter** button visible when the next scheduled encounter date is today. Clicking Start Encounter invokes `POST /api/encounter/{id}/start` (`api.startEncounter`) and navigates directly to `/encounter/{id}`
+- **Encounters** — simple list of `{Date}: {TLDR}` filtered to `status = complete`, ordered by appointment date (most recent first), date linking to `/encounter/{id}`
+- **Breadcrumbs** — visible only to users with the `admin` role (`hasRole('admin')`), displaying mentee status and Created/Saved audit breadcrumbs
 
-API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
+API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`, `api.scheduleEncounters(data)`, `api.startEncounter(id)`, `api.finishEncounter(id)`.
 
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
-
-For E2E tests, keep the dev server running on port `8392` and the API stack up, then run `npm run cypress:run` or `npm run cypress:run:spec -- <spec-path>`.
 
 ## Paths and Resources
 
@@ -156,7 +154,7 @@ E2E coverage: `cypress/e2e/path.cy.ts` and `cypress/e2e/resource.cy.ts`.
 | `/plan` | `PlanNewPage` — create plan form | `POST /api/plan` |
 | `/plan/:id` | `PlanEditPage` — plan detail editor with metadata and sequential **Steps** checklist | `GET /api/plan/{id}`, `PATCH /api/plan/{id}` |
 
-Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the New Encounter plan picker.
+Collection browsing for encounter plans lives on Discovery (`/discovery/plans`). `GET /api/plan` now serves the Schedule Encounters dialog plan picker.
 
 **PlanNewPage** creates a plan via `POST /api/plan` and navigates to the edit page.
 
@@ -180,16 +178,17 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/encounter/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
+| `/encounter/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}`, `POST /api/encounter/{id}/finish` |
 
 **Encounter Detail** page layout:
 
-- **Profile** (collapsible) — read-only goals/interests and journey activity (recent completions, resources in Now); editable mentor notes
-- **Checklist** (collapsible) — `encounter.agenda` items (server-filled from plan checklist); checked state persisted via PATCH
-- **Encounter** — TLDR one-sentence summary (always visible, autosave)
-- **Summary** / **Transcript** (collapsible) — large textarea autosave fields
+- **Profile** (collapsible) — read-only goals/interests and journey activity; editable mentor notes (while active)
+- **Checklist** (collapsible) — `encounter.agenda` items; checklist checkboxes are editable when status is `active` and disabled otherwise
+- **Encounter** — Date and Status are read-only; TLDR one-sentence summary is editable when status is `active`
+- **Summary** / **Transcript** (collapsible) — large markdown fields editable when status is `active`
+- **End Encounter Button** — visible in the header when `encounter.status === 'active'`. Clicking it dispatches `POST /api/encounter/{id}/finish` (`api.finishEncounter`), transitioning status to `complete`, hiding the button, and making all checklist checkboxes and editor fields read-only.
 
-**New Encounter** flow from Profile Detail: select a plan → `POST /api/encounter` with required `mentor_id`, `mentee_id`, and `plan_id` → navigate to detail page.
+When encounter status is `active`, all editors permit blur-to-save updates. When status is not `active` (e.g. `scheduled`, `complete`, `archived`), all controls on the page are read-only and checkboxes are disabled.
 
 E2E coverage: `cypress/e2e/encounter.cy.ts`, `cypress/e2e/profile.cy.ts`.
 
@@ -198,7 +197,7 @@ E2E coverage: `cypress/e2e/encounter.cy.ts`, `cypress/e2e/profile.cy.ts`.
 ```
 src/
   api/              # Mentor domain API client (profile, mentee, path, resource, plan, encounter)
-  components/       # Journey-specific UI (PlanChecklistEditor, PlanSelectDialog, admin)
+  components/       # Journey-specific UI (PlanChecklistEditor, ScheduleEncountersDialog, admin)
   pages/            # Detail/create pages only (no collection list dashboards)
   composables/      # useAuth (spa_utils re-export), useConfig, useRoles, useDiscoveryRedirect
   stores/           # Pinia stores (UI state only)
@@ -210,7 +209,7 @@ src/
 
 | Layer | Owns |
 |-------|------|
-| **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / plan-select presentation |
+| **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / schedule encounters presentation |
 | **`spa_utils` 1.0.5** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors |
 | **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |

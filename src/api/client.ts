@@ -14,6 +14,7 @@ import type {
   Encounter,
   EncounterInput,
   EncounterUpdate,
+  ScheduleEncounterInput,
 
   ProfileDetail,
   ProfilePropertiesResponse,
@@ -194,6 +195,25 @@ export const api = {
     return request<Encounter>(`/encounter/${encounterId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
+    })
+  },
+
+  async scheduleEncounters(data: ScheduleEncounterInput): Promise<Encounter[]> {
+    return request<Encounter[]>('/encounter/schedule', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async startEncounter(encounterId: string): Promise<Encounter> {
+    return request<Encounter>(`/encounter/${encounterId}/start`, {
+      method: 'POST',
+    })
+  },
+
+  async finishEncounter(encounterId: string): Promise<Encounter> {
+    return request<Encounter>(`/encounter/${encounterId}/finish`, {
+      method: 'POST',
     })
   },
 

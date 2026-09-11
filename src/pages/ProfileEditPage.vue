@@ -1,13 +1,5 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col>
-        <h1 class="text-h4 mb-4" data-automation-id="profile-edit-heading">
-          {{ displayName }}
-        </h1>
-      </v-col>
-    </v-row>
-
     <v-row v-if="isLoading">
       <v-col class="text-center">
         <v-progress-circular indeterminate color="primary" />
@@ -15,125 +7,123 @@
     </v-row>
 
     <template v-else-if="profileDetail">
+      <!-- Card 1: Mentee Name -->
       <v-row>
         <v-col cols="12">
-          <DataCard
-            v-model:collapsed="profileCollapsed"
-            title="Profile"
-            name-field="display_name"
-            :model="profileCardModel"
-            :on-save="readonlySave"
-            automation-id="profile-edit-profile-section"
+          <v-card
+            class="mh-card"
+            :class="{ 'mh-card--collapsed': profileCollapsed }"
+            variant="outlined"
+            rounded="lg"
+            elevation="2"
+            data-automation-id="profile-edit-profile-section"
           >
-            <v-row>
-              <v-col cols="12" md="6">
-                <SentenceEditor
-                  field="display_name"
-                  label="Name"
-                  :editable="false"
-                  automation-id="profile-edit-profile-name"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <EnumEditor
-                  field="status"
-                  enums="status"
-                  label="Status"
-                  :editable="false"
-                  automation-id="profile-edit-profile-status"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <DateTimeEditor
-                  field="start_date"
-                  label="Start Date"
-                  :editable="false"
-                  automation-id="profile-edit-profile-start-date"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <SentenceEditor
-                  field="location"
-                  label="Location"
-                  :editable="false"
-                  automation-id="profile-edit-profile-location"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <SentenceEditor
-                  field="employer"
-                  label="Employer"
-                  :editable="false"
-                  automation-id="profile-edit-profile-employer"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <SentenceEditor
-                  field="job_title"
-                  label="Job Title"
-                  :editable="false"
-                  automation-id="profile-edit-profile-job-title"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <EmailEditor
-                  field="email"
-                  label="Email"
-                  :editable="false"
-                  automation-id="profile-edit-profile-email"
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <UsPhoneEditor
-                  field="phone"
-                  label="Phone"
-                  :editable="false"
-                  automation-id="profile-edit-profile-phone"
-                />
-              </v-col>
-            </v-row>
-          </DataCard>
-        </v-col>
-      </v-row>
+            <v-toolbar
+              color="primary"
+              density="comfortable"
+              class="mh-card__title-bar"
+              flat
+            >
+              <v-toolbar-title class="mh-card__title" data-automation-id="profile-edit-profile-section-title-display">
+                <a
+                  :href="customerProfileHref"
+                  class="text-white text-decoration-none mentee-title-link"
+                  data-automation-id="profile-edit-customer-profile-link"
+                >
+                  {{ displayName }}
+                </a>
+              </v-toolbar-title>
 
-      <v-row class="mt-4">
-        <v-col cols="12">
-          <DataCard
-            v-model:collapsed="notesCollapsed"
-            title="Notes"
-            :model="menteeCardModel"
-            :on-save="updateMenteeField"
-            automation-id="profile-edit-notes-section"
-          >
+              <div class="mh-card__actions" data-automation-id="profile-edit-profile-section-actions-display">
+                <v-btn
+                  v-if="profileEmail"
+                  :href="`mailto:${profileEmail}`"
+                  icon
+                  variant="text"
+                  size="small"
+                  data-automation-id="profile-edit-mentee-mailto-link"
+                  :title="profileEmail"
+                >
+                  <v-icon>mdi-email</v-icon>
+                </v-btn>
+                <v-btn
+                  v-if="canStartEncounter && nextScheduledEncounter"
+                  color="success"
+                  class="ml-2"
+                  :loading="isStartingEncounter"
+                  data-automation-id="profile-edit-start-encounter-button"
+                  @click="handleStartEncounter"
+                >
+                  <v-icon start>mdi-play</v-icon>
+                  Start Encounter
+                </v-btn>
+              </div>
+
+              <v-btn
+                icon
+                variant="text"
+                size="small"
+                data-automation-id="profile-edit-profile-section-collapse-button"
+                @click="profileCollapsed = !profileCollapsed"
+              >
+                <v-icon>{{ profileCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
+              </v-btn>
+            </v-toolbar>
+
+            <v-card-text v-show="!profileCollapsed" class="mh-card__body">
+
+            <!-- Minimal Profile data: Goals and Interests -->
+            <div class="mb-4">
+              <p class="text-subtitle-2 text-medium-emphasis mb-1">Goals</p>
+              <div v-if="profileGoals.length" data-automation-id="profile-edit-goals-display">
+                <v-chip
+                  v-for="goal in profileGoals"
+                  :key="goal"
+                  size="small"
+                  class="mr-2 mb-2"
+                >
+                  {{ goal }}
+                </v-chip>
+              </div>
+              <p v-else class="text-body-2 text-medium-emphasis" data-automation-id="profile-edit-goals-display">—</p>
+            </div>
+
+            <div class="mb-6">
+              <p class="text-subtitle-2 text-medium-emphasis mb-1">Interests</p>
+              <div v-if="profileInterests.length" data-automation-id="profile-edit-interests-display">
+                <v-chip
+                  v-for="interest in profileInterests"
+                  :key="interest"
+                  size="small"
+                  color="primary"
+                  variant="tonal"
+                  class="mr-2 mb-2"
+                >
+                  {{ interest }}
+                </v-chip>
+              </div>
+              <p v-else class="text-body-2 text-medium-emphasis" data-automation-id="profile-edit-interests-display">—</p>
+            </div>
+
+            <!-- Editable Mentee collection fields: Summary and Notes -->
             <SentenceEditor
-              field="description"
-              label="Relationship Summary"
-              automation-id="profile-edit-notes-description-input"
-            />
-            <SentenceEditor
-              field="focus"
-              label="Focus"
-              class="mt-4"
-              automation-id="profile-edit-notes-focus-input"
-            />
-            <MarkdownEditor
-              field="homework"
-              label="Homework"
-              :rows="3"
-              class="mt-4"
-              automation-id="profile-edit-notes-homework-input"
+              field="summary"
+              label="Summary"
+              automation-id="profile-edit-mentee-summary-input"
             />
             <MarkdownEditor
               field="notes"
-              label="Mentor Notes"
+              label="Notes"
               :rows="4"
               class="mt-4"
-              automation-id="profile-edit-notes-input"
+              automation-id="profile-edit-mentee-notes-input"
             />
-          </DataCard>
+          </v-card-text>
+        </v-card>
         </v-col>
       </v-row>
 
+      <!-- Card 2: Encounters -->
       <v-row class="mt-4">
         <v-col cols="12">
           <MhCard
@@ -143,11 +133,11 @@
             <template #actions>
               <v-btn
                 color="primary"
-                data-automation-id="profile-edit-new-encounter-button"
-                @click="showPlanDialog = true"
+                data-automation-id="profile-edit-schedule-encounters-button"
+                @click="showScheduleDialog = true"
               >
-                <v-icon start>mdi-plus</v-icon>
-                New Encounter
+                <v-icon start>mdi-calendar-clock</v-icon>
+                Schedule Encounters
               </v-btn>
               <v-btn
                 icon
@@ -161,42 +151,31 @@
             </template>
 
             <div v-show="!encountersCollapsed">
-              <p
-                v-if="firstEncounterDate"
-                class="text-body-2 text-medium-emphasis mb-4"
-                data-automation-id="profile-edit-first-encounter-date"
-              >
-                First encounter: {{ firstEncounterDate }}
-              </p>
-
               <v-alert
-                v-if="sortedEncounters.length === 0"
+                v-if="completedEncounters.length === 0"
                 type="info"
                 variant="tonal"
                 data-automation-id="profile-edit-encounters-empty"
               >
-                No encounters recorded for this mentee yet.
+                No completed encounters recorded for this mentee yet.
               </v-alert>
 
-              <v-list v-else lines="two" data-automation-id="profile-edit-encounters-list">
+              <v-list v-else lines="one" data-automation-id="profile-edit-encounters-list">
                 <v-list-item
-                  v-for="encounter in sortedEncounters"
+                  v-for="encounter in completedEncounters"
                   :key="encounter._id"
-                  :to="`/encounter/${encounter._id}`"
                   data-automation-id="profile-edit-encounter-item"
                 >
                   <v-list-item-title>
-                    {{ encounter.tldr || 'Encounter' }}
+                    <router-link
+                      :to="`/encounter/${encounter._id}`"
+                      class="text-decoration-none text-primary font-weight-medium"
+                      data-automation-id="profile-edit-encounter-date-link"
+                    >
+                      {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
+                    </router-link>
+                    <span class="ml-1">{{ encounter.tldr || 'Encounter' }}</span>
                   </v-list-item-title>
-                  <v-list-item-subtitle>
-                    {{ encounterDateDisplay(encounter.date) }}
-                    <span v-if="encounter.status"> · {{ encounter.status }}</span>
-                  </v-list-item-subtitle>
-                  <template v-if="encounter.summary" #append>
-                    <span class="text-caption text-medium-emphasis d-none d-md-inline">
-                      {{ encounter.summary }}
-                    </span>
-                  </template>
                 </v-list-item>
               </v-list>
             </div>
@@ -204,15 +183,40 @@
         </v-col>
       </v-row>
 
-      <v-row class="mt-4">
-        <v-col>
-          <v-btn
-            :href="dashboardHref"
-            variant="text"
-            data-automation-id="profile-edit-dashboard-link"
+      <!-- Card 3: Breadcrumbs (admin only) -->
+      <v-row v-if="hasAdminRole" class="mt-4">
+        <v-col cols="12">
+          <DataCard
+            title="Breadcrumbs"
+            :model="breadcrumbsModel"
+            automation-id="profile-edit-breadcrumbs-section"
           >
-            Back to Dashboard
-          </v-btn>
+            <v-row>
+              <v-col cols="12" md="4">
+                <EnumEditor
+                  field="status"
+                  enums="status"
+                  label="Status"
+                  :editable="false"
+                  automation-id="profile-edit-status-display"
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <BreadcrumbDisplay
+                  field="created"
+                  label="Created"
+                  automation-id="profile-edit-created-breadcrumb"
+                />
+              </v-col>
+              <v-col cols="12" md="4">
+                <BreadcrumbDisplay
+                  field="saved"
+                  label="Saved"
+                  automation-id="profile-edit-saved-breadcrumb"
+                />
+              </v-col>
+            </v-row>
+          </DataCard>
         </v-col>
       </v-row>
     </template>
@@ -221,11 +225,12 @@
       {{ errorMessage }}
     </v-snackbar>
 
-    <PlanSelectDialog
-      v-model="showPlanDialog"
-      automation-prefix="profile-edit-new-encounter-plan"
-      :loading="isCreatingEncounter"
-      @submit="handleCreateEncounter"
+    <ScheduleEncountersDialog
+      v-model="showScheduleDialog"
+      :loading="isScheduling"
+      :mentor-id="mentorId"
+      :mentee-id="profileId"
+      @submit="handleScheduleEncounters"
     />
   </v-container>
 </template>
@@ -235,34 +240,36 @@ import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
+  BreadcrumbDisplay,
   DataCard,
-  DateTimeEditor,
-  EmailEditor,
   EnumEditor,
   MarkdownEditor,
   MhCard,
   SentenceEditor,
-  UsPhoneEditor,
   buildJourneyUrl,
   formatDate,
+  provideDataCardContext,
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
-import { PlanSelectDialog } from '@/components/dashboard'
+import { ScheduleEncountersDialog } from '@/components/dashboard'
 import { api } from '@/api/client'
-import type { Encounter, EncounterInput, MenteeUpdate, ProfileExperience } from '@/api/types'
-
-const dashboardHref = buildJourneyUrl('discovery')
+import { useRoles } from '@/composables/useRoles'
+import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
+import type { Encounter, ScheduleEncounterInput, MenteeUpdate } from '@/api/types'
 
 const routeLocation = useRoute()
 const router = useRouter()
 const queryClient = useQueryClient()
+const { hasRole } = useRoles()
+const hasAdminRole = hasRole('admin')
 
 const profileId = computed(() => routeLocation.params.id as string)
+const customerProfileHref = computed(() => buildJourneyUrl('customer', `profile/${profileId.value}`))
 
 const profileCollapsed = ref(false)
-const notesCollapsed = ref(false)
 const encountersCollapsed = ref(false)
-const showPlanDialog = ref(false)
+const showScheduleDialog = ref(false)
+const mentorId = computed(() => profileDetail.value?.profile?.mentor_id || '')
 
 const { data: profileDetail, isLoading, error: queryError } = useQuery({
   queryKey: ['profile', profileId],
@@ -271,80 +278,50 @@ const { data: profileDetail, isLoading, error: queryError } = useQuery({
 
 const displayName = computed(() => {
   const profile = profileDetail.value?.profile
-  if (!profile) return 'Profile'
-  return profile.display_name
+  if (!profile?.display_name) return 'Mentee'
+  return profile.display_name.startsWith('Mentee: ')
+    ? profile.display_name
+    : `Mentee: ${profile.display_name}`
 })
 
-const latestExperience = computed((): ProfileExperience | undefined => {
-  return profileDetail.value?.profile.experience?.[0]
-})
-
-const latestRole = computed(() => latestExperience.value?.roles?.[0])
-
-const profileCardModel = computed<Record<string, unknown>>(() => {
-  const profile = profileDetail.value?.profile
-  return {
-    ...profile,
-    display_name: profile?.display_name,
-    start_date: latestRole.value?.start || profile?.created?.at_time,
-    employer: latestExperience.value?.company,
-    job_title: latestRole.value?.title,
-  }
-})
+const profileEmail = computed(() => profileDetail.value?.profile.email)
+const profileGoals = computed(() => profileDetail.value?.profile.goals ?? [])
+const profileInterests = computed(() => profileDetail.value?.profile.interests ?? [])
 
 const menteeCardModel = computed<Record<string, unknown>>(() => ({
   ...profileDetail.value?.mentee,
 }))
 
-function readonlySave(_field: string, _value: unknown): Promise<void> {
-  return Promise.resolve()
-}
-
-const { mutate: createEncounter, isPending: isCreatingEncounter } = useMutation<{ _id: string }, Error, EncounterInput>({
-  mutationFn: (payload: EncounterInput) => api.createEncounter(payload),
-  onSuccess: (response) => {
-    queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
-    showPlanDialog.value = false
-    errorRef.value = null
-    router.push(`/encounter/${response._id}`)
-  },
-  onError: (error: Error) => {
-    errorRef.value = error
-  },
-})
-
-function handleCreateEncounter(planId: string) {
-  const mentorId = profileDetail.value?.profile.mentor_id
-  if (!mentorId) {
-    errorRef.value = new Error('Mentor is not assigned to this profile.')
-    return
+const breadcrumbsModel = computed<Record<string, unknown>>(() => {
+  const mentee = profileDetail.value?.mentee
+  const profile = profileDetail.value?.profile
+  return {
+    status: mentee?.status || profile?.status || 'active',
+    created: mentee?.created || profile?.created,
+    saved: mentee?.saved || profile?.saved,
   }
-
-  createEncounter({
-    mentor_id: mentorId,
-    mentee_id: profileId.value,
-    plan_id: planId,
-    status: 'active',
-  })
-}
-
-const sortedEncounters = computed((): Encounter[] => {
-  const encounters = profileDetail.value?.encounters ?? []
-  return [...encounters].sort((a, b) => {
-    const aTime = a.date || a.created.at_time
-    const bTime = b.date || b.created.at_time
-    return new Date(bTime).getTime() - new Date(aTime).getTime()
-  })
 })
 
-const firstEncounterDate = computed(() => {
-  if (sortedEncounters.value.length === 0) return null
-  const oldest = [...sortedEncounters.value].sort((a, b) => {
-    const aTime = a.date || a.created.at_time
-    const bTime = b.date || b.created.at_time
-    return new Date(aTime).getTime() - new Date(bTime).getTime()
-  })[0]
-  return encounterDateDisplay(oldest.date || oldest.created.at_time)
+const allEncounters = computed((): Encounter[] => profileDetail.value?.encounters ?? [])
+
+const nextScheduledEncounter = computed(() => getNextScheduledEncounter(allEncounters.value))
+
+const nextScheduledDate = computed(() => {
+  const enc = nextScheduledEncounter.value
+  if (!enc) return undefined
+  return enc.appointment?.from || enc.date || enc.created?.at_time
+})
+
+const canStartEncounter = computed(() => isEncounterDateToday(nextScheduledDate.value))
+
+const completedEncounters = computed((): Encounter[] => {
+  return allEncounters.value
+    .filter((e) => e.status === 'complete')
+    .sort((a, b) => {
+      const aTime = a.appointment?.from || a.date || a.created?.at_time || ''
+      const bTime = b.appointment?.from || b.date || b.created?.at_time || ''
+      return new Date(bTime).getTime() - new Date(aTime).getTime()
+    })
 })
 
 function encounterDateDisplay(date?: string) {
@@ -376,9 +353,57 @@ const { mutateAsync: updateMentee } = useMutation({
 })
 
 async function updateMenteeField(field: string, value: unknown) {
-  if (!['description', 'focus', 'homework', 'notes'].includes(field)) {
+  if (!['summary', 'notes'].includes(field)) {
     throw new Error(`Unsupported mentee field: ${field}`)
   }
   await updateMentee({ [field]: String(value ?? '') } as MenteeUpdate)
 }
+
+provideDataCardContext({
+  model: () => menteeCardModel.value,
+  onSave: updateMenteeField,
+})
+
+const { mutate: scheduleEncounters, isPending: isScheduling } = useMutation<Encounter[], Error, ScheduleEncounterInput>({
+  mutationFn: (payload: ScheduleEncounterInput) => api.scheduleEncounters(payload),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
+    showScheduleDialog.value = false
+    errorRef.value = null
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+function handleScheduleEncounters(payload: ScheduleEncounterInput) {
+  if (!payload.mentor_id) {
+    errorRef.value = new Error('Mentor is not assigned to this profile.')
+    return
+  }
+  scheduleEncounters(payload)
+}
+
+const { mutate: startEncounterMutation, isPending: isStartingEncounter } = useMutation({
+  mutationFn: (encounterId: string) => api.startEncounter(encounterId),
+  onSuccess: (encounter) => {
+    queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
+    queryClient.invalidateQueries({ queryKey: ['encounter', encounter._id] })
+    router.push(`/encounter/${encounter._id}`)
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+function handleStartEncounter() {
+  if (!nextScheduledEncounter.value?._id) return
+  startEncounterMutation(nextScheduledEncounter.value._id)
+}
 </script>
+
+<style scoped>
+.mentee-title-link:hover {
+  text-decoration: underline !important;
+}
+</style>

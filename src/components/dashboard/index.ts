@@ -1,1 +1,1 @@
-export { default as PlanSelectDialog } from './PlanSelectDialog.vue'
+export { default as ScheduleEncountersDialog } from './ScheduleEncountersDialog.vue'

@@ -87,14 +87,22 @@ export interface EncounterAgendaItem {
   step?: string
 }
 
+export interface EncounterAppointment {
+  from?: string
+  to?: string
+}
+
 export interface Encounter {
   _id: string
   mentor_id?: string
   mentee_id?: string
   plan_id?: string
   agenda?: EncounterAgendaItem[]
+  appointment?: EncounterAppointment
   date?: string
-  status?: 'active' | 'archived'
+  status?: 'active' | 'archived' | 'complete' | 'scheduled'
+  mentee_name?: string
+  mentor_name?: string
   tldr?: string
   summary?: string
   transcript?: string
@@ -106,8 +114,9 @@ export interface EncounterInput {
   mentor_id: string
   mentee_id: string
   plan_id: string
+  appointment?: EncounterAppointment
   date?: string
-  status?: 'active' | 'archived'
+  status?: 'active' | 'archived' | 'complete' | 'scheduled'
   tldr?: string
   summary?: string
   transcript?: string
@@ -118,11 +127,23 @@ export interface EncounterUpdate {
   mentee_id?: string
   plan_id?: string
   agenda?: EncounterAgendaItem[]
+  appointment?: EncounterAppointment
   date?: string
-  status?: 'active' | 'archived'
+  status?: 'active' | 'archived' | 'complete' | 'scheduled'
   tldr?: string
   summary?: string
   transcript?: string
+}
+
+export interface ScheduleEncounterInput {
+  mentor_id: string
+  mentee_id: string
+  plan_id: string
+  start_date: string
+  day_of_week: number
+  time_of_day: string
+  recurrence_days?: number
+  count: number
 }
 
 
@@ -167,6 +188,7 @@ export interface Mentee {
   name?: string
   profile_id?: string
   status?: 'active' | 'archived'
+  summary?: string
   description?: string
   focus?: string
   homework?: string
@@ -181,6 +203,7 @@ export interface MenteeUpdate {
   name?: string
   profile_id?: string
   status?: 'active' | 'archived'
+  summary?: string
   description?: string
   focus?: string
   homework?: string

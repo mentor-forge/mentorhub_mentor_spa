@@ -1,53 +1,101 @@
 describe('Encounter Domain', () => {
-  beforeEach(() => {
+  it('should show active encounter editable fields and End Encounter button', () => {
     cy.mentorMenteeProfileId().then((profileId) => {
-      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
+      cy.createTestEncounter(profileId, 'active').then((encounterId) => {
+        cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
+
+        cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
+        cy.get('[data-automation-id="encounter-detail-profile-section"]').should('be.visible')
+        cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('be.visible')
+        cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('be.visible')
+        cy.get('[data-automation-id="encounter-detail-profile-section"]').should('have.class', 'mh-card')
+        cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('have.class', 'mh-card')
+        cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card')
+
+        // End Encounter button visible for active encounter
+        cy.get('[data-automation-id="encounter-detail-end-button"]').should('be.visible')
+
+        // Date and Status are read-only
+        cy.get('[data-automation-id^="encounter-detail-date-input"]').should('exist')
+        cy.get('[data-automation-id^="encounter-detail-status-select"]').should('exist')
+
+        // Active encounter: TLDR, Summary, and Checklist are editable
+        cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('exist').and('not.be.disabled')
+        cy.get('[data-automation-id="encounter-detail-summary-input"]').find('textarea').should('exist').and('not.be.disabled')
+        cy.get('[data-automation-id="encounter-detail-checklist-section"]')
+          .find('input[type="checkbox"]')
+          .each(($cb) => {
+            cy.wrap($cb).should('not.be.disabled')
+          })
+      })
     })
   })
 
-  it('should create an encounter from ProfileEditPage plan dialog', () => {
-    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-dialog"]').should('be.visible')
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
+  it('should update encounter TLDR on active detail page', () => {
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.createTestEncounter(profileId, 'active').then((encounterId) => {
+        cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
 
-    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
-    cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
-    cy.get('[data-automation-id="encounter-detail-profile-section"]').should('be.visible')
-    cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('be.visible')
-    cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('be.visible')
-    cy.get('[data-automation-id="encounter-detail-profile-section"]').should('have.class', 'mh-card')
-    cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('have.class', 'mh-card')
-    cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card')
-    cy.get('[data-automation-id="encounter-detail-date-input"]').find('input[type="date"]').should('exist')
-    cy.get('[data-automation-id="encounter-detail-status-select"]').should('be.visible')
-    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('exist')
+        const tldr = `Cypress encounter ${Date.now()}`
+        cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').clear().type(tldr)
+        cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').blur()
+        cy.wait(1000)
+        cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('have.value', tldr)
+      })
+    })
   })
 
-  it('should update encounter TLDR on detail page', () => {
-    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
-    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
+  it('should finish active encounter when End Encounter button is clicked and appear in mentee encounters list', () => {
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.createTestEncounter(profileId, 'active').then((encounterId) => {
+        cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
 
-    const tldr = `Cypress encounter ${Date.now()}`
-    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').clear().type(tldr)
-    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').blur()
-    cy.wait(1000)
-    cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('have.value', tldr)
+        cy.intercept('POST', '**/api/encounter/*/finish').as('finishEncounter')
+        cy.get('[data-automation-id="encounter-detail-end-button"]').should('be.visible').click()
+        cy.wait('@finishEncounter')
+
+        // End Encounter button should disappear after finish
+        cy.get('[data-automation-id="encounter-detail-end-button"]').should('not.exist')
+
+        // Checkboxes should become disabled
+        cy.get('[data-automation-id="encounter-detail-checklist-section"]')
+          .find('input[type="checkbox"]')
+          .each(($cb) => {
+            cy.wrap($cb).should('be.disabled')
+          })
+
+        // Return to mentee profile page and verify encounter appears in completed encounters list
+        cy.get('[data-automation-id="encounter-detail-back-button"]').click()
+        cy.url().should('match', new RegExp(`/mentor/mentee/${profileId}$`))
+        cy.get('[data-automation-id="profile-edit-encounters-list"]').should('be.visible')
+        cy.get(`[data-automation-id="profile-edit-encounter-date-link"][href*="${encounterId}"]`).should('exist')
+      })
+    })
   })
 
-  it('should open encounter detail from profile encounters list and go back', () => {
-    cy.get('[data-automation-id="profile-edit-new-encounter-button"]').click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-item"]').first().click()
-    cy.get('[data-automation-id="profile-edit-new-encounter-plan-submit-button"]').click()
-    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
+  it('should render complete encounter as read-only with disabled checkboxes and no End Encounter button', () => {
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.createTestEncounter(profileId, 'complete').then((encounterId) => {
+        cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
 
-    cy.get('[data-automation-id="encounter-detail-back-button"]').click()
-    cy.url().should('match', /\/mentor\/mentee\/[0-9a-fA-F]{24}$/)
+        cy.get('[data-automation-id="encounter-detail-end-button"]').should('not.exist')
+        cy.get('[data-automation-id="encounter-detail-checklist-section"]')
+          .find('input[type="checkbox"]')
+          .each(($cb) => {
+            cy.wrap($cb).should('be.disabled')
+          })
+      })
+    })
+  })
 
-    cy.get('[data-automation-id="profile-edit-encounter-item"]').first().click()
-    cy.url().should('match', /\/mentor\/encounter\/[0-9a-fA-F]{24}$/)
-    cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
+  it('should open encounter detail and navigate back to mentee profile', () => {
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.createTestEncounter(profileId, 'active').then((encounterId) => {
+        cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
+
+        cy.get('[data-automation-id="encounter-detail-back-button"]').click()
+        cy.url().should('match', new RegExp(`/mentor/mentee/${profileId}$`))
+      })
+    })
   })
 })
