@@ -153,7 +153,7 @@
       </v-row>
 
       <!-- Card 3: Breadcrumbs (admin only) -->
-      <v-row v-if="hasRole('admin')" class="mt-4">
+      <v-row v-if="hasAdminRole" class="mt-4">
         <v-col cols="12">
           <DataCard
             title="Breadcrumbs"
@@ -243,6 +243,7 @@ const routeLocation = useRoute()
 const router = useRouter()
 const queryClient = useQueryClient()
 const { hasRole } = useRoles()
+const hasAdminRole = hasRole('admin')
 
 const profileId = computed(() => routeLocation.params.id as string)
 

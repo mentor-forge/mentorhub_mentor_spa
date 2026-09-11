@@ -1,10 +1,21 @@
 <template>
   <v-container>
-    <v-row>
-      <v-col>
-        <h1 class="text-h4 mb-4" data-automation-id="encounter-detail-heading">
+    <v-row class="align-center justify-space-between mb-4">
+      <v-col cols="auto">
+        <h1 class="text-h4" data-automation-id="encounter-detail-heading">
           {{ pageHeading }}
         </h1>
+      </v-col>
+      <v-col v-if="isEncounterActive" cols="auto">
+        <v-btn
+          color="error"
+          :loading="isFinishingEncounter"
+          data-automation-id="encounter-detail-end-button"
+          @click="handleFinishEncounter"
+        >
+          <v-icon start>mdi-stop</v-icon>
+          End Encounter
+        </v-btn>
       </v-col>
     </v-row>
 
@@ -431,5 +442,23 @@ function goBack() {
     return
   }
   redirectToDiscoveryDashboard()
+}
+
+const { mutate: finishEncounterMutation, isPending: isFinishingEncounter } = useMutation({
+  mutationFn: () => api.finishEncounter(encounterId.value),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
+    if (menteeId.value) {
+      queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
+    }
+    errorRef.value = null
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+function handleFinishEncounter() {
+  finishEncounterMutation()
 }
 </script>

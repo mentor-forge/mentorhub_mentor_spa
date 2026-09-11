@@ -1,6 +1,6 @@
 # R165 – End Encounter button on Encounter Detail page
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R160_sync_encounter_workflow_api_client, R162_encounter_detail_active_readonly  
 **Description**: Implement the End Encounter button on `EncounterEditPage` ([mentorhub_mentor_spa#22](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22)). The button is visible while the encounter is in `active` status. Clicking it calls `api.finishEncounter`, transitions status to `complete`, and refreshes the page so all data becomes read-only per R162.
@@ -74,4 +74,17 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Implementation Summary
+- Added `encounter-detail-end-button` button to `EncounterEditPage.vue` header, visible when `isEncounterActive` (`encounter.status === 'active'`).
+- Integrated `finishEncounterMutation` with `useMutation` calling `api.finishEncounter(encounterId.value)` (`POST /api/encounter/{id}/finish`).
+- On mutation success, invalidates query cache for `['encounter', encounterId.value]` and `['profile', menteeId.value]`, transitioning the page to read-only mode and hiding the End Encounter button. Handled errors with `errorRef` / `useErrorHandler`.
+- In `ProfileEditPage.vue`, fixed `hasAdminRole` ref evaluation so `Breadcrumbs` card correctly hides for mentors without admin role.
+- Updated `cypress/e2e/encounter.cy.ts` with comprehensive E2E tests validating active encounter display, End Encounter button visibility, finish mutation triggering, status transition to complete, and read-only field verification.
+- Documented `finishEncounter` API client method and End Encounter button workflow in `README.md`.
+
+### Test Results
+- `npm run test`: 16/16 test files passed, 115/115 tests passed.
+- `npm run build`: built cleanly in Vite (`vue-tsc && vite build`).
+- `npm run cypress:run:spec -- cypress/e2e/encounter.cy.ts`: 5/5 passed (100%).
+- `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`: 11/11 passed (100%).
+- `npm run container`: built image `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` successfully.

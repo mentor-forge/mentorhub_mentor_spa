@@ -23,7 +23,7 @@ describe('Profile Edit Page', () => {
 
   it('should show Breadcrumbs card when user has admin role', () => {
     cy.mentorMenteeProfileId().then((profileId) => {
-      cy.login(['mentor', 'admin'], `/mentor/mentee/${profileId}`)
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`, ['mentor', 'admin'])
       cy.get('[data-automation-id="profile-edit-breadcrumbs-section"]').should('be.visible')
       cy.get('[data-automation-id="profile-edit-status-display"]').should('exist')
       cy.get('[data-automation-id="profile-edit-created-breadcrumb"]').should('exist')
@@ -68,7 +68,12 @@ describe('Profile Edit Page', () => {
   })
 
   it('should show Start Encounter button when next scheduled encounter is today, and navigate on click', () => {
-    const todayStr = new Date().toISOString().slice(0, 10)
+    const d = new Date()
+    const todayStr = [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0'),
+    ].join('-')
     cy.intercept('GET', '**/api/profile/*', (req) => {
       req.continue((res) => {
         if (res.body) {

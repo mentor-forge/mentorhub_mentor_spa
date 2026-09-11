@@ -56,10 +56,10 @@ function seedAuthAndVisit(
 }
 
 /** Login as seeded mentor profile (default user: marti) for dashboard tests. */
-Cypress.Commands.add('loginAsMentor', (visitPath = defaultVisitPath) => {
+Cypress.Commands.add('loginAsMentor', (visitPath = defaultVisitPath, roles: string[] = ['mentor']) => {
   const mentorUser = Cypress.env('MENTOR_DASHBOARD_USER') as string
   const profileId = Cypress.env('MENTOR_DASHBOARD_PROFILE_ID') as string
-  seedAuthAndVisit(['mentor', 'admin'], visitPath, mentorUser, profileId)
+  seedAuthAndVisit(roles, visitPath, mentorUser, profileId)
 })
 
 /** Programmatic login then visit a path (skips `/` dashboard redirect). */
@@ -95,7 +95,8 @@ Cypress.Commands.add('mentorMenteeProfileId', () => {
           if (!response.body.length || !response.body[0]._id) {
             throw new Error(`Seeded mentor '${mentorUser}' has no mentees returned from GET /mentor/api/profile`)
           }
-          return response.body[0]._id as string
+          const activeMentee = response.body.find((m: { name?: string }) => !m.name?.includes('Left')) || response.body[0]
+          return activeMentee._id as string
         })
     })
 })
@@ -118,14 +119,54 @@ Cypress.Commands.add('closeNavDrawer', () => {
     .should('not.have.class', 'v-navigation-drawer--active')
 })
 
+/** Create test encounter via API for integration testing. */
+Cypress.Commands.add('createTestEncounter', (menteeId: string, status = 'active') => {
+  const mentorUser = Cypress.env('MENTOR_DASHBOARD_USER') as string
+  const profileId = Cypress.env('MENTOR_DASHBOARD_PROFILE_ID') as string
+  const secret = Cypress.env('JWT_SECRET') as string
+
+  return cy
+    .task<{ token: string; expiresAt: string }>('signCypressJwt', {
+      roles: ['mentor', 'admin'],
+      secret,
+      sub: mentorUser,
+      profile_id: profileId,
+    })
+    .then(({ token }) => {
+      return cy
+        .request({
+          method: 'GET',
+          url: '/mentor/api/plan',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((planRes) => {
+          const planId = planRes.body[0]?._id
+          return cy
+            .request({
+              method: 'POST',
+              url: '/mentor/api/encounter',
+              headers: { Authorization: `Bearer ${token}` },
+              body: {
+                mentor_id: profileId,
+                mentee_id: menteeId,
+                plan_id: planId,
+                status,
+              },
+            })
+            .then((encounterRes) => encounterRes.body._id as string)
+        })
+    })
+})
+
 declare global {
   namespace Cypress {
     interface Chainable {
       /** `cy.visit` restricted to `/mentor/`-prefixed URLs, asserting the fetched document URL. */
       visitPrefixed(path: string, options?: Partial<Cypress.VisitOptions>): Chainable<void>
-      loginAsMentor(visitPath?: string): Chainable<void>
+      loginAsMentor(visitPath?: string, roles?: string[]): Chainable<void>
       loginAndVisit(path: string, roles?: string[]): Chainable<void>
       mentorMenteeProfileId(): Chainable<string>
+      createTestEncounter(menteeId: string, status?: string): Chainable<string>
       openNavDrawer(): Chainable<void>
       closeNavDrawer(): Chainable<void>
     }

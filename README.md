@@ -125,7 +125,7 @@ Mentee collection browsing is hosted on Discovery (`/discovery/`).
 - **Encounters** — simple list of `{Date}: {TLDR}` filtered to `status = complete`, ordered by appointment date (most recent first), date linking to `/encounter/{id}`
 - **Breadcrumbs** — visible only to users with the `admin` role (`hasRole('admin')`), displaying mentee status and Created/Saved audit breadcrumbs
 
-API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`, `api.scheduleEncounters(data)`, `api.startEncounter(id)`.
+API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`, `api.scheduleEncounters(data)`, `api.startEncounter(id)`, `api.finishEncounter(id)`.
 
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
 
@@ -178,7 +178,7 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 
 | Route | Page | API |
 |-------|------|-----|
-| `/encounter/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}` |
+| `/encounter/:id` | `EncounterEditPage` — Encounter Detail with Profile, Checklist, TLDR, Summary, and Transcript sections | `GET /api/encounter/{id}`, `GET /api/profile/{id}`, `GET /api/profile/{id}/properties`, `PATCH /api/encounter/{id}`, `PATCH /api/mentee/{id}`, `POST /api/encounter/{id}/finish` |
 
 **Encounter Detail** page layout:
 
@@ -186,6 +186,7 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 - **Checklist** (collapsible) — `encounter.agenda` items; checklist checkboxes are editable when status is `active` and disabled otherwise
 - **Encounter** — Date and Status are read-only; TLDR one-sentence summary is editable when status is `active`
 - **Summary** / **Transcript** (collapsible) — large markdown fields editable when status is `active`
+- **End Encounter Button** — visible in the header when `encounter.status === 'active'`. Clicking it dispatches `POST /api/encounter/{id}/finish` (`api.finishEncounter`), transitioning status to `complete`, hiding the button, and making all checklist checkboxes and editor fields read-only.
 
 When encounter status is `active`, all editors permit blur-to-save updates. When status is not `active` (e.g. `scheduled`, `complete`, `archived`), all controls on the page are read-only and checkboxes are disabled.
 
