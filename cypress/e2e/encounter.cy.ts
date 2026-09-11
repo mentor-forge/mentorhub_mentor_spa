@@ -19,8 +19,9 @@ describe('Encounter Domain', () => {
         cy.get('[data-automation-id^="encounter-detail-date-input"]').should('exist')
         cy.get('[data-automation-id^="encounter-detail-status-select"]').should('exist')
 
-        // Active encounter: TLDR and Checklist are editable
+        // Active encounter: TLDR, Summary, and Checklist are editable
         cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('exist').and('not.be.disabled')
+        cy.get('[data-automation-id="encounter-detail-summary-input"]').find('textarea').should('exist').and('not.be.disabled')
         cy.get('[data-automation-id="encounter-detail-checklist-section"]')
           .find('input[type="checkbox"]')
           .each(($cb) => {
@@ -44,7 +45,7 @@ describe('Encounter Domain', () => {
     })
   })
 
-  it('should finish active encounter when End Encounter button is clicked', () => {
+  it('should finish active encounter when End Encounter button is clicked and appear in mentee encounters list', () => {
     cy.mentorMenteeProfileId().then((profileId) => {
       cy.createTestEncounter(profileId, 'active').then((encounterId) => {
         cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
@@ -62,6 +63,12 @@ describe('Encounter Domain', () => {
           .each(($cb) => {
             cy.wrap($cb).should('be.disabled')
           })
+
+        // Return to mentee profile page and verify encounter appears in completed encounters list
+        cy.get('[data-automation-id="encounter-detail-back-button"]').click()
+        cy.url().should('match', new RegExp(`/mentor/mentee/${profileId}$`))
+        cy.get('[data-automation-id="profile-edit-encounters-list"]').should('be.visible')
+        cy.get(`[data-automation-id="profile-edit-encounter-date-link"][href*="${encounterId}"]`).should('exist')
       })
     })
   })

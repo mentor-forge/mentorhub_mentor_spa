@@ -41,6 +41,43 @@ describe('Profile Edit Page', () => {
     })
   })
 
+  it('should display completed encounters in Encounters card with date linking to detail page', () => {
+    cy.intercept('GET', '**/api/profile/*', (req) => {
+      req.continue((res) => {
+        if (res.body) {
+          res.body.encounters = [
+            {
+              _id: '67a000000000000000000010',
+              mentor_id: 'mentor-1',
+              mentee_id: res.body.profile?._id,
+              status: 'complete',
+              date: '2026-08-15',
+              tldr: 'Completed milestone review',
+            },
+            {
+              _id: '67a000000000000000000011',
+              mentor_id: 'mentor-1',
+              mentee_id: res.body.profile?._id,
+              status: 'scheduled',
+              date: '2026-08-20',
+              tldr: 'Future scheduled encounter',
+            },
+          ]
+        }
+      })
+    })
+
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
+    })
+
+    cy.get('[data-automation-id="profile-edit-encounters-list"]').should('be.visible')
+    cy.get('[data-automation-id="profile-edit-encounter-item"]').should('have.length', 1)
+    cy.get('[data-automation-id="profile-edit-encounter-item"]').first().should('contain.text', 'Completed milestone review')
+    cy.get('[data-automation-id="profile-edit-encounter-date-link"]')
+      .should('have.attr', 'href', '/mentor/encounter/67a000000000000000000010')
+  })
+
   it('should update mentee summary and notes fields', () => {
     const summary = `Cypress summary ${Date.now()}`
     cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').clear().type(summary).blur()
