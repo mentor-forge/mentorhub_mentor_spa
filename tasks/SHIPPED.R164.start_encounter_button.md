@@ -1,6 +1,6 @@
 # R164 – Start Encounter button in Mentee Name card
 
-**Status**: Pending  
+**Status**: Complete  
 **Type**: Feature  
 **Depends On**: R160_sync_encounter_workflow_api_client, R161_mentee_page_three_datacards  
 **Description**: Implement the Start Encounter button in the Mentee Name card ([mentorhub_mentor_spa#22](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22)). The button is visible only when the next scheduled encounter date is today. Clicking it calls `api.startEncounter` and opens the encounter detail page.
@@ -82,4 +82,10 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Created pure date utilities in `src/utils/date.ts` (`isEncounterDateToday`, `getNextScheduledEncounter`).
+- Added comprehensive unit tests in `src/utils/date.test.ts` covering date formats, edge cases, and appointment timestamp fallbacks.
+- Updated `ProfileEditPage.vue` to display the `Start Encounter` button (`data-automation-id="profile-edit-start-encounter-button"`) in Card 1 when the next scheduled encounter date is today.
+- Wired the button click to invoke `api.startEncounter(id)` via Vue Query mutation, invalidate cache, and navigate to `/encounter/${id}`.
+- Added E2E tests in `cypress/e2e/profile.cy.ts` asserting visibility when an encounter is scheduled for today, absence when the encounter is in the future, and navigation upon click.
+- Updated `README.md` documenting Start Encounter button visibility rules and API client methods.
+- Verified unit tests (`npm run test`) and production build (`npm run build`).

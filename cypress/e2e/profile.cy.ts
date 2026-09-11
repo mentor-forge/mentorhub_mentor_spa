@@ -67,6 +67,65 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-schedule-encounters-dialog"]').should('not.exist')
   })
 
+  it('should show Start Encounter button when next scheduled encounter is today, and navigate on click', () => {
+    const todayStr = new Date().toISOString().slice(0, 10)
+    cy.intercept('GET', '**/api/profile/*', (req) => {
+      req.continue((res) => {
+        if (res.body) {
+          res.body.encounters = [
+            {
+              _id: '67a000000000000000000001',
+              mentor_id: 'mentor-1',
+              mentee_id: res.body.profile?._id,
+              status: 'scheduled',
+              date: todayStr,
+            },
+          ]
+        }
+      })
+    })
+
+    cy.intercept('POST', '**/api/encounter/*/start', {
+      statusCode: 200,
+      body: {
+        _id: '67a000000000000000000001',
+        status: 'active',
+      },
+    }).as('startEncounter')
+
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
+    })
+
+    cy.get('[data-automation-id="profile-edit-start-encounter-button"]').should('be.visible').click()
+    cy.wait('@startEncounter')
+    cy.url().should('match', /\/mentor\/encounter\/67a000000000000000000001$/)
+  })
+
+  it('should not show Start Encounter button when next scheduled encounter is in future', () => {
+    cy.intercept('GET', '**/api/profile/*', (req) => {
+      req.continue((res) => {
+        if (res.body) {
+          res.body.encounters = [
+            {
+              _id: '67a000000000000000000002',
+              mentor_id: 'mentor-1',
+              mentee_id: res.body.profile?._id,
+              status: 'scheduled',
+              date: '2099-01-01',
+            },
+          ]
+        }
+      })
+    })
+
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
+    })
+
+    cy.get('[data-automation-id="profile-edit-start-encounter-button"]').should('not.exist')
+  })
+
   it('should have a Back to Dashboard link pointing to Discovery', () => {
     cy.get('[data-automation-id="profile-edit-dashboard-link"]')
       .should('be.visible')

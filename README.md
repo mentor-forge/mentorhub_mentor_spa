@@ -121,11 +121,11 @@ Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
 **ProfileEditPage** loads composite profile detail (`profile`, `mentee`, `encounters`) into three DataCards:
 
-- **Mentee Name** — mentee display name with mailto link, minimal read-only goals and interests, editable mentee `summary` and `notes`, and action slot for starting encounters
+- **Mentee Name** — mentee display name with mailto link, minimal read-only goals and interests, editable mentee `summary` and `notes`, and a **Start Encounter** button visible when the next scheduled encounter date is today. Clicking Start Encounter invokes `POST /api/encounter/{id}/start` (`api.startEncounter`) and navigates directly to `/encounter/{id}`
 - **Encounters** — simple list of `{Date}: {TLDR}` filtered to `status = complete`, ordered by appointment date (most recent first), date linking to `/encounter/{id}`
 - **Breadcrumbs** — visible only to users with the `admin` role (`hasRole('admin')`), displaying mentee status and Created/Saved audit breadcrumbs
 
-API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`.
+API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`, `api.scheduleEncounters(data)`, `api.startEncounter(id)`.
 
 E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
 

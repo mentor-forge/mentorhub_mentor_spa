@@ -29,7 +29,17 @@
               >
                 <v-icon>mdi-email</v-icon>
               </v-btn>
-              <!-- Slot / placeholder for Start Encounter button (wired in R164) -->
+              <v-btn
+                v-if="canStartEncounter && nextScheduledEncounter"
+                color="success"
+                class="ml-2"
+                :loading="isStartingEncounter"
+                data-automation-id="profile-edit-start-encounter-button"
+                @click="handleStartEncounter"
+              >
+                <v-icon start>mdi-play</v-icon>
+                Start Encounter
+              </v-btn>
             </template>
 
             <!-- Minimal Profile data: Goals and Interests -->
@@ -208,7 +218,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
   BreadcrumbDisplay,
@@ -224,11 +234,13 @@ import {
 import { ScheduleEncountersDialog } from '@/components/dashboard'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
+import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
 import type { Encounter, ScheduleEncounterInput, MenteeUpdate } from '@/api/types'
 
 const dashboardHref = buildJourneyUrl('discovery')
 
 const routeLocation = useRoute()
+const router = useRouter()
 const queryClient = useQueryClient()
 const { hasRole } = useRoles()
 
@@ -268,9 +280,20 @@ const breadcrumbsModel = computed<Record<string, unknown>>(() => {
   }
 })
 
+const allEncounters = computed((): Encounter[] => profileDetail.value?.encounters ?? [])
+
+const nextScheduledEncounter = computed(() => getNextScheduledEncounter(allEncounters.value))
+
+const nextScheduledDate = computed(() => {
+  const enc = nextScheduledEncounter.value
+  if (!enc) return undefined
+  return enc.appointment?.from || enc.date || enc.created?.at_time
+})
+
+const canStartEncounter = computed(() => isEncounterDateToday(nextScheduledDate.value))
+
 const completedEncounters = computed((): Encounter[] => {
-  const encounters = profileDetail.value?.encounters ?? []
-  return encounters
+  return allEncounters.value
     .filter((e) => e.status === 'complete')
     .sort((a, b) => {
       const aTime = a.appointment?.from || a.date || a.created?.at_time || ''
@@ -332,5 +355,22 @@ function handleScheduleEncounters(payload: ScheduleEncounterInput) {
     return
   }
   scheduleEncounters(payload)
+}
+
+const { mutate: startEncounterMutation, isPending: isStartingEncounter } = useMutation({
+  mutationFn: (encounterId: string) => api.startEncounter(encounterId),
+  onSuccess: (encounter) => {
+    queryClient.invalidateQueries({ queryKey: ['profile', profileId.value] })
+    queryClient.invalidateQueries({ queryKey: ['encounter', encounter._id] })
+    router.push(`/encounter/${encounter._id}`)
+  },
+  onError: (error: Error) => {
+    errorRef.value = error
+  },
+})
+
+function handleStartEncounter() {
+  if (!nextScheduledEncounter.value?._id) return
+  startEncounterMutation(nextScheduledEncounter.value._id)
 }
 </script>
