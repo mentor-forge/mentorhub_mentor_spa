@@ -182,12 +182,12 @@ E2E coverage: `cypress/e2e/plan.cy.ts`.
 
 **Encounter Detail** page layout:
 
-- **Profile** (collapsible) — read-only goals/interests and journey activity (recent completions, resources in Now); editable mentor notes
-- **Checklist** (collapsible) — `encounter.agenda` items (server-filled from plan checklist); checked state persisted via PATCH
-- **Encounter** — TLDR one-sentence summary (always visible, autosave)
-- **Summary** / **Transcript** (collapsible) — large textarea autosave fields
+- **Profile** (collapsible) — read-only goals/interests and journey activity; editable mentor notes (while active)
+- **Checklist** (collapsible) — `encounter.agenda` items; checklist checkboxes are editable when status is `active` and disabled otherwise
+- **Encounter** — Date and Status are read-only; TLDR one-sentence summary is editable when status is `active`
+- **Summary** / **Transcript** (collapsible) — large markdown fields editable when status is `active`
 
-**New Encounter** flow from Profile Detail: select a plan → `POST /api/encounter` with required `mentor_id`, `mentee_id`, and `plan_id` → navigate to detail page.
+When encounter status is `active`, all editors permit blur-to-save updates. When status is not `active` (e.g. `scheduled`, `complete`, `archived`), all controls on the page are read-only and checkboxes are disabled.
 
 E2E coverage: `cypress/e2e/encounter.cy.ts`, `cypress/e2e/profile.cy.ts`.
 

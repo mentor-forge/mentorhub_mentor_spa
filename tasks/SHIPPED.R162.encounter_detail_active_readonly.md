@@ -1,6 +1,6 @@
 # R162 – Encounter detail: editable when status is active, read-only otherwise
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R160_sync_encounter_workflow_api_client  
 **Description**: Enforce the F-RS12 encounter detail editability rule ([mentorhub_mentor_spa#22](https://github.com/mentor-forge/mentorhub_mentor_spa/issues/22)): when encounter `status === 'active'`, TLDR, Summary, Transcript, and checklist checkboxes are editable. When `status !== 'active'` (e.g. `scheduled`, `complete`, `archived`), all fields on the page become read-only.
@@ -72,4 +72,10 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- Added `isEncounterActive = computed(() => encounter.value?.status === 'active')` in `EncounterEditPage.vue`.
+- Bound `:editable="isEncounterActive"` to TLDR, Summary, Transcript, and Notes editors; marked Date and Status as read-only.
+- Disabled checklist checkboxes (`:disabled="!isEncounterActive || isUpdatingAgenda"`), and guarded `updateMenteeField`, `updateEncounterField`, and `toggleAgendaItem` against non-active status mutations.
+- Updated `cypress/e2e/encounter.cy.ts` to assert that active encounters permit editing and non-active encounters render read-only with disabled checkboxes.
+- Updated `README.md` Encounter Detail documentation.
+- Verified tests (108/108 passing) and production build.
+

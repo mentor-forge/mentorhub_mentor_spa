@@ -112,6 +112,7 @@
               field="notes"
               label="Mentor Notes"
               :rows="4"
+              :editable="isEncounterActive"
               automation-id="encounter-detail-mentor-notes-input"
             />
           </DataCard>
@@ -154,7 +155,7 @@
                   <template #prepend>
                     <v-checkbox-btn
                       :model-value="item.checked ?? false"
-                      :disabled="isUpdatingAgenda"
+                      :disabled="!isEncounterActive || isUpdatingAgenda"
                       @update:model-value="toggleAgendaItem(index, $event)"
                     />
                   </template>
@@ -178,12 +179,14 @@
             <DateTimeEditor
               field="date"
               label="Encounter Date"
+              :editable="false"
               automation-id="encounter-detail-date-input"
             />
             <EnumEditor
               field="status"
               enums="status"
               label="Status"
+              :editable="false"
               class="mt-4"
               automation-id="encounter-detail-status-select"
             />
@@ -192,6 +195,7 @@
               label="TLDR *"
               :rules="[rules.required, rules.sentencePattern]"
               hint="One-sentence summary, max 255 characters"
+              :editable="isEncounterActive"
               class="mt-4"
               automation-id="encounter-detail-tldr-input"
             />
@@ -213,6 +217,7 @@
               label="Summary"
               hint="Markdown is accepted"
               :rows="12"
+              :editable="isEncounterActive"
               automation-id="encounter-detail-summary-input"
             />
           </DataCard>
@@ -233,6 +238,7 @@
               label="Transcript"
               hint="Markdown is accepted"
               :rows="12"
+              :editable="isEncounterActive"
               automation-id="encounter-detail-transcript-input"
             />
           </DataCard>
@@ -346,6 +352,8 @@ const agendaItems = computed(() => encounter.value?.agenda ?? [])
 
 const backLabel = computed(() => (menteeId.value ? 'Back to Profile' : 'Back to Dashboard'))
 
+const isEncounterActive = computed(() => encounter.value?.status === 'active')
+
 const errorRef = ref<Error | null>(null)
 watch(queryError, (err) => {
   errorRef.value = err
@@ -378,6 +386,7 @@ const { mutateAsync: updateMentee } = useMutation({
 })
 
 async function updateMenteeField(field: string, value: unknown) {
+  if (!isEncounterActive.value) return
   if (field !== 'notes') {
     throw new Error(`Unsupported mentee field: ${field}`)
   }
@@ -399,6 +408,7 @@ const { mutateAsync: updateEncounter, isPending: isUpdatingAgenda } = useMutatio
 })
 
 async function updateEncounterField(field: string, value: unknown) {
+  if (!isEncounterActive.value) return
   if (!['date', 'status', 'tldr', 'summary', 'transcript'].includes(field)) {
     throw new Error(`Unsupported encounter field: ${field}`)
   }
@@ -406,6 +416,7 @@ async function updateEncounterField(field: string, value: unknown) {
 }
 
 async function toggleAgendaItem(index: number, checked: boolean | null) {
+  if (!isEncounterActive.value) return
   const currentAgenda = encounter.value?.agenda ?? []
   const updatedAgenda: EncounterAgendaItem[] = currentAgenda.map((item, itemIndex) => {
     if (itemIndex !== index) return { ...item }
