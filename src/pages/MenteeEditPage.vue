@@ -28,7 +28,8 @@
                 <a
                   :href="customerProfileHref"
                   class="text-white text-decoration-none mentee-title-link"
-                  data-automation-id="profile-edit-customer-profile-link"
+                  title="Open Profile"
+                  data-automation-id="mentee-edit-customer-profile-link"
                 >
                   {{ displayName }}
                 </a>
@@ -49,14 +50,13 @@
                 <v-btn
                   v-if="canStartEncounter && nextScheduledEncounter"
                   color="success"
+                  icon="mdi-timer-play"
                   class="ml-2"
                   :loading="isStartingEncounter"
+                  title="Start Encounter"
                   data-automation-id="profile-edit-start-encounter-button"
                   @click="handleStartEncounter"
-                >
-                  <v-icon start>mdi-play</v-icon>
-                  Start Encounter
-                </v-btn>
+                />
               </div>
 
               <v-btn

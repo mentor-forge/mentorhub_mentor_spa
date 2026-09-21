@@ -45,7 +45,7 @@ describe('Profile Edit Page', () => {
   it('should have a link on the Mentee card title that links to /customer/profile/:id', () => {
     cy.mentorMenteeProfileId().then((profileId) => {
       cy.loginAsMentor(`/mentor/mentee/${profileId}`)
-      cy.get('[data-automation-id="profile-edit-customer-profile-link"]')
+      cy.get('[data-automation-id="mentee-edit-customer-profile-link"]')
         .should('be.visible')
         .and('have.attr', 'href')
         .and('match', new RegExp(`/customer/profile/${profileId}$`))
@@ -150,7 +150,10 @@ describe('Profile Edit Page', () => {
       cy.loginAsMentor(`/mentor/mentee/${profileId}`)
     })
 
-    cy.get('[data-automation-id="profile-edit-start-encounter-button"]').should('be.visible').click()
+    cy.get('[data-automation-id="profile-edit-start-encounter-button"]')
+      .should('be.visible')
+      .and('not.contain.text', 'Start Encounter')
+      .click()
     cy.wait('@startEncounter')
     cy.url().should('match', /\/mentor\/encounter\/67a000000000000000000001$/)
   })
