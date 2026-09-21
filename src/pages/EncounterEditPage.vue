@@ -92,12 +92,14 @@
           </v-toolbar>
 
           <v-card-text v-show="!profileCollapsed" class="mh-card__body">
-            <MarkdownField
+            <MarkdownEditor
               :model-value="notesText"
               label="Mentor Notes"
-              :readonly="!isEncounterActive"
-              data-automation-id="encounter-detail-mentor-notes-input"
+              :editable="isEncounterActive"
+              :rows="4"
+              automation-id="encounter-detail-mentor-notes-input"
               @update:model-value="handleNotesInput"
+              @blur="handleNotesBlur"
             />
           </v-card-text>
         </v-card>
@@ -221,11 +223,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
 import DataCardGrid from '@/components/DataCardGrid.vue'
-import MarkdownField from '@/components/MarkdownField.vue'
+import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import {
   DataCard,
   EnumEditor,
-  MarkdownEditor,
   MhCard,
   SentenceEditor,
   formatDate,
@@ -343,6 +344,14 @@ function handleNotesInput(val: string) {
   notesDebounceTimer = setTimeout(() => {
     updateMenteeField('notes', val)
   }, 500)
+}
+
+function handleNotesBlur() {
+  if (notesDebounceTimer) {
+    clearTimeout(notesDebounceTimer)
+    notesDebounceTimer = null
+  }
+  updateMenteeField('notes', notesText.value)
 }
 
 const agendaItems = computed(() => encounter.value?.agenda ?? [])

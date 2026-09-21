@@ -125,6 +125,18 @@ describe('Encounter Domain', () => {
         cy.get('[data-automation-id="encounter-detail-mentor-notes-input"]')
           .find('[data-automation-id="markdown-field-display"]')
           .should('exist')
+
+        // Expand and verify Summary card renders markdown in read-only mode
+        cy.get('[data-automation-id="encounter-detail-summary-section-collapse-button"]').click()
+        cy.get('[data-automation-id="encounter-detail-summary-input"]')
+          .find('[data-automation-id="markdown-field-display"]')
+          .should('exist')
+
+        // Expand and verify Transcript card renders markdown in read-only mode
+        cy.get('[data-automation-id="encounter-detail-transcript-section-collapse-button"]').click()
+        cy.get('[data-automation-id="encounter-detail-transcript-input"]')
+          .find('[data-automation-id="markdown-field-display"]')
+          .should('exist')
       })
     })
   })
