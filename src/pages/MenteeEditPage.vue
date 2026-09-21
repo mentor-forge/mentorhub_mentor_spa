@@ -48,7 +48,8 @@
               </v-btn>
               <v-btn
                 v-if="canStartEncounter && nextScheduledEncounter"
-                color="success"
+                color="white"
+                variant="text"
                 icon="mdi-timer-play"
                 class="ml-2"
                 :loading="isStartingEncounter"

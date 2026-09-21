@@ -68,7 +68,8 @@
               />
               <v-btn
                 v-if="isEncounterActive"
-                color="error"
+                color="white"
+                variant="text"
                 icon="mdi-stop"
                 size="small"
                 class="ml-2"
