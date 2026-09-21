@@ -25,8 +25,7 @@ describe('Profile Edit Page', () => {
   it('should display Goals and Interests side-by-side in the same row', () => {
     cy.viewport(1280, 800)
     cy.get('[data-automation-id="profile-edit-goals-display"]')
-      .closest('.v-col')
-      .parent('.v-row')
+      .closest('.v-row')
       .within(() => {
         cy.get('[data-automation-id="profile-edit-goals-display"]').should('exist')
         cy.get('[data-automation-id="profile-edit-interests-display"]').should('exist')
