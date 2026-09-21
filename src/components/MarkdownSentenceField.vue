@@ -16,6 +16,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
+  (e: 'blur', event: FocusEvent): void
 }>()
 
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -85,6 +86,7 @@ onMounted(() => {
       data-automation-id="markdown-sentence-field-input"
       :value="modelValue"
       @input="onInput"
+      @blur="emit('blur', $event)"
     />
   </div>
 </template>

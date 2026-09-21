@@ -95,18 +95,23 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-encounters-list"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-encounter-item"]').should('have.length', 1)
     cy.get('[data-automation-id="profile-edit-encounter-item"]').first().should('contain.text', 'Completed milestone review')
+    cy.get('[data-automation-id="profile-edit-encounter-tldr"]').should('be.visible')
     cy.get('[data-automation-id="profile-edit-encounter-date-link"]')
       .should('have.attr', 'href', '/mentor/encounter/67a000000000000000000010')
   })
 
-  it('should update mentee summary and notes fields', () => {
+  it('should update mentee summary and notes fields using MarkdownSentenceField', () => {
     const summary = `Cypress summary ${Date.now()}`
     cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').clear().type(summary).blur()
     cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').should('have.value', summary)
 
     const notes = `Cypress notes ${Date.now()}`
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').clear().type(notes).blur()
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').should('have.value', notes)
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"] textarea')
+      .should('have.class', 'markdown-sentence-field__input')
+      .clear()
+      .type(notes)
+      .blur()
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"] textarea').should('have.value', notes)
   })
 
   it('should open and cancel schedule encounters dialog', () => {

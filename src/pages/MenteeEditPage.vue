@@ -115,12 +115,13 @@
               label="Summary"
               automation-id="profile-edit-mentee-summary-input"
             />
-            <MarkdownEditor
-              field="notes"
+            <MarkdownSentenceField
+              :model-value="notesText"
               label="Notes"
-              :rows="4"
               class="mt-4"
-              automation-id="profile-edit-mentee-notes-input"
+              data-automation-id="profile-edit-mentee-notes-input"
+              @update:model-value="handleNotesInput"
+              @blur="handleNotesBlur"
             />
           </v-card-text>
         </v-card>
@@ -160,22 +161,28 @@
               No completed encounters recorded for this mentee yet.
             </v-alert>
 
-            <v-list v-else lines="one" data-automation-id="profile-edit-encounters-list">
+            <v-list v-else data-automation-id="profile-edit-encounters-list">
               <v-list-item
                 v-for="encounter in completedEncounters"
                 :key="encounter._id"
                 data-automation-id="profile-edit-encounter-item"
               >
-                <v-list-item-title>
+                <div class="d-flex align-start py-1 w-100">
                   <router-link
                     :to="`/encounter/${encounter._id}`"
-                    class="text-decoration-none text-primary font-weight-medium"
+                    class="text-decoration-none text-primary font-weight-medium mr-2 text-no-wrap"
                     data-automation-id="profile-edit-encounter-date-link"
                   >
                     {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
                   </router-link>
-                  <span class="ml-1">{{ encounter.tldr || 'Encounter' }}</span>
-                </v-list-item-title>
+                  <div class="flex-grow-1">
+                    <MarkdownSentenceField
+                      :model-value="encounter.tldr || 'Encounter'"
+                      :readonly="true"
+                      data-automation-id="profile-edit-encounter-tldr"
+                    />
+                  </div>
+                </div>
               </v-list-item>
             </v-list>
           </div>
@@ -239,7 +246,6 @@ import {
   BreadcrumbDisplay,
   DataCard,
   EnumEditor,
-  MarkdownEditor,
   MhCard,
   SentenceEditor,
   buildJourneyUrl,
@@ -249,6 +255,7 @@ import {
 } from '@mentor-forge/mentorhub_spa_utils'
 import { ScheduleEncountersDialog } from '@/components/dashboard'
 import DataCardGrid from '@/components/DataCardGrid.vue'
+import MarkdownSentenceField from '@/components/MarkdownSentenceField.vue'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
@@ -354,6 +361,32 @@ async function updateMenteeField(field: string, value: unknown) {
     throw new Error(`Unsupported mentee field: ${field}`)
   }
   await updateMentee({ [field]: String(value ?? '') } as MenteeUpdate)
+}
+
+const notesText = ref('')
+watch(
+  () => profileDetail.value?.mentee?.notes,
+  (val) => {
+    notesText.value = val ?? ''
+  },
+  { immediate: true }
+)
+
+let notesDebounceTimer: ReturnType<typeof setTimeout> | null = null
+function handleNotesInput(val: string) {
+  notesText.value = val
+  if (notesDebounceTimer) clearTimeout(notesDebounceTimer)
+  notesDebounceTimer = setTimeout(() => {
+    updateMenteeField('notes', val)
+  }, 500)
+}
+
+function handleNotesBlur() {
+  if (notesDebounceTimer) {
+    clearTimeout(notesDebounceTimer)
+    notesDebounceTimer = null
+  }
+  updateMenteeField('notes', notesText.value)
 }
 
 provideDataCardContext({

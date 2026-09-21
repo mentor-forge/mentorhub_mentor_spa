@@ -62,9 +62,10 @@ The agent must not update files outside this list.
 ## Execution Notes
 
 - **Implementation Summary**:
-  - Replaced outer `v-row` and `v-col` layout with `<DataCardGrid>` in `src/pages/MenteeEditPage.vue`.
+  - Replaced outer `v-row` and `v-col` layout with `<DataCardGrid>` in `src/pages/MenteeEditPage.vue`, using `<v-container fluid>` for full viewport width.
   - Reorganized Goals and Interests inside the Mentee card to be side-by-side using `<v-row class="mb-4">` with `<v-col cols="12" sm="6">` each.
-  - Verified long-text fields: `MenteeEditPage` uses typed configurators `SentenceEditor` and `MarkdownEditor` with DataCard context; no plain `<textarea>` or bare `AutoSaveField` exists on this page, preserving existing configurators as specified in instructions.
-  - Updated `cypress/e2e/profile.cy.ts` with test verifying Goals and Interests containers are siblings within the same `.v-row` element at desktop viewport.
-  - All 123 Vitest unit tests and `vue-tsc && vite build` passed cleanly.
+  - Adopted `MarkdownSentenceField` for the Mentee card Notes field: enables vertical auto-expansion to show all content up to 40vh, with debounced save and instant save on blur.
+  - Adopted `MarkdownSentenceField` for the Encounters card list: renders TLDR in read-only mode with word-wrapping, removing single-line ellipsis truncation.
+  - Updated `cypress/e2e/profile.cy.ts` with assertions verifying side-by-side Goals/Interests, Notes auto-expanding input, and Encounters TLDR rendering.
+  - All 124 Vitest unit tests and `vue-tsc && vite build` passed cleanly; all 43 Cypress E2E tests passed 100%.
 

@@ -50,6 +50,18 @@ describe('MarkdownSentenceField', () => {
     expect(wrapper.emitted('update:modelValue')?.[0]).toEqual(['Updated notes'])
   })
 
+  it('emits blur when textarea loses focus', async () => {
+    const wrapper = mount(MarkdownSentenceField, {
+      props: {
+        modelValue: 'Initial notes',
+        readonly: false,
+      },
+    })
+    const textarea = wrapper.find('textarea')
+    await textarea.trigger('blur')
+    expect(wrapper.emitted('blur')).toBeTruthy()
+  })
+
   it('renders formatted markdown HTML in read-only mode', () => {
     const wrapper = mount(MarkdownSentenceField, {
       props: {
