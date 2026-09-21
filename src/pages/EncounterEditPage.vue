@@ -37,9 +37,23 @@
                 class="encounter-detail-plan-counts ml-2"
                 data-automation-id="encounter-detail-plan-counts"
               >
-                (<span title="Library">{{ planCounts.library }}</span>,
-                <span title="Now">{{ planCounts.now }}</span>,
-                <span title="Next">{{ planCounts.next }}</span>)
+                (
+                <v-tooltip text="Library" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <span v-bind="tooltipProps" class="cursor-pointer" title="Library" data-automation-id="encounter-detail-plan-count-library">{{ planCounts.library }}</span>
+                  </template>
+                </v-tooltip>,
+                <v-tooltip text="Now" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <span v-bind="tooltipProps" class="cursor-pointer" title="Now" data-automation-id="encounter-detail-plan-count-now">{{ planCounts.now }}</span>
+                  </template>
+                </v-tooltip>,
+                <v-tooltip text="Next" location="top">
+                  <template #activator="{ props: tooltipProps }">
+                    <span v-bind="tooltipProps" class="cursor-pointer" title="Next" data-automation-id="encounter-detail-plan-count-next">{{ planCounts.next }}</span>
+                  </template>
+                </v-tooltip>
+                )
               </span>
             </v-toolbar-title>
 
@@ -55,15 +69,14 @@
               <v-btn
                 v-if="isEncounterActive"
                 color="error"
+                icon="mdi-stop"
                 size="small"
                 class="ml-2"
                 :loading="isFinishingEncounter"
+                title="End Encounter"
                 data-automation-id="encounter-detail-end-button"
                 @click="handleFinishEncounter"
-              >
-                <v-icon start>mdi-stop</v-icon>
-                End Encounter
-              </v-btn>
+              />
             </div>
 
             <v-btn
@@ -78,7 +91,7 @@
           </v-toolbar>
 
           <v-card-text v-show="!profileCollapsed" class="mh-card__body">
-            <MarkdownSentenceField
+            <MarkdownField
               :model-value="notesText"
               label="Mentor Notes"
               :readonly="!isEncounterActive"
@@ -214,7 +227,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
 import DataCardGrid from '@/components/DataCardGrid.vue'
-import MarkdownSentenceField from '@/components/MarkdownSentenceField.vue'
+import MarkdownField from '@/components/MarkdownField.vue'
 import {
   DataCard,
   DateTimeEditor,
@@ -239,7 +252,7 @@ const profileCollapsed = ref(false)
 const encounterCollapsed = ref(true)
 const checklistCollapsed = ref(false)
 const summaryCollapsed = ref(true)
-const transcriptCollapsed = ref(true)
+const transcriptCollapsed = ref(false)
 
 const { data: encounter, isLoading, error: queryError } = useQuery({
   queryKey: ['encounter', encounterId],
@@ -256,7 +269,7 @@ watch(
       checklistCollapsed.value = false
       encounterCollapsed.value = true
       summaryCollapsed.value = true
-      transcriptCollapsed.value = true
+      transcriptCollapsed.value = false
     } else {
       profileCollapsed.value = false
       checklistCollapsed.value = true
@@ -281,10 +294,18 @@ const encounterDateDisplay = computed(() => {
   return date ? formatDate(date) : '—'
 })
 
+const menteeName = computed(() => {
+  return (
+    encounter.value?.mentee_name ||
+    mentee.value?.name ||
+    ((encounter.value as Record<string, unknown> | undefined)?.name as string) ||
+    ''
+  )
+})
+
 const menteeTitleText = computed(() => {
-  const encounterName = (encounter.value as Record<string, unknown> | undefined)?.name
-  if (encounterName && typeof encounterName === 'string') {
-    return `${encounterName} — ${encounterDateDisplay.value}`
+  if (menteeName.value) {
+    return `${menteeName.value} — ${encounterDateDisplay.value}`
   }
   return encounterDateDisplay.value
 })
@@ -416,6 +437,7 @@ const { mutate: finishEncounterMutation, isPending: isFinishingEncounter } = use
   mutationFn: () => api.finishEncounter(encounterId.value),
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
+    queryClient.invalidateQueries({ queryKey: ['profile'] })
     if (menteeId.value) {
       queryClient.invalidateQueries({ queryKey: ['mentee', menteeId.value] })
     }

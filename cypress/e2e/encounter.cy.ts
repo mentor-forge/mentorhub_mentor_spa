@@ -12,24 +12,38 @@ describe('Encounter Domain', () => {
         cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('have.class', 'mh-card')
         cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card')
 
+        // First card title bar displays mentee name before date-time
+        cy.get('[data-automation-id="encounter-detail-profile-link"]')
+          .invoke('text')
+          .should('match', /.+ — ./)
+
         // Mentee card does not contain profile goals
         cy.get('[data-automation-id="encounter-detail-profile-goals"]').should('not.exist')
 
         // Encounter card is collapsed on page load for an active encounter
         cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card--collapsed')
 
+        // Transcript card is open by default for an active encounter
+        cy.get('[data-automation-id="encounter-detail-transcript-section"]')
+          .should('be.visible')
+          .and('not.have.class', 'mh-card--collapsed')
+
         // End Encounter and Back buttons visible inside Mentee card title bar
         cy.get('[data-automation-id="encounter-detail-profile-section"]')
           .find('[data-automation-id="encounter-detail-end-button"]')
           .should('be.visible')
+          .and('have.attr', 'title', 'End Encounter')
+          .and('contain.html', 'mdi-stop')
         cy.get('[data-automation-id="encounter-detail-profile-section"]')
           .find('[data-automation-id="encounter-detail-back-button"]')
           .should('be.visible')
 
-        // Plan counts badge if present
+        // Plan counts badge tooltips if present
         cy.get('body').then(($body) => {
           if ($body.find('[data-automation-id="encounter-detail-plan-counts"]').length > 0) {
-            cy.get('[data-automation-id="encounter-detail-plan-counts"]').should('be.visible')
+            cy.get('[data-automation-id="encounter-detail-plan-count-library"]').should('have.attr', 'title', 'Library')
+            cy.get('[data-automation-id="encounter-detail-plan-count-now"]').should('have.attr', 'title', 'Now')
+            cy.get('[data-automation-id="encounter-detail-plan-count-next"]').should('have.attr', 'title', 'Next')
           }
         })
 
@@ -106,6 +120,11 @@ describe('Encounter Domain', () => {
           .each(($cb) => {
             cy.wrap($cb).should('be.disabled')
           })
+
+        // Mentor Notes is rendered in read-only mode as markdown
+        cy.get('[data-automation-id="encounter-detail-mentor-notes-input"]')
+          .find('[data-automation-id="markdown-field-display"]')
+          .should('exist')
       })
     })
   })

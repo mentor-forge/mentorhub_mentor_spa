@@ -176,7 +176,7 @@
                     {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
                   </router-link>
                   <div class="flex-grow-1">
-                    <MarkdownSentenceField
+                    <SentenceField
                       :model-value="encounter.tldr || 'Encounter'"
                       :readonly="true"
                       data-automation-id="profile-edit-encounter-tldr"
@@ -256,6 +256,7 @@ import {
 import { ScheduleEncountersDialog } from '@/components/dashboard'
 import DataCardGrid from '@/components/DataCardGrid.vue'
 import MarkdownSentenceField from '@/components/MarkdownSentenceField.vue'
+import SentenceField from '@/components/SentenceField.vue'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
