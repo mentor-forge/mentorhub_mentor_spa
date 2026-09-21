@@ -270,18 +270,10 @@ watch(
 
 const menteeId = computed(() => encounter.value?.mentee_id ?? '')
 
-const { data: profileDetail } = useQuery({
-  queryKey: ['profile', menteeId],
-  queryFn: () => api.getProfile(menteeId.value),
+const { data: mentee } = useQuery({
+  queryKey: ['mentee', menteeId],
+  queryFn: () => api.getMentee(menteeId.value),
   enabled: computed(() => Boolean(menteeId.value)),
-})
-
-
-
-const menteeDisplayName = computed(() => {
-  const profile = profileDetail.value?.profile
-  if (!profile) return 'Encounter'
-  return profile.display_name
 })
 
 const encounterDateDisplay = computed(() => {
@@ -289,7 +281,13 @@ const encounterDateDisplay = computed(() => {
   return date ? formatDate(date) : '—'
 })
 
-const menteeTitleText = computed(() => `${menteeDisplayName.value} — ${encounterDateDisplay.value}`)
+const menteeTitleText = computed(() => {
+  const encounterName = (encounter.value as Record<string, unknown> | undefined)?.name
+  if (encounterName && typeof encounterName === 'string') {
+    return `${encounterName} — ${encounterDateDisplay.value}`
+  }
+  return encounterDateDisplay.value
+})
 
 const menteeProfileHref = computed(() => (menteeId.value ? `/mentee/${menteeId.value}` : '#'))
 
@@ -299,10 +297,10 @@ function goToMenteeProfile() {
   }
 }
 
-const planCounts = computed(() => profileDetail.value?.mentee?.plan_counts)
+const planCounts = computed(() => mentee.value?.plan_counts)
 
 const menteeCardModel = computed<Record<string, unknown>>(() => ({
-  ...profileDetail.value?.mentee,
+  ...mentee.value,
 }))
 
 provideDataCardContext({
@@ -317,7 +315,7 @@ const encounterCardModel = computed<Record<string, unknown>>(() => ({
 
 const notesText = ref('')
 watch(
-  () => profileDetail.value?.mentee?.notes,
+  () => mentee.value?.notes,
   (val) => {
     notesText.value = val ?? ''
   },
@@ -349,7 +347,7 @@ const rules = {
 
 const { mutateAsync: updateMentee } = useMutation({
   mutationFn: (data: MenteeUpdate) => {
-    const menteeDocId = profileDetail.value?.mentee._id
+    const menteeDocId = mentee.value?._id
     if (!menteeDocId) {
       return Promise.reject(new Error('Mentee document not loaded'))
     }
@@ -357,7 +355,7 @@ const { mutateAsync: updateMentee } = useMutation({
   },
   onSuccess: () => {
     if (menteeId.value) {
-      queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
+      queryClient.invalidateQueries({ queryKey: ['mentee', menteeId.value] })
     }
     errorRef.value = null
   },
@@ -379,7 +377,7 @@ const { mutateAsync: updateEncounter, isPending: isUpdatingAgenda } = useMutatio
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
     if (menteeId.value) {
-      queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
+      queryClient.invalidateQueries({ queryKey: ['mentee', menteeId.value] })
     }
     errorRef.value = null
   },
@@ -419,7 +417,7 @@ const { mutate: finishEncounterMutation, isPending: isFinishingEncounter } = use
   onSuccess: () => {
     queryClient.invalidateQueries({ queryKey: ['encounter', encounterId.value] })
     if (menteeId.value) {
-      queryClient.invalidateQueries({ queryKey: ['profile', menteeId.value] })
+      queryClient.invalidateQueries({ queryKey: ['mentee', menteeId.value] })
     }
     errorRef.value = null
   },
