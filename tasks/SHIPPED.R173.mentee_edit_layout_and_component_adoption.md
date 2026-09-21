@@ -1,6 +1,6 @@
 # R173 – MenteeEditPage: Goals/Interests Layout and Component Adoption
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R167, R168, R171, R172  
 **Description**: Update the MenteeEditPage layout: Goals and Interests side-by-side, adopt `DataCardGrid`, and adopt `MarkdownSentenceField` for any long-text fields.
@@ -61,4 +61,10 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- **Implementation Summary**:
+  - Replaced outer `v-row` and `v-col` layout with `<DataCardGrid>` in `src/pages/MenteeEditPage.vue`.
+  - Reorganized Goals and Interests inside the Mentee card to be side-by-side using `<v-row class="mb-4">` with `<v-col cols="12" sm="6">` each.
+  - Verified long-text fields: `MenteeEditPage` uses typed configurators `SentenceEditor` and `MarkdownEditor` with DataCard context; no plain `<textarea>` or bare `AutoSaveField` exists on this page, preserving existing configurators as specified in instructions.
+  - Updated `cypress/e2e/profile.cy.ts` with test verifying Goals and Interests containers are siblings within the same `.v-row` element at desktop viewport.
+  - All 123 Vitest unit tests and `vue-tsc && vite build` passed cleanly.
+

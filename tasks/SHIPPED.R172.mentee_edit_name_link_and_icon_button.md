@@ -1,6 +1,6 @@
 # R172 – MenteeEditPage: Name Link and Icon Start Encounter Button
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R171  
 **Description**: Update the Mentee name in the card title bar to be a link to the customer profile page, and replace the labeled Start Encounter button with an icon-only button.
@@ -63,4 +63,19 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- **Planned Approach**:
+  - In `src/pages/MenteeEditPage.vue`:
+    - Update mentee name `<a>` anchor: set `title="Open Profile"` and `data-automation-id="mentee-edit-customer-profile-link"`.
+    - Update Start Encounter button: convert to icon-only `v-btn` with `icon="mdi-timer-play"`, `title="Start Encounter"`, removing text label.
+  - In `cypress/e2e/profile.cy.ts`:
+    - Assert `data-automation-id="mentee-edit-customer-profile-link"` is present with href matching `/customer/profile/`.
+    - Assert `data-automation-id="profile-edit-start-encounter-button"` does not contain the text "Start Encounter".
+  - Verify with unit tests and `npm run build`.
+
+- **Implementation Summary**:
+  - In `src/pages/MenteeEditPage.vue`, updated mentee name link to include `title="Open Profile"` and `data-automation-id="mentee-edit-customer-profile-link"`.
+  - Replaced the labeled "Start Encounter" button with an icon-only button using `icon="mdi-timer-play"` and `title="Start Encounter"`.
+  - Updated `cypress/e2e/profile.cy.ts` to assert the link's automation ID and that the Start Encounter button contains no label text.
+  - Vitest unit tests (123 tests) and `vue-tsc && vite build` passed cleanly.
+
+

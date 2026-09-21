@@ -1,6 +1,6 @@
 # R169 – Encounter Detail: Header, Profile Title, and Buttons
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none (mentorhub_mentor_api L362 is Shipped — `plan_counts` is available on `GET /mentee/{profile_id}`)  
 **Description**: Redesign the `EncounterEditPage` header and Mentee data card title bar. Covers the profile title line, plan counts badge, End Encounter button relocation, and Back button. Does not require R167 or R168.
@@ -76,4 +76,22 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- **Planned Approach**:
+  - Update `src/api/types.ts`: add `plan_counts?: { library: number; now: number; next: number }` to `Mentee` interface.
+  - Update `src/pages/EncounterEditPage.vue`:
+    - Remove top header row containing `encounter-detail-heading` and the old End Encounter button.
+    - Structure Mentee/Profile card using `mh-card` with `v-toolbar` / `v-toolbar-title` (and `provideDataCardContext`) so custom header content is supported.
+    - In title area: render mentee name and formatted encounter date as a link (`encounter-detail-profile-link`) to `/mentee/:id`.
+    - If `plan_counts` exists, render `(library, now, next)` badge (`encounter-detail-plan-counts`) with tooltips "Library", "Now", "Next".
+    - In actions: place icon-only back button (`encounter-detail-back-button`) with tooltip "Back to Mentee" navigating to `/mentee/:id`, and the End Encounter button (`encounter-detail-end-button`).
+    - Remove bottom row with "BACK TO PROFILE".
+  - Update `cypress/e2e/encounter.cy.ts` assertions for the new button placement, profile link, and plan counts.
+  - Verify with unit tests and build.
+
+- **Implementation Summary**:
+  - Added `plan_counts?: { library: number; now: number; next: number }` to `Mentee` interface in `src/api/types.ts`.
+  - Updated `src/pages/EncounterEditPage.vue`: removed page-level header row and bottom back button, moved back button (`mdi-arrow-left`) and End Encounter button into the Mentee card title bar actions, rendered mentee name and encounter date as a link with `title="Open Profile"` and `data-automation-id="encounter-detail-profile-link"`, and added plan counts badge `data-automation-id="encounter-detail-plan-counts"` with tooltips.
+  - Updated `cypress/e2e/encounter.cy.ts` with assertions for profile link, title-bar buttons, and plan counts badge.
+  - Vitest unit tests passed (123 tests) and `npm run build` completed without errors.
+
+

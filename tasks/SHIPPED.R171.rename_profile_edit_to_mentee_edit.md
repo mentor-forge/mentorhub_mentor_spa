@@ -1,6 +1,6 @@
 # R171 – Rename ProfileEditPage to MenteeEditPage
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Pure rename of `ProfileEditPage.vue` to `MenteeEditPage.vue` and update all import references. No functional changes.
@@ -48,4 +48,18 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- **Planned Approach**:
+  - `git mv src/pages/ProfileEditPage.vue src/pages/MenteeEditPage.vue`
+  - Update `src/router/index.ts` to import `@/pages/MenteeEditPage.vue`
+  - Update test description references in `cypress/e2e/profile.cy.ts` from `ProfileEditPage` to `MenteeEditPage`
+  - Verify with `grep -r "ProfileEditPage" src/ cypress/` returns 0 matches
+  - Verify with `npm run test` and `npm run build`
+
+- **Implementation Summary**:
+  - Renamed `src/pages/ProfileEditPage.vue` to `src/pages/MenteeEditPage.vue`.
+  - Updated lazy route import in `src/router/index.ts` to `@/pages/MenteeEditPage.vue`.
+  - Updated test descriptions in `cypress/e2e/profile.cy.ts`.
+  - Confirmed `grep -r "ProfileEditPage" src/ cypress/` produces zero matches.
+  - Vitest test suites (123 tests) and `vue-tsc && vite build` passed cleanly.
+
+

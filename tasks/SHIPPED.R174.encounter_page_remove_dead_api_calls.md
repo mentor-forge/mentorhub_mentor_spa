@@ -1,6 +1,6 @@
 # R174 – EncounterEditPage: Remove Dead API Calls After Card Cleanup
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: R170  
 **Description**: After R170 removes Profile and Journey data sections from the Mentee card, the `EncounterEditPage` still makes two now-unnecessary API calls (`getProfile` and `getProfileProperties`). Replace them with a single `getMentee` call. The mentee name comes from the encounter's enriched `name` field; notes, `_id`, and `plan_counts` come from `getMentee`.
@@ -87,4 +87,26 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- **Planned Approach**:
+  - In `src/pages/EncounterEditPage.vue`:
+    - Confirm `profileProperties` query has already been removed.
+    - Replace `profileDetail` query (`api.getProfile`) with `mentee` query calling `api.getMentee(menteeId.value)` under key `['mentee', menteeId]`.
+    - Update `menteeTitleText` to use `encounter.value?.name`: if present, `${encounter.value.name} — ${encounterDateDisplay.value}`, falling back to `encounterDateDisplay.value`.
+    - Update `planCounts` to read from `mentee.value?.plan_counts`.
+    - Update `menteeCardModel` to `{ ...mentee.value }`.
+    - Update `notesText` watch to track `mentee.value?.notes`.
+    - Update `updateMentee` mutation: get `menteeDocId` from `mentee.value?._id`, and invalidate query key `['mentee', menteeId.value]`.
+    - Update invalidations in `updateEncounter` and `finishEncounterMutation` from `['profile', menteeId.value]` to `['mentee', menteeId.value]`.
+  - In `cypress/e2e/encounter.cy.ts`:
+    - Verify all cypress tests and update if any mock intercepts exist.
+  - Verify with unit tests and `npm run build`.
+
+- **Implementation Summary**:
+  - In `src/pages/EncounterEditPage.vue`, replaced `getProfile` and `getProfileProperties` queries with a single `getMentee` query using queryKey `['mentee', menteeId]`.
+  - Derived Mentee title bar text from enriched encounter name (`encounter.value.name`) with fallback to date display.
+  - Sourced `plan_counts`, `notes`, and card model directly from `mentee.value`.
+  - Updated mutation invalidations to `['mentee', menteeId.value]`.
+  - Verified Cypress tests in `cypress/e2e/encounter.cy.ts` have no stale `GET /profile/` intercepts.
+  - Vitest unit tests (123 tests) and `vue-tsc && vite build` passed cleanly.
+
+

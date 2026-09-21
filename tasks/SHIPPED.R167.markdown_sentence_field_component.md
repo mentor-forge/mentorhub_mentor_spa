@@ -1,6 +1,6 @@
 # R167 – MarkdownSentenceField Component
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: none  
 **Description**: Create a local `MarkdownSentenceField` Vue component designed to be harvested to `spa_utils`. Used by R170 and R173.
@@ -58,4 +58,17 @@ The agent must not update files outside this list.
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+- **Planned Approach**:
+  - Check package.json: no third-party markdown library installed. Implement lightweight safe markdown renderer (bold, italic, line breaks, HTML escaped).
+  - Create `src/components/MarkdownSentenceField.vue` with `modelValue`, `readonly`, and optional `label` props.
+  - Implement read-only view with markdown HTML formatting and `data-automation-id="markdown-sentence-field"`.
+  - Implement edit mode with auto-resizing `<textarea>`, max-height 40vh, word wrapping, emitting `update:modelValue`.
+  - Create unit tests in `src/components/MarkdownSentenceField.test.ts`.
+  - Verify with `npm run test` and `npm run build`.
+
+- **Implementation Summary**:
+  - Created `src/components/MarkdownSentenceField.vue` adhering to all requirements: safe HTML escaping, inline markdown rendering (`**bold**`, `*italic*`, `\n` line breaks), auto-resizing textarea with 40vh max-height, `data-automation-id="markdown-sentence-field"`.
+  - Created unit tests in `src/components/MarkdownSentenceField.test.ts` covering read-only markdown rendering, textarea edit mode, `update:modelValue` events, and XSS escaping.
+  - All 17 test suites (121 tests) passed; `npm run build` passed with zero errors.
+
+

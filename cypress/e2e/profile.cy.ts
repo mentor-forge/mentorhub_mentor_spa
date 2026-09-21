@@ -22,6 +22,17 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-breadcrumbs-section"]').should('not.exist')
   })
 
+  it('should display Goals and Interests side-by-side in the same row', () => {
+    cy.viewport(1280, 800)
+    cy.get('[data-automation-id="profile-edit-goals-display"]')
+      .closest('.v-col')
+      .parent('.v-row')
+      .within(() => {
+        cy.get('[data-automation-id="profile-edit-goals-display"]').should('exist')
+        cy.get('[data-automation-id="profile-edit-interests-display"]').should('exist')
+      })
+  })
+
   it('should show Breadcrumbs card when user has admin role', () => {
     cy.mentorMenteeProfileId().then((profileId) => {
       cy.loginAsMentor(`/mentor/mentee/${profileId}`, ['mentor', 'admin'])

@@ -7,103 +7,107 @@
     </v-row>
 
     <template v-else-if="profileDetail">
-      <!-- Card 1: Mentee Name -->
-      <v-row>
-        <v-col cols="12">
-          <v-card
-            class="mh-card"
-            :class="{ 'mh-card--collapsed': profileCollapsed }"
-            variant="outlined"
-            rounded="lg"
-            elevation="2"
-            data-automation-id="profile-edit-profile-section"
+      <DataCardGrid>
+        <!-- Card 1: Mentee Name -->
+        <v-card
+          class="mh-card"
+          :class="{ 'mh-card--collapsed': profileCollapsed }"
+          variant="outlined"
+          rounded="lg"
+          elevation="2"
+          data-automation-id="profile-edit-profile-section"
+        >
+          <v-toolbar
+            color="primary"
+            density="comfortable"
+            class="mh-card__title-bar"
+            flat
           >
-            <v-toolbar
-              color="primary"
-              density="comfortable"
-              class="mh-card__title-bar"
-              flat
-            >
-              <v-toolbar-title class="mh-card__title" data-automation-id="profile-edit-profile-section-title-display">
-                <a
-                  :href="customerProfileHref"
-                  class="text-white text-decoration-none mentee-title-link"
-                  title="Open Profile"
-                  data-automation-id="mentee-edit-customer-profile-link"
-                >
-                  {{ displayName }}
-                </a>
-              </v-toolbar-title>
+            <v-toolbar-title class="mh-card__title" data-automation-id="profile-edit-profile-section-title-display">
+              <a
+                :href="customerProfileHref"
+                class="text-white text-decoration-none mentee-title-link"
+                title="Open Profile"
+                data-automation-id="mentee-edit-customer-profile-link"
+              >
+                {{ displayName }}
+              </a>
+            </v-toolbar-title>
 
-              <div class="mh-card__actions" data-automation-id="profile-edit-profile-section-actions-display">
-                <v-btn
-                  v-if="profileEmail"
-                  :href="`mailto:${profileEmail}`"
-                  icon
-                  variant="text"
-                  size="small"
-                  data-automation-id="profile-edit-mentee-mailto-link"
-                  :title="profileEmail"
-                >
-                  <v-icon>mdi-email</v-icon>
-                </v-btn>
-                <v-btn
-                  v-if="canStartEncounter && nextScheduledEncounter"
-                  color="success"
-                  icon="mdi-timer-play"
-                  class="ml-2"
-                  :loading="isStartingEncounter"
-                  title="Start Encounter"
-                  data-automation-id="profile-edit-start-encounter-button"
-                  @click="handleStartEncounter"
-                />
-              </div>
-
+            <div class="mh-card__actions" data-automation-id="profile-edit-profile-section-actions-display">
               <v-btn
+                v-if="profileEmail"
+                :href="`mailto:${profileEmail}`"
                 icon
                 variant="text"
                 size="small"
-                data-automation-id="profile-edit-profile-section-collapse-button"
-                @click="profileCollapsed = !profileCollapsed"
+                data-automation-id="profile-edit-mentee-mailto-link"
+                :title="profileEmail"
               >
-                <v-icon>{{ profileCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
+                <v-icon>mdi-email</v-icon>
               </v-btn>
-            </v-toolbar>
-
-            <v-card-text v-show="!profileCollapsed" class="mh-card__body">
-
-            <!-- Minimal Profile data: Goals and Interests -->
-            <div class="mb-4">
-              <p class="text-subtitle-2 text-medium-emphasis mb-1">Goals</p>
-              <div v-if="profileGoals.length" data-automation-id="profile-edit-goals-display">
-                <v-chip
-                  v-for="goal in profileGoals"
-                  :key="goal"
-                  size="small"
-                  class="mr-2 mb-2"
-                >
-                  {{ goal }}
-                </v-chip>
-              </div>
-              <p v-else class="text-body-2 text-medium-emphasis" data-automation-id="profile-edit-goals-display">—</p>
+              <v-btn
+                v-if="canStartEncounter && nextScheduledEncounter"
+                color="success"
+                icon="mdi-timer-play"
+                class="ml-2"
+                :loading="isStartingEncounter"
+                title="Start Encounter"
+                data-automation-id="profile-edit-start-encounter-button"
+                @click="handleStartEncounter"
+              />
             </div>
 
-            <div class="mb-6">
-              <p class="text-subtitle-2 text-medium-emphasis mb-1">Interests</p>
-              <div v-if="profileInterests.length" data-automation-id="profile-edit-interests-display">
-                <v-chip
-                  v-for="interest in profileInterests"
-                  :key="interest"
-                  size="small"
-                  color="primary"
-                  variant="tonal"
-                  class="mr-2 mb-2"
-                >
-                  {{ interest }}
-                </v-chip>
-              </div>
-              <p v-else class="text-body-2 text-medium-emphasis" data-automation-id="profile-edit-interests-display">—</p>
-            </div>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              data-automation-id="profile-edit-profile-section-collapse-button"
+              @click="profileCollapsed = !profileCollapsed"
+            >
+              <v-icon>{{ profileCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
+            </v-btn>
+          </v-toolbar>
+
+          <v-card-text v-show="!profileCollapsed" class="mh-card__body">
+            <!-- Minimal Profile data: Goals and Interests side-by-side -->
+            <v-row class="mb-4">
+              <v-col cols="12" sm="6">
+                <div>
+                  <p class="text-subtitle-2 text-medium-emphasis mb-1">Goals</p>
+                  <div v-if="profileGoals.length" data-automation-id="profile-edit-goals-display">
+                    <v-chip
+                      v-for="goal in profileGoals"
+                      :key="goal"
+                      size="small"
+                      class="mr-2 mb-2"
+                    >
+                      {{ goal }}
+                    </v-chip>
+                  </div>
+                  <p v-else class="text-body-2 text-medium-emphasis" data-automation-id="profile-edit-goals-display">—</p>
+                </div>
+              </v-col>
+
+              <v-col cols="12" sm="6">
+                <div>
+                  <p class="text-subtitle-2 text-medium-emphasis mb-1">Interests</p>
+                  <div v-if="profileInterests.length" data-automation-id="profile-edit-interests-display">
+                    <v-chip
+                      v-for="interest in profileInterests"
+                      :key="interest"
+                      size="small"
+                      color="primary"
+                      variant="tonal"
+                      class="mr-2 mb-2"
+                    >
+                      {{ interest }}
+                    </v-chip>
+                  </div>
+                  <p v-else class="text-body-2 text-medium-emphasis" data-automation-id="profile-edit-interests-display">—</p>
+                </div>
+              </v-col>
+            </v-row>
 
             <!-- Editable Mentee collection fields: Summary and Notes -->
             <SentenceEditor
@@ -120,105 +124,97 @@
             />
           </v-card-text>
         </v-card>
-        </v-col>
-      </v-row>
 
-      <!-- Card 2: Encounters -->
-      <v-row class="mt-4">
-        <v-col cols="12">
-          <MhCard
-            title="Encounters"
-            automation-id="profile-edit-encounters-section"
-          >
-            <template #actions>
-              <v-btn
-                color="primary"
-                data-automation-id="profile-edit-schedule-encounters-button"
-                @click="showScheduleDialog = true"
+        <!-- Card 2: Encounters -->
+        <MhCard
+          title="Encounters"
+          automation-id="profile-edit-encounters-section"
+        >
+          <template #actions>
+            <v-btn
+              color="primary"
+              data-automation-id="profile-edit-schedule-encounters-button"
+              @click="showScheduleDialog = true"
+            >
+              <v-icon start>mdi-calendar-clock</v-icon>
+              Schedule Encounters
+            </v-btn>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              data-automation-id="profile-edit-encounters-toggle"
+              @click="encountersCollapsed = !encountersCollapsed"
+            >
+              <v-icon>{{ encountersCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
+            </v-btn>
+          </template>
+
+          <div v-show="!encountersCollapsed">
+            <v-alert
+              v-if="completedEncounters.length === 0"
+              type="info"
+              variant="tonal"
+              data-automation-id="profile-edit-encounters-empty"
+            >
+              No completed encounters recorded for this mentee yet.
+            </v-alert>
+
+            <v-list v-else lines="one" data-automation-id="profile-edit-encounters-list">
+              <v-list-item
+                v-for="encounter in completedEncounters"
+                :key="encounter._id"
+                data-automation-id="profile-edit-encounter-item"
               >
-                <v-icon start>mdi-calendar-clock</v-icon>
-                Schedule Encounters
-              </v-btn>
-              <v-btn
-                icon
-                variant="text"
-                size="small"
-                data-automation-id="profile-edit-encounters-toggle"
-                @click="encountersCollapsed = !encountersCollapsed"
-              >
-                <v-icon>{{ encountersCollapsed ? 'mdi-chevron-down' : 'mdi-chevron-up' }}</v-icon>
-              </v-btn>
-            </template>
+                <v-list-item-title>
+                  <router-link
+                    :to="`/encounter/${encounter._id}`"
+                    class="text-decoration-none text-primary font-weight-medium"
+                    data-automation-id="profile-edit-encounter-date-link"
+                  >
+                    {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
+                  </router-link>
+                  <span class="ml-1">{{ encounter.tldr || 'Encounter' }}</span>
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
+        </MhCard>
 
-            <div v-show="!encountersCollapsed">
-              <v-alert
-                v-if="completedEncounters.length === 0"
-                type="info"
-                variant="tonal"
-                data-automation-id="profile-edit-encounters-empty"
-              >
-                No completed encounters recorded for this mentee yet.
-              </v-alert>
-
-              <v-list v-else lines="one" data-automation-id="profile-edit-encounters-list">
-                <v-list-item
-                  v-for="encounter in completedEncounters"
-                  :key="encounter._id"
-                  data-automation-id="profile-edit-encounter-item"
-                >
-                  <v-list-item-title>
-                    <router-link
-                      :to="`/encounter/${encounter._id}`"
-                      class="text-decoration-none text-primary font-weight-medium"
-                      data-automation-id="profile-edit-encounter-date-link"
-                    >
-                      {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
-                    </router-link>
-                    <span class="ml-1">{{ encounter.tldr || 'Encounter' }}</span>
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </div>
-          </MhCard>
-        </v-col>
-      </v-row>
-
-      <!-- Card 3: Breadcrumbs (admin only) -->
-      <v-row v-if="hasAdminRole" class="mt-4">
-        <v-col cols="12">
-          <DataCard
-            title="Breadcrumbs"
-            :model="breadcrumbsModel"
-            automation-id="profile-edit-breadcrumbs-section"
-          >
-            <v-row>
-              <v-col cols="12" md="4">
-                <EnumEditor
-                  field="status"
-                  enums="status"
-                  label="Status"
-                  :editable="false"
-                  automation-id="profile-edit-status-display"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <BreadcrumbDisplay
-                  field="created"
-                  label="Created"
-                  automation-id="profile-edit-created-breadcrumb"
-                />
-              </v-col>
-              <v-col cols="12" md="4">
-                <BreadcrumbDisplay
-                  field="saved"
-                  label="Saved"
-                  automation-id="profile-edit-saved-breadcrumb"
-                />
-              </v-col>
-            </v-row>
-          </DataCard>
-        </v-col>
-      </v-row>
+        <!-- Card 3: Breadcrumbs (admin only) -->
+        <DataCard
+          v-if="hasAdminRole"
+          title="Breadcrumbs"
+          :model="breadcrumbsModel"
+          automation-id="profile-edit-breadcrumbs-section"
+        >
+          <v-row>
+            <v-col cols="12" md="4">
+              <EnumEditor
+                field="status"
+                enums="status"
+                label="Status"
+                :editable="false"
+                automation-id="profile-edit-status-display"
+              />
+            </v-col>
+            <v-col cols="12" md="4">
+              <BreadcrumbDisplay
+                field="created"
+                label="Created"
+                automation-id="profile-edit-created-breadcrumb"
+              />
+            </v-col>
+            <v-col cols="12" md="4">
+              <BreadcrumbDisplay
+                field="saved"
+                label="Saved"
+                automation-id="profile-edit-saved-breadcrumb"
+              />
+            </v-col>
+          </v-row>
+        </DataCard>
+      </DataCardGrid>
     </template>
 
     <v-snackbar :model-value="showError as unknown as boolean" color="error" :timeout="5000">
@@ -252,6 +248,7 @@ import {
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { ScheduleEncountersDialog } from '@/components/dashboard'
+import DataCardGrid from '@/components/DataCardGrid.vue'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
