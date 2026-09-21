@@ -4,7 +4,7 @@ describe('Encounter Domain', () => {
       cy.createTestEncounter(profileId, 'active').then((encounterId) => {
         cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
 
-        cy.get('[data-automation-id="encounter-detail-heading"]').should('be.visible')
+        cy.get('[data-automation-id="encounter-detail-profile-link"]').should('be.visible')
         cy.get('[data-automation-id="encounter-detail-profile-section"]').should('be.visible')
         cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('be.visible')
         cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('be.visible')
@@ -12,8 +12,20 @@ describe('Encounter Domain', () => {
         cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('have.class', 'mh-card')
         cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card')
 
-        // End Encounter button visible for active encounter
-        cy.get('[data-automation-id="encounter-detail-end-button"]').should('be.visible')
+        // End Encounter and Back buttons visible inside Mentee card title bar
+        cy.get('[data-automation-id="encounter-detail-profile-section"]')
+          .find('[data-automation-id="encounter-detail-end-button"]')
+          .should('be.visible')
+        cy.get('[data-automation-id="encounter-detail-profile-section"]')
+          .find('[data-automation-id="encounter-detail-back-button"]')
+          .should('be.visible')
+
+        // Plan counts badge if present
+        cy.get('body').then(($body) => {
+          if ($body.find('[data-automation-id="encounter-detail-plan-counts"]').length > 0) {
+            cy.get('[data-automation-id="encounter-detail-plan-counts"]').should('be.visible')
+          }
+        })
 
         // Date and Status are read-only
         cy.get('[data-automation-id^="encounter-detail-date-input"]').should('exist')
