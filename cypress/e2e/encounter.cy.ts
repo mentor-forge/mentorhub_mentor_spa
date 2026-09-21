@@ -12,6 +12,12 @@ describe('Encounter Domain', () => {
         cy.get('[data-automation-id="encounter-detail-checklist-section"]').should('have.class', 'mh-card')
         cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card')
 
+        // Mentee card does not contain profile goals
+        cy.get('[data-automation-id="encounter-detail-profile-goals"]').should('not.exist')
+
+        // Encounter card is collapsed on page load for an active encounter
+        cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('have.class', 'mh-card--collapsed')
+
         // End Encounter and Back buttons visible inside Mentee card title bar
         cy.get('[data-automation-id="encounter-detail-profile-section"]')
           .find('[data-automation-id="encounter-detail-end-button"]')
@@ -47,6 +53,10 @@ describe('Encounter Domain', () => {
     cy.mentorMenteeProfileId().then((profileId) => {
       cy.createTestEncounter(profileId, 'active').then((encounterId) => {
         cy.loginAsMentor(`/mentor/encounter/${encounterId}`)
+
+        // Expand encounter section since it is collapsed by default for active encounters
+        cy.get('[data-automation-id="encounter-detail-encounter-section-collapse-button"]').click()
+        cy.get('[data-automation-id="encounter-detail-encounter-section"]').should('not.have.class', 'mh-card--collapsed')
 
         const tldr = `Cypress encounter ${Date.now()}`
         cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').clear().type(tldr)
