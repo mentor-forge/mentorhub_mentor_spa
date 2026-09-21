@@ -154,18 +154,11 @@
           :on-save="updateEncounterField"
           automation-id="encounter-detail-encounter-section"
         >
-          <DateTimeEditor
-            field="date"
-            label="Encounter Date"
-            :editable="false"
-            automation-id="encounter-detail-date-input"
-          />
           <EnumEditor
             field="status"
             enums="status"
             label="Status"
             :editable="false"
-            class="mt-4"
             automation-id="encounter-detail-status-select"
           />
           <SentenceEditor
@@ -231,7 +224,6 @@ import DataCardGrid from '@/components/DataCardGrid.vue'
 import MarkdownField from '@/components/MarkdownField.vue'
 import {
   DataCard,
-  DateTimeEditor,
   EnumEditor,
   MarkdownEditor,
   MhCard,

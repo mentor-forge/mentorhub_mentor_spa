@@ -47,8 +47,8 @@ describe('Encounter Domain', () => {
           }
         })
 
-        // Date and Status are read-only
-        cy.get('[data-automation-id^="encounter-detail-date-input"]').should('exist')
+        // Status is read-only; encounter date is in Mentee card title bar, not in Encounter card
+        cy.get('[data-automation-id^="encounter-detail-date-input"]').should('not.exist')
         cy.get('[data-automation-id^="encounter-detail-status-select"]').should('exist')
 
         // Active encounter: TLDR, Summary, and Checklist are editable
