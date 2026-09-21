@@ -179,7 +179,7 @@ describe('Profile Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-start-encounter-button"]').should('not.exist')
   })
 
-  it('should not show a Back to Dashboard link on ProfileEditPage', () => {
+  it('should not show a Back to Dashboard link on MenteeEditPage', () => {
     cy.get('[data-automation-id="profile-edit-dashboard-link"]').should('not.exist')
   })
 
@@ -187,7 +187,7 @@ describe('Profile Edit Page', () => {
     cy.get('button').contains('New Profile').should('not.exist')
   })
 
-  it('should not show a Properties button on ProfileEditPage', () => {
+  it('should not show a Properties button on MenteeEditPage', () => {
     cy.get('button').contains('Properties').should('not.exist')
   })
 })

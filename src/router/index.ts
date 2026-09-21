@@ -63,7 +63,7 @@ const router = createRouter({
     {
       path: '/mentee/:id',
       name: 'ProfileEdit',
-      component: () => import('@/pages/ProfileEditPage.vue'),
+      component: () => import('@/pages/MenteeEditPage.vue'),
       meta: { requiresAuth: true }
     },
     
