@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid>
     <v-row v-if="isLoading">
       <v-col class="text-center">
         <v-progress-circular indeterminate color="primary" />
