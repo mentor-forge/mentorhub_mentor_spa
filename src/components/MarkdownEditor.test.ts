@@ -50,6 +50,93 @@ describe('MarkdownEditor', () => {
     })
   })
 
+  describe('click-to-edit feature in editable mode', () => {
+    it('renders formatted markdown by default when editable is true', () => {
+      const wrapper = mount(MarkdownEditor, {
+        props: {
+          modelValue: '## Section Title\nSome content',
+          editable: true,
+          label: 'Notes',
+        },
+      })
+
+      const vm = wrapper.vm as any
+      expect(vm.isEditing).toBe(false)
+      const display = wrapper.find('[data-automation-id="markdown-field-display"]')
+      expect(display.exists()).toBe(true)
+      expect(display.html()).toContain('<h2>Section Title</h2>')
+      expect(display.html()).toContain('Some content')
+      expect(wrapper.find('.edit-hint').exists()).toBe(true)
+    })
+
+    it('shifts to raw textarea input when container is clicked', async () => {
+      const wrapper = mount(MarkdownEditor, {
+        props: {
+          modelValue: '## Clickable content',
+          editable: true,
+        },
+      })
+
+      const vm = wrapper.vm as any
+      expect(vm.isEditing).toBe(false)
+
+      const container = wrapper.find('.markdown-editor__container')
+      await container.trigger('click')
+
+      expect(vm.isEditing).toBe(true)
+    })
+
+    it('shifts back to markdown display and saves on textarea blur', async () => {
+      const onSave = vi.fn().mockResolvedValue(undefined)
+      const wrapper = mount(MarkdownEditor, {
+        props: {
+          modelValue: 'Initial notes',
+          editable: true,
+          onSave,
+        },
+      })
+
+      const vm = wrapper.vm as any
+      vm.startEditing()
+      expect(vm.isEditing).toBe(true)
+
+      vm.handleInput('Updated notes')
+      await vm.onTextareaBlur()
+
+      expect(vm.isEditing).toBe(false)
+      expect(onSave).toHaveBeenCalledWith('Updated notes')
+    })
+
+    it('does not shift to edit mode on click when editable is false', async () => {
+      const wrapper = mount(MarkdownEditor, {
+        props: {
+          modelValue: 'Readonly content',
+          editable: false,
+        },
+      })
+
+      const vm = wrapper.vm as any
+      const container = wrapper.find('.markdown-editor__container')
+      await container.trigger('click')
+
+      expect(vm.isEditing).toBe(false)
+      expect(wrapper.find('.edit-hint').exists()).toBe(false)
+    })
+
+    it('shows placeholder prompt when editable and empty', () => {
+      const wrapper = mount(MarkdownEditor, {
+        props: {
+          modelValue: '',
+          editable: true,
+          label: 'Summary',
+        },
+      })
+
+      const display = wrapper.find('[data-automation-id="markdown-field-display"]')
+      expect(display.text()).toContain('Click to add summary...')
+    })
+  })
+
   describe('read-only markdown rendering', () => {
     it('should render markdown headings and bold text when editable is false', () => {
       const wrapper = mount(MarkdownEditor, {
@@ -81,7 +168,7 @@ describe('MarkdownEditor', () => {
       expect(display.text()).toContain('Hello')
     })
 
-    it('should render an em-dash when value is empty', () => {
+    it('should render an em-dash when value is empty and not editable', () => {
       const wrapper = mount(MarkdownEditor, {
         props: {
           modelValue: '',

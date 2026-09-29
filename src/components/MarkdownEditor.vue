@@ -1,55 +1,96 @@
 <template>
   <template v-if="visible">
-    <v-textarea
-      v-if="editable"
-      :model-value="currentValue"
-      @update:model-value="handleInput"
-      @blur="handleBlur"
-      :label="label"
-      :disabled="saving"
-      :error="!!error"
-      :error-messages="error"
-      :hint="hint"
-      :rules="resolvedRules"
-      :rows="rows"
-      auto-grow
-      variant="outlined"
-      density="comfortable"
-      class="markdown-editor"
-      :data-automation-id="props.automationId"
-    >
-      <template v-if="saving" #append-inner>
-        <v-progress-circular size="16" width="2" indeterminate color="primary" />
-      </template>
-      <template v-else-if="saved" #append-inner>
-        <v-icon size="16" color="success">mdi-check</v-icon>
-      </template>
-    </v-textarea>
-
     <div
-      v-else
-      class="markdown-editor markdown-editor--display"
+      class="markdown-editor"
+      :class="{
+        'markdown-editor--editable': editable,
+        'markdown-editor--editing': isEditing,
+        'markdown-editor--display': !isEditing,
+      }"
       :data-automation-id="props.automationId"
     >
-      <div
-        class="markdown-editor__container"
-        :data-automation-id="resolvedDisplayAutomationId"
+      <!-- Edit Mode: visible when editing is active -->
+      <v-textarea
+        v-if="editable"
+        v-show="isEditing"
+        ref="textareaRef"
+        :model-value="currentValue"
+        @update:model-value="handleInput"
+        @blur="onTextareaBlur"
+        @keydown.esc="isEditing = false"
+        :label="label"
+        :disabled="saving"
+        :error="!!error"
+        :error-messages="error"
+        :hint="hint"
+        :rules="resolvedRules"
+        :rows="rows"
+        auto-grow
+        variant="outlined"
+        density="comfortable"
+        class="markdown-editor__input"
+        :data-automation-id="props.automationId ? `${props.automationId}-input` : undefined"
       >
-        <div v-if="label" class="markdown-editor__display-label text-caption text-medium-emphasis mb-1">
-          {{ label }}
+        <template v-if="saving" #append-inner>
+          <v-progress-circular size="16" width="2" indeterminate color="primary" />
+        </template>
+        <template v-else-if="saved" #append-inner>
+          <v-icon size="16" color="success">mdi-check</v-icon>
+        </template>
+      </v-textarea>
+
+      <!-- Display Mode: renders Markdown. Clickable to edit when editable=true -->
+      <div
+        v-show="!isEditing || !editable"
+        class="markdown-editor__container"
+        :class="{ 'markdown-editor__container--clickable': editable }"
+        :data-automation-id="resolvedDisplayAutomationId"
+        :tabindex="editable ? 0 : undefined"
+        :role="editable ? 'button' : undefined"
+        :aria-label="editable ? `Edit ${label || 'markdown content'}` : undefined"
+        @click="startEditing"
+        @keydown.enter.prevent="startEditing"
+      >
+        <div class="d-flex align-center justify-space-between mb-1">
+          <div v-if="label" class="markdown-editor__display-label text-caption text-medium-emphasis">
+            {{ label }}
+          </div>
+          <div v-if="editable" class="markdown-editor__actions d-flex align-center">
+            <v-progress-circular v-if="saving" size="14" width="2" indeterminate color="primary" class="mr-1" />
+            <v-icon v-else-if="saved" size="14" color="success" class="mr-1">mdi-check</v-icon>
+            <span class="text-caption text-primary d-inline-flex align-center edit-hint">
+              <v-icon size="12" class="mr-1">mdi-pencil</v-icon> Edit
+            </span>
+          </div>
         </div>
+
         <div
+          v-if="hasContent"
           class="markdown-editor__display-value"
           data-automation-id="markdown-field-display"
           v-html="renderedMarkdown"
         />
+        <div
+          v-else-if="editable"
+          class="markdown-editor__placeholder text-body-2 text-medium-emphasis font-italic"
+          data-automation-id="markdown-field-display"
+        >
+          Click to add {{ (label || 'content').toLowerCase() }}...
+        </div>
+        <div
+          v-else
+          class="markdown-editor__display-value"
+          data-automation-id="markdown-field-display"
+        >
+          —
+        </div>
       </div>
     </div>
   </template>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import {
@@ -103,6 +144,8 @@ const saving = ref(false)
 const saved = ref(false)
 const error = ref<string | null>(null)
 const currentValue = ref<string | number | undefined>(sourceValue.value)
+const isEditing = ref(false)
+const textareaRef = ref<any>(null)
 
 watch(sourceValue, (newValue) => {
   currentValue.value = newValue
@@ -117,12 +160,16 @@ const resolvedDisplayAutomationId = computed(() => {
     : `${props.automationId}-display`
 })
 
+const hasContent = computed(() => {
+  const val = currentValue.value
+  return val !== undefined && val !== null && String(val).trim() !== ''
+})
+
 const renderedMarkdown = computed(() => {
-  const raw = currentValue.value
-  if (raw === undefined || raw === null || raw === '') {
+  if (!hasContent.value) {
     return '—'
   }
-  const str = String(raw)
+  const str = String(currentValue.value)
   try {
     const rawHtml = marked.parse(str) as string
     return DOMPurify.sanitize(rawHtml)
@@ -132,11 +179,31 @@ const renderedMarkdown = computed(() => {
   }
 })
 
+function startEditing() {
+  if (!props.editable) return
+  isEditing.value = true
+  nextTick(() => {
+    const textareaEl =
+      textareaRef.value?.$el?.querySelector('textarea') ||
+      textareaRef.value?.focus
+    if (typeof textareaRef.value?.focus === 'function') {
+      textareaRef.value.focus()
+    } else if (textareaEl?.focus) {
+      textareaEl.focus()
+    }
+  })
+}
+
 function handleInput(value: string | number) {
   currentValue.value = value
   saved.value = false
   error.value = null
   emit('update:modelValue', String(value))
+}
+
+async function onTextareaBlur(event?: FocusEvent) {
+  isEditing.value = false
+  await handleBlur(event)
 }
 
 async function handleBlur(event?: FocusEvent) {
@@ -172,9 +239,11 @@ async function handleBlur(event?: FocusEvent) {
 
 defineExpose({
   currentValue,
+  isEditing,
   saving,
   saved,
   error,
+  startEditing,
   handleInput,
   handleBlur,
 })
@@ -185,12 +254,36 @@ defineExpose({
   width: 100%;
 }
 
-.markdown-editor--display {
-  width: 100%;
-}
-
 .markdown-editor__container {
   width: 100%;
+  border-radius: 4px;
+  padding: 0.5rem 0.75rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.markdown-editor__container--clickable {
+  cursor: pointer;
+  border: 1px dashed rgba(var(--v-theme-primary, 25, 118, 210), 0.35);
+  background-color: rgba(var(--v-theme-primary, 25, 118, 210), 0.02);
+}
+
+.markdown-editor__container--clickable:hover {
+  background-color: rgba(var(--v-theme-primary, 25, 118, 210), 0.06);
+  border-color: rgba(var(--v-theme-primary, 25, 118, 210), 0.75);
+}
+
+.markdown-editor__container--clickable:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary, 25, 118, 210));
+}
+
+.edit-hint {
+  opacity: 0.75;
+  transition: opacity 0.2s ease;
+}
+
+.markdown-editor__container--clickable:hover .edit-hint {
+  opacity: 1;
 }
 
 .markdown-editor__display-label {
@@ -201,6 +294,12 @@ defineExpose({
   line-height: 1.6;
   word-break: break-word;
   overflow-wrap: break-word;
+}
+
+.markdown-editor__placeholder {
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
 }
 
 .markdown-editor__display-value :deep(h1),
