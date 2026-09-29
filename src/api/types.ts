@@ -195,6 +195,11 @@ export interface Mentee {
   notes?: string
   next_appointment?: string
   schedule?: MenteeSchedule
+  plan_counts?: {
+    library: number
+    now: number
+    next: number
+  }
   created: Breadcrumb
   saved: Breadcrumb
 }
