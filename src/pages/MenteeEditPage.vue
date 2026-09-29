@@ -174,7 +174,7 @@
                   >
                     {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
                   </router-link>
-                  <div class="flex-grow-1">
+                  <div class="flex-grow-1" data-automation-id="profile-edit-encounter-tldr">
                     <SentenceEditor
                       :model-value="encounter.tldr || 'Encounter'"
                       :editable="false"

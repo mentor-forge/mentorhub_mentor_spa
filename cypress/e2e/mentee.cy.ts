@@ -1,4 +1,4 @@
-describe('Profile Edit Page', () => {
+describe('Mentee Edit Page', () => {
   beforeEach(() => {
     cy.mentorMenteeProfileId().then((profileId) => {
       cy.loginAsMentor(`/mentor/mentee/${profileId}`)
@@ -107,9 +107,10 @@ describe('Profile Edit Page', () => {
 
     const notes = `Cypress notes ${Date.now()}`
     cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').click()
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').clear().type(notes).blur()
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea:visible').clear().type(notes).blur()
     cy.wait(1000)
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').should('have.value', notes)
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').should('contain.text', notes)
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').first().should('have.value', notes)
   })
 
   it('should open and cancel schedule encounters dialog', () => {
