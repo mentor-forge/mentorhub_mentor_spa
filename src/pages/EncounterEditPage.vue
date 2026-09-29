@@ -222,11 +222,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { api } from '@/api/client'
 import { redirectToDiscoveryDashboard } from '@/composables/useDiscoveryRedirect'
-import DataCardGrid from '@/components/DataCardGrid.vue'
-import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import {
   DataCard,
+  DataCardGrid,
   EnumEditor,
+  MarkdownEditor,
   MhCard,
   SentenceEditor,
   formatDate,

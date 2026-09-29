@@ -244,7 +244,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
   BreadcrumbDisplay,
   DataCard,
+  DataCardGrid,
   EnumEditor,
+  MarkdownEditor,
   MhCard,
   SentenceEditor,
   buildJourneyUrl,
@@ -253,8 +255,6 @@ import {
   useErrorHandler,
 } from '@mentor-forge/mentorhub_spa_utils'
 import { ScheduleEncountersDialog } from '@/components/dashboard'
-import DataCardGrid from '@/components/DataCardGrid.vue'
-import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'

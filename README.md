@@ -210,7 +210,7 @@ src/
 | Layer | Owns |
 |-------|------|
 | **This SPA** | Mentor journey create/edit pages, page state, domain API client (`API_BASE` from Vite `base`), Discovery redirect, Plan checklist / schedule encounters presentation |
-| **`spa_utils` 1.0.6** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors, package `DataCardGrid` / `MarkdownEditor` (F161 harvests local copies) |
+| **`spa_utils` 1.0.6** | Auth/JWT bootstrap, IdP redirect, `PageFrame` chrome, role-gated hamburger catalog, `hostingConfigHref` Settings destination, Token claim labels, logout `return_to` `/discovery/`, `buildJourneyUrl` / ALB origin rules, `DataCard` / typed editors, `DataCardGrid` / `MarkdownEditor` (no local parallel copies) |
 | **Discovery SPA** | Collection browsing (`/discovery/resources`, `/discovery/paths`, `/discovery/plans`, mentee lists); this SPA must not host those lists |
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
 | **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
@@ -254,13 +254,12 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.6** `PageFrame` as the navigation
 ### Reusable Components and Composables
 This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.6`:
 - **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Catalog rows, role gates, and Discovery collection hrefs are owned by spa_utils. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`.
-- **Components**: `DataCard`, `MhCard`, typed editors (`WordEditor`, `SentenceEditor`,
-  `EnumEditor`, `BreadcrumbDisplay`, and others), and package `DataCardGrid` / `MarkdownEditor`
-  once F161 switches imports off the local copies under `src/components/`. Multi-card view/edit
-  pages use `DataCardGrid`; list collections live on Discovery (package `CardGrid` / `ListPageSearch`
-  are not consumed here). Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a
-  compatibility wrapper for legacy pages, and `AutoSaveSelect` remains available
-  where runtime enumerators have not yet migrated
+- **Components**: `DataCard`, `MhCard`, `DataCardGrid`, `MarkdownEditor`, typed editors (`WordEditor`,
+  `SentenceEditor`, `EnumEditor`, `BreadcrumbDisplay`, and others). Multi-card view/edit pages use
+  `DataCardGrid`; list collections live on Discovery (package `CardGrid` / `ListPageSearch` are not
+  consumed here). Prefer `DataCard` + typed editors for view/edit forms. `AutoSaveField` is a
+  compatibility wrapper for legacy pages, and `AutoSaveSelect` remains available where runtime
+  enumerators have not yet migrated
 - **Composables**: `useResourceList`, `useErrorHandler`, `useRoles`, `useDiscoveryRedirect`
 - **Utilities**: `formatDate`, `validationRules`
 

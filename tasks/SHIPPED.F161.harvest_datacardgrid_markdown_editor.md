@@ -1,6 +1,6 @@
 # F161 – Harvest package `DataCardGrid` and `MarkdownEditor`
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F160_pin_spa_utils_1_0_6`  
 **Description**: After the **1.0.6** pin, import `DataCardGrid` and `MarkdownEditor` from `@mentor-forge/mentorhub_spa_utils`, switch Mentor multi-card pages to those exports, and **delete** the SPA-local copies so there is one implementation. Remove SPA `marked` / `dompurify` (and `@types/dompurify`) if they existed only for the local editor. Detail/edit pages keep working through the existing editor props; rendered markdown resting view arrives with the package bump.
@@ -88,4 +88,32 @@ Touch other `src/**` only if a leftover re-export or import fails compile. Do no
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Planned approach
+
+1. Add `DataCardGrid` and `MarkdownEditor` to the existing `@mentor-forge/mentorhub_spa_utils` import blocks in `EncounterEditPage.vue` and `MenteeEditPage.vue`; remove `@/components/…` imports. Leave template bindings, automation ids, and props unchanged.
+2. Delete SPA-local `DataCardGrid` / `MarkdownEditor` `.vue` and `.test.ts` files; grep `src/**` to confirm no leftover imports.
+3. Remove direct `marked`, `dompurify`, and `@types/dompurify` from `package.json`; run `mh` + `npm install --include=dev` to refresh the lockfile.
+4. Update `README.md` ownership text: package owns `DataCardGrid` / `MarkdownEditor`; no parallel local copies.
+5. Run test suite, coverage (record only — waived), and build; do not change `vitest.config.ts` or run Cypress.
+
+### Summary
+
+Harvest complete: encounter and mentee edit pages consume package `DataCardGrid` and `MarkdownEditor` from spa_utils **1.0.6**; local duplicates and their unit tests removed; SPA no longer lists `marked` / `dompurify` as direct dependencies (transitive via spa_utils only). README reflects package ownership.
+
+### Files changed
+
+**Updated:** `src/pages/EncounterEditPage.vue`, `src/pages/MenteeEditPage.vue`, `package.json`, `package-lock.json`, `README.md`
+
+**Deleted:** `src/components/DataCardGrid.vue`, `src/components/DataCardGrid.test.ts`, `src/components/MarkdownEditor.vue`, `src/components/MarkdownEditor.test.ts`
+
+### Command results
+
+| Command | Result |
+|---------|--------|
+| `mh` | CodeArtifact auth refreshed |
+| `npm install --include=dev` | exit 0 (removed direct marked/dompurify deps) |
+| `npm ls @mentor-forge/mentorhub_spa_utils` | `@mentor-forge/mentorhub_spa_utils@1.0.6` |
+| `npm ls marked dompurify` | Only under `@mentor-forge/mentorhub_spa_utils@1.0.6` (transitive); not direct SPA deps |
+| `npm run test` | exit 0 — 16 files, 121 tests passed |
+| `npm run test:coverage` | exit 1 (waived) — all tests passed; **ERROR:** `src/components/**` functions **78.37%** vs threshold **90%** (F163) |
+| `npm run build` | exit 0 — `vue-tsc` + Vite build clean |
