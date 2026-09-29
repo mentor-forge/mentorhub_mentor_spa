@@ -196,6 +196,45 @@ describe('Mentee Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-start-encounter-button"]').should('not.exist')
   })
 
+  it('should show Start Encounter button for today even when older unstarted encounters exist in the past', () => {
+    const d = new Date()
+    const todayStr = [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0'),
+    ].join('-')
+    cy.intercept('GET', '**/api/profile/*', (req) => {
+      req.continue((res) => {
+        if (res.body) {
+          res.body.encounters = [
+            {
+              _id: '67a000000000000000000099',
+              mentor_id: 'mentor-1',
+              mentee_id: res.body.profile?._id,
+              status: 'scheduled',
+              date: '2020-01-01',
+            },
+            {
+              _id: '67a000000000000000000001',
+              mentor_id: 'mentor-1',
+              mentee_id: res.body.profile?._id,
+              status: 'scheduled',
+              date: todayStr,
+            },
+          ]
+        }
+      })
+    })
+
+    cy.mentorMenteeProfileId().then((profileId) => {
+      cy.loginAsMentor(`/mentor/mentee/${profileId}`)
+    })
+
+    cy.get('[data-automation-id="profile-edit-start-encounter-button"]')
+      .should('be.visible')
+      .and('not.contain.text', 'Start Encounter')
+  })
+
   it('should not show a Back to Dashboard link on MenteeEditPage', () => {
     cy.get('[data-automation-id="profile-edit-dashboard-link"]').should('not.exist')
   })
