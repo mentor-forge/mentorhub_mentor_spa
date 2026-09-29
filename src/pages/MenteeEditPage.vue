@@ -116,13 +116,11 @@
               label="Summary"
               automation-id="profile-edit-mentee-summary-input"
             />
-            <MarkdownSentenceField
-              :model-value="notesText"
+            <MarkdownEditor
+              field="notes"
               label="Notes"
               class="mt-4"
-              data-automation-id="profile-edit-mentee-notes-input"
-              @update:model-value="handleNotesInput"
-              @blur="handleNotesBlur"
+              automation-id="profile-edit-mentee-notes-input"
             />
           </v-card-text>
         </v-card>
@@ -177,10 +175,10 @@
                     {{ encounterDateDisplay(encounter.appointment?.from || encounter.date || encounter.created?.at_time) }}:
                   </router-link>
                   <div class="flex-grow-1">
-                    <SentenceField
+                    <SentenceEditor
                       :model-value="encounter.tldr || 'Encounter'"
-                      :readonly="true"
-                      data-automation-id="profile-edit-encounter-tldr"
+                      :editable="false"
+                      automation-id="profile-edit-encounter-tldr"
                     />
                   </div>
                 </div>
@@ -256,8 +254,7 @@ import {
 } from '@mentor-forge/mentorhub_spa_utils'
 import { ScheduleEncountersDialog } from '@/components/dashboard'
 import DataCardGrid from '@/components/DataCardGrid.vue'
-import MarkdownSentenceField from '@/components/MarkdownSentenceField.vue'
-import SentenceField from '@/components/SentenceField.vue'
+import MarkdownEditor from '@/components/MarkdownEditor.vue'
 import { api } from '@/api/client'
 import { useRoles } from '@/composables/useRoles'
 import { isEncounterDateToday, getNextScheduledEncounter } from '@/utils/date'
@@ -363,32 +360,6 @@ async function updateMenteeField(field: string, value: unknown) {
     throw new Error(`Unsupported mentee field: ${field}`)
   }
   await updateMentee({ [field]: String(value ?? '') } as MenteeUpdate)
-}
-
-const notesText = ref('')
-watch(
-  () => profileDetail.value?.mentee?.notes,
-  (val) => {
-    notesText.value = val ?? ''
-  },
-  { immediate: true }
-)
-
-let notesDebounceTimer: ReturnType<typeof setTimeout> | null = null
-function handleNotesInput(val: string) {
-  notesText.value = val
-  if (notesDebounceTimer) clearTimeout(notesDebounceTimer)
-  notesDebounceTimer = setTimeout(() => {
-    updateMenteeField('notes', val)
-  }, 500)
-}
-
-function handleNotesBlur() {
-  if (notesDebounceTimer) {
-    clearTimeout(notesDebounceTimer)
-    notesDebounceTimer = null
-  }
-  updateMenteeField('notes', notesText.value)
 }
 
 provideDataCardContext({

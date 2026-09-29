@@ -100,18 +100,16 @@ describe('Profile Edit Page', () => {
       .should('have.attr', 'href', '/mentor/encounter/67a000000000000000000010')
   })
 
-  it('should update mentee summary and notes fields using MarkdownSentenceField', () => {
+  it('should update mentee summary and notes fields', () => {
     const summary = `Cypress summary ${Date.now()}`
     cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').clear().type(summary).blur()
     cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').should('have.value', summary)
 
     const notes = `Cypress notes ${Date.now()}`
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"] textarea')
-      .should('have.class', 'markdown-sentence-field__input')
-      .clear()
-      .type(notes)
-      .blur()
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"] textarea').should('have.value', notes)
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').click()
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').clear().type(notes).blur()
+    cy.wait(1000)
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').should('have.value', notes)
   })
 
   it('should open and cancel schedule encounters dialog', () => {
