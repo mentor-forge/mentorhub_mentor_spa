@@ -291,6 +291,7 @@ See the [mentorhub_spa_utils README](../mentorhub_spa_utils/README.md) for compl
 - UI role gating is UX; API authorization is proven separately via Bearer requests through `/mentor/api/`
 - Run all specs: `npm run cypress:run` (headless) or `npm run cypress` (interactive)
 - Run one spec: `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts`
+- Package `MarkdownEditor` (spa_utils **1.0.6**) shows a resting sanitized markdown display until edit mode: click or Enter on `${automationId}-display`, then type into `[data-automation-id="${automationId}-input"]` (not a bare nested `textarea` while the field is resting). Read-only fields expose `markdown-field-display` only.
 
 ## Adding New Features
 

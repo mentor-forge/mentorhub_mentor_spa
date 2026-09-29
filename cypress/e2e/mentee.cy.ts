@@ -106,11 +106,17 @@ describe('Mentee Edit Page', () => {
     cy.get('[data-automation-id="profile-edit-mentee-summary-input"]').find('input').should('have.value', summary)
 
     const notes = `Cypress notes ${Date.now()}`
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').click()
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea:visible').clear().type(notes).blur()
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input-display"]').click()
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input-input"]')
+      .find('textarea')
+      .filter(':visible')
+      .clear()
+      .type(notes)
+      .blur()
     cy.wait(1000)
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').should('contain.text', notes)
-    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]').find('textarea').first().should('have.value', notes)
+    cy.get('[data-automation-id="profile-edit-mentee-notes-input"]')
+      .find('[data-automation-id="markdown-field-display"]')
+      .should('contain.text', notes)
   })
 
   it('should open and cancel schedule encounters dialog', () => {

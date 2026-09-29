@@ -53,7 +53,16 @@ describe('Encounter Domain', () => {
 
         // Active encounter: TLDR, Summary, and Checklist are editable
         cy.get('[data-automation-id="encounter-detail-tldr-input"]').find('input').should('exist').and('not.be.disabled')
-        cy.get('[data-automation-id="encounter-detail-summary-input"]').find('textarea').should('exist').and('not.be.disabled')
+        cy.get('[data-automation-id="encounter-detail-summary-section-collapse-button"]').click()
+        cy.get('[data-automation-id="encounter-detail-summary-section"]').should('not.have.class', 'mh-card--collapsed')
+        cy.get('[data-automation-id="encounter-detail-summary-input"]')
+          .find('[data-automation-id="markdown-field-display"]')
+          .should('exist')
+        cy.get('[data-automation-id="encounter-detail-summary-input-display"]').should('be.visible').click()
+        cy.get('[data-automation-id="encounter-detail-summary-input-input"]')
+          .find('textarea')
+          .should('be.visible')
+          .and('not.be.disabled')
         cy.get('[data-automation-id="encounter-detail-checklist-section"]')
           .find('input[type="checkbox"]')
           .each(($cb) => {

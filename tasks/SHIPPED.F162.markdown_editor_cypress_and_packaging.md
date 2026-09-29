@@ -1,6 +1,6 @@
 # F162 – MarkdownEditor Cypress activation and packaging
 
-**Status**: Pending  
+**Status**: Shipped  
 **Type**: Feature  
 **Depends On**: `F161_harvest_datacardgrid_markdown_editor`  
 **Description**: Align Cypress with spa_utils **1.0.6** `MarkdownEditor` resting view: specs that typed into a markdown textarea without opening edit mode must activate the display first, then type into `${automationId}-input`. Update selectors that targeted deleted local components. Run the packaged SPA as the acceptance gate for this Mentor 1.0.6 pin/harvest issue.
@@ -79,4 +79,40 @@ Do not change the spa_utils pin. Do not restore local `DataCardGrid` / `Markdown
 
 ## Execution Notes
 
-_Reserved for the task execution agent._
+### Planned approach
+
+1. Align `encounter.cy.ts` active Summary assertion with spa_utils resting view: assert `markdown-field-display`, click `encounter-detail-summary-input-display`, then assert editable textarea under `encounter-detail-summary-input-input`.
+2. Align `mentee.cy.ts` notes write path: click `profile-edit-mentee-notes-input-display`, type into `profile-edit-mentee-notes-input-input`, assert saved text on `markdown-field-display` after blur.
+3. Skim other E2E specs; change only if markdown or deleted-local selectors fail.
+4. Add README E2E bullet for markdown activate-then-`${automationId}-input`.
+5. Run `npm run test`, `npm run test:coverage` (record; waived), `npm run build`, then packaging gate (`container`, `service` if not up, `cypress:run`).
+
+### Summary
+
+Aligned Mentor Cypress with spa_utils **1.0.6** `MarkdownEditor` resting view: expand collapsed Summary card when needed, assert `markdown-field-display`, activate via `${automationId}-display`, edit via `${automationId}-input`. Mentee notes flow uses the same pattern. README E2E section documents activate-then-input for markdown fields.
+
+### Files changed
+
+- `cypress/e2e/encounter.cy.ts` — active Summary: expand section, resting display, activate, `${automationId}-input` textarea assertion (replaces always-visible textarea check).
+- `cypress/e2e/mentee.cy.ts` — notes: `profile-edit-mentee-notes-input-display` → `profile-edit-mentee-notes-input-input`; post-save assert on `markdown-field-display`.
+- `README.md` — Testing / E2E bullet for markdown edit-mode activation.
+- `tasks/PENDING.F162.markdown_editor_cypress_and_packaging.md` — this file.
+
+No changes to navigation, deployment, path, resource, or plan specs.
+
+### Command results
+
+| Command | Result |
+|---------|--------|
+| `npm run test` | Pass — 16 files, 121 tests |
+| `npm run test:coverage` | **Waived** — exit 1; `src/components/**` functions 78.37% vs 90% threshold (expected; F163) |
+| `npm run build` | Pass |
+| `npm run container` | Pass — `ghcr.io/mentor-forge/mentorhub_mentor_spa:latest` |
+| `npm run service` | Pass — stopped Vite on **8392**, ran `mh down && mh up mentor` (fresh stack for gate) |
+| `npm run cypress:run` | Pass — **44/44** after fresh `npm run service` |
+
+**Cypress notes:** First full run after spec edits (without DB reset) reported **43/44** — `encounter.cy.ts` “finish active encounter…” could not find the new date link when many prior completed encounters existed from earlier runs. Re-running `npm run service` (resets Mongo) and `npm run cypress:run` yielded **44/44 all specs passed**. No selector change applied to the finish test.
+
+### Blockers
+
+None.
