@@ -30,7 +30,7 @@ Source issue is authoritative for this migration. The agreed migration supersede
 
 - Inventory package pin/lock URLs, tracked versus ignored npm config, Dockerfile/codeartifact_token, build wrapper and GitHub Actions. Document package/runtime paths, external prerequisites and rollback.
 - Audit initAuth/useAuth/runtime-config/nginx wiring for AWS endpoints or Cognito assumptions. Most current runtime auth is configurable through shared spa_utils; do not replace that ownership with per-SPA auth code.
-- Record external prerequisite: I-US01 exact published GitHub npm version, public visibility, read:packages/Actions package access; central identity/hosting decision is required for production runtime cutover. No OpenAPI or data schema changes are intended.
+- Record external prerequisite: I-US01 exact published GitHub npm version, public visibility, read:packages/Actions package access; production identity/hosting selection and cutover are deferred and do not gate local package/build acceptance. No OpenAPI or data schema changes are intended.
 
 ### Craftsmanship Expectations
 
@@ -52,11 +52,21 @@ Only these implementation files may change. The orchestrator may also update/ren
 
 This is a reviewable plan, not an execution record. Execute only this task's listed outputs when orchestration is separately authorized. Do not touch excluded MongoDB/Runbook utility repos, publish packages/tags, mutate issue/project state, or delete/provision AWS resources as a side effect. Future workflow publication happens only through the reviewed maintainer release path.
 
-Where a task requires an unpublished release, an undecided production contract, unavailable live schema or operator evidence, stop execution at that prerequisite and report it; do not guess values or substitute the unrelated PyPI api-utils package. Pending status describes the plan's review state, not proof that external execution gates are satisfied.
+Where a task requires an unpublished release, unavailable live schema or operator evidence, stop execution at that prerequisite and report it; do not guess values or substitute the unrelated PyPI api-utils package. Pending status describes the plan's review state, not proof that external execution gates are satisfied.
 
 ## External prerequisites
 
-SPA utils package publication and consumer registry access: https://github.com/mentor-forge/mentorhub_spa_utils/issues/43. Production identity/hosting readiness: https://github.com/mentor-forge/mentorhub/issues/80. Keep these as execution gates rather than cross-repo Depends On IDs.
+SPA utils package publication and consumer registry access: https://github.com/mentor-forge/mentorhub_spa_utils/issues/43. Cloud-agnostic local configuration boundary: https://github.com/mentor-forge/mentorhub/issues/80. No production provider choice is required for this package/build work. Keep these as execution gates rather than cross-repo Depends On IDs.
+
+## Cloud-agnostic deployment boundary
+
+The deliverable is a cloud-agnostic **local** deployment plus the agreed GitHub dependency/build migration. Existing identity/hosting implementations are largely placeholders: audit actual executable dependencies before proposing changes. Selecting, implementing or migrating to a production IdP/hosting provider is not a prerequisite for library releases, journey package/build/CI changes or local acceptance.
+
+Keep application-facing backing-service contracts and environment settings provider neutral. Concentrate necessary integration changes in Admin API and DeveloperEdition/docker-compose.yaml where inspection proves coupling; preserve the existing shared JWT/redirect contracts and local persona/mocked-service behavior. Do not create per-journey provider adapters, new identity schemas or a general multi-cloud framework speculatively.
+
+Cloud-specific provisioning, backing-service configuration, identity-provider wiring, roles/secrets and deployment overlays belong to the relevant infrastructure repo: mentorhub_cloudformation owns AWS, including future CodeArtifact provisioning. Future separate repos may implement Google, Microsoft/Azure, IBM or Red Hat platforms against the same contracts; do not create or implement them in this effort. Core compose must not require AWS accounts, credentials or endpoints. A locally optional emulator is not a live AWS dependency; retain it only if useful without making it a required cloud-specific integration.
+
+AWS inventory, secure backup/restore evidence and separately approved decommissioning remain I-S01 responsibilities. Production provider selection or a live production cutover is future infrastructure/integration work, not an acceptance gate for the cloud-agnostic local stack.
 
 ## Execution Notes
 
