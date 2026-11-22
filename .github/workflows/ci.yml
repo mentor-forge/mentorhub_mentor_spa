@@ -1,0 +1,80 @@
+name: Mentor SPA PR validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate_lock:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check locked package sources
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+
+          const manifest = JSON.parse(readFileSync('package.json', 'utf8'))
+          const lock = JSON.parse(readFileSync('package-lock.json', 'utf8'))
+          const sharedName = '@mentor-forge/mentorhub_spa_utils'
+          const shared = lock.packages[`node_modules/${sharedName}`]
+          assert.deepEqual(lock.packages[''].dependencies, manifest.dependencies)
+          assert.deepEqual(lock.packages[''].devDependencies, manifest.devDependencies)
+          assert.equal(shared.version, manifest.dependencies[sharedName])
+          assert.ok(shared.integrity, 'SPA Utils must have a locked integrity hash')
+
+          for (const [path, entry] of Object.entries(lock.packages)) {
+            if (!entry.resolved) continue
+            const registry = path.endsWith(`node_modules/${sharedName}`)
+              ? 'https://npm.pkg.github.com'
+              : 'https://registry.npmjs.org'
+            assert.equal(new URL(entry.resolved).origin, registry, path)
+          }
+          JS
+
+  validate:
+    needs: validate_lock
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install locked dependencies
+        run: npm ci
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CYPRESS_INSTALL_BINARY: '0'
+      - name: Unit tests
+        run: npm test
+      - name: Type check and build
+        run: npm run build
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build container for validation
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          secrets: |
+            github_npm_token=${{ secrets.GITHUB_TOKEN }}
