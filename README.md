@@ -333,6 +333,22 @@ Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
 
+### Updating the Nginx base
+
+The runtime stage pins the official Nginx 1.30.7 Alpine image by its
+multi-platform digest. When updating the pin, check the official
+[stable release](https://nginx.org/en/download.html) and
+[security advisories](https://nginx.org/en/security_advisories.html), then use
+`docker buildx imagetools inspect` to confirm the tag and index support both
+AMD64 and ARM64.
+
+Build both architectures with a fresh base and verify the packaged Nginx
+binary with `nginx -v`. Scan both images and run the packaged Cypress suite,
+including history fallback, the prefixed API proxy, and runtime configuration.
+After main publishes to GHCR, record the published index and both platform
+manifest digests. Verify the published binaries and promote the same
+application digest through environments.
+
 ## Configuration
 - **Supported browser entry**: `http://<host>:8080/mentor/` via Developer Edition welcome / ALB
 - **Direct-port debugging only**: `http://localhost:8392/mentor/`; `http://localhost:8392/` and `/mentor` redirect to `/mentor/`

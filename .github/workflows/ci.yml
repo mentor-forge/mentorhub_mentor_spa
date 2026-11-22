@@ -75,6 +75,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          pull: true
           push: false
           secrets: |
             github_npm_token=${{ secrets.GITHUB_TOKEN }}
