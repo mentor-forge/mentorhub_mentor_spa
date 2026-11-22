@@ -33,7 +33,7 @@ The supported browser entry is `http://<host>:8080/mentor/` through Developer Ed
 
 ## Developer Commands
 
-Set `GITHUB_TOKEN` in your shell to a GitHub token with `read:packages` access before installing packages or building the image. The repository npm config routes the `@mentor-forge` scope to GitHub Packages and uses public npm for other dependencies. The container build uses the token as a BuildKit secret.
+Before installing packages or building the image, set `GITHUB_TOKEN` in your shell using the Developer Edition onboarding token with `read:packages` access. The repository npm config routes `@mentor-forge` to GitHub Packages and uses public npm for other dependencies. The container build passes the token as a BuildKit secret. Keep its value out of repository files.
 
 ```sh
 ## install dependencies (Node >= 24)
@@ -71,7 +71,7 @@ npm run cypress
 npm run cypress:run
 
 ## run one Cypress spec headlessly
-npm run cypress:run:spec -- cypress/e2e/profile.cy.ts
+npm run cypress:run:spec -- cypress/e2e/mentee.cy.ts
 
 ## Developer Edition: stop stack, then start db + mentor-api only
 npm run api
@@ -92,6 +92,12 @@ npm run container
 2. Start the Vite dev server: `npm run dev` (served at `http://localhost:8392/mentor/`)
 3. Sign in via Developer Edition login (`http://127.0.0.1:8080/login.html`) when prompted
 4. This SPA has no default landing page; collection browsing lives on Discovery (`http://<host>:8080/discovery/`). Root `/mentor/` and unmatched paths forward to the Discovery dashboard.
+
+For Vite checks, run the six browser specs for navigation, paths, plans, resources, mentees and encounters against `npm run dev`. For packaged verification, stop Vite and run the entire Cypress suite against the built image and the local Mentor API. `deployment.cy.ts` exercises the container's Nginx redirects, cache headers, history fallback, runtime configuration and prefixed API proxy.
+
+### Rollout and rollback
+
+After CI verifies the locked install and multi-platform build, record the published GHCR image digest for deployment. Roll back a deployment using the previous known-good image digest. If a shared package regression requires a source rollback, restore the previous known-good GitHub Packages version in both `package.json` and `package-lock.json`, then rerun the locked install, build and Cypress checks before publishing a replacement image.
 
 ### In-App Route Table
 
@@ -129,7 +135,7 @@ Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
 API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`, `api.scheduleEncounters(data)`, `api.startEncounter(id)`, `api.finishEncounter(id)`.
 
-E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
+E2E coverage: `cypress/e2e/mentee.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/mentee.cy.ts` while `npm run api` and `npm run dev` are running).
 
 ## Paths and Resources
 
