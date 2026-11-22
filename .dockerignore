@@ -25,3 +25,5 @@ Refactor.md
 *.spec.tsx
 vitest.config.ts
 cypress.config.ts
+.npmrc
+**/.npmrc

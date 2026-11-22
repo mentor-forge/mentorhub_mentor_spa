@@ -33,6 +33,8 @@ The supported browser entry is `http://<host>:8080/mentor/` through Developer Ed
 
 ## Developer Commands
 
+Set `GITHUB_TOKEN` in your shell to a GitHub token with `read:packages` access before installing packages or building the image. The repository npm config routes the `@mentor-forge` scope to GitHub Packages and uses public npm for other dependencies. The container build uses the token as a BuildKit secret.
+
 ```sh
 ## install dependencies (Node >= 24)
 npm install
@@ -215,7 +217,7 @@ src/
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
 | **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
 
-Uses `@mentor-forge/mentorhub_spa_utils` **1.0.6** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
+Uses `@mentor-forge/mentorhub_spa_utils` **1.0.7** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 
 ### Deployment Prefix & Runtime Config Invariants
 
@@ -252,7 +254,7 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.6** `PageFrame` as the navigation
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.6`:
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.7`:
 - **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Catalog rows, role gates, and Discovery collection hrefs are owned by spa_utils. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`.
 - **Components**: `DataCard`, `MhCard`, `DataCardGrid`, `MarkdownEditor`, typed editors (`WordEditor`,
   `SentenceEditor`, `EnumEditor`, `BreadcrumbDisplay`, and others). Multi-card view/edit pages use
