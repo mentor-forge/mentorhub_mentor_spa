@@ -6,26 +6,32 @@ ENV CYPRESS_INSTALL_BINARY=0
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 ARG VITE_IDP_LOGIN_URI=http://127.0.0.1:8080/login.html
 ENV VITE_IDP_LOGIN_URI=$VITE_IDP_LOGIN_URI
 
-# CodeArtifact registry + auth via BuildKit secret (CI or scripts/docker-build.sh); no committed .npmrc.
-RUN --mount=type=secret,id=codeartifact_token \
+# Resolve locked packages with registry-scoped auth confined to this install step.
+RUN --mount=type=secret,id=github_npm_token,required=true \
+    --mount=type=tmpfs,target=/run/npm-config \
     --mount=type=cache,target=/root/.npm \
-    sh -c 'echo "@mentor-forge:registry=https://mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/" > .npmrc && \
-    echo "//mentor-forge-560167829275.d.codeartifact.us-east-1.amazonaws.com/npm/mentorhub-npm/:_authToken=$(cat /run/secrets/codeartifact_token)" >> .npmrc && \
-    if [ -f package-lock.json ]; then npm ci; else npm install; fi'
+    printf '%s\n' '@mentor-forge:registry=https://npm.pkg.github.com' \
+      '//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}' > /run/npm-config/npmrc && \
+    GITHUB_TOKEN="$(cat /run/secrets/github_npm_token)" \
+      NPM_CONFIG_USERCONFIG=/run/npm-config/npmrc npm ci
 
 COPY . .
 RUN --mount=type=cache,target=/app/node_modules/.vite \
     npm run build
 
-RUN DATE=$(date "+%Y-%m-%d:%H:%M:%S") && echo "$DATE" > ./dist/patch.txt
+ARG BUILT_AT=LOCAL
+RUN printf '%s\n' "$BUILT_AT" | grep -Eq '^(LOCAL|[0-9]{8}-[0-9]{6})$' && \
+    printf '%s\n' "$BUILT_AT" > ./dist/patch.txt && \
+    sed -i "s/name=\"spa-built-at\" content=\"LOCAL\"/name=\"spa-built-at\" content=\"$BUILT_AT\"/" ./dist/index.html && \
+    grep -Fq "name=\"spa-built-at\" content=\"$BUILT_AT\"" ./dist/index.html
 
 # Deploy stage
-FROM nginx:stable-alpine
+FROM nginx:1.30.7-alpine@sha256:caf4e1e032a20f9c3c5e28fc7f25ffd768ad8677b4975c54193075997b3a97e3
 
 LABEL org.opencontainers.image.source="https://github.com/mentor-forge/mentorhub_mentor_spa"
 

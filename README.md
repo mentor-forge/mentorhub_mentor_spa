@@ -33,6 +33,8 @@ The supported browser entry is `http://<host>:8080/mentor/` through Developer Ed
 
 ## Developer Commands
 
+Before installing packages or building the image, set `GITHUB_TOKEN` in your shell using the Developer Edition onboarding token with `read:packages` access. The repository npm config routes `@mentor-forge` to GitHub Packages and uses public npm for other dependencies. The container build passes the token as a BuildKit secret. Keep its value out of repository files.
+
 ```sh
 ## install dependencies (Node >= 24)
 npm install
@@ -69,7 +71,7 @@ npm run cypress
 npm run cypress:run
 
 ## run one Cypress spec headlessly
-npm run cypress:run:spec -- cypress/e2e/profile.cy.ts
+npm run cypress:run:spec -- cypress/e2e/mentee.cy.ts
 
 ## Developer Edition: stop stack, then start db + mentor-api only
 npm run api
@@ -90,6 +92,12 @@ npm run container
 2. Start the Vite dev server: `npm run dev` (served at `http://localhost:8392/mentor/`)
 3. Sign in via Developer Edition login (`http://127.0.0.1:8080/login.html`) when prompted
 4. This SPA has no default landing page; collection browsing lives on Discovery (`http://<host>:8080/discovery/`). Root `/mentor/` and unmatched paths forward to the Discovery dashboard.
+
+For Vite checks, run the six browser specs for navigation, paths, plans, resources, mentees and encounters against `npm run dev`. For packaged verification, stop Vite and run the entire Cypress suite against the built image and the local Mentor API. `deployment.cy.ts` exercises the container's Nginx redirects, cache headers, history fallback, runtime configuration and prefixed API proxy.
+
+### Rollout and rollback
+
+After CI verifies the locked install and multi-platform build, record the published GHCR image digest for deployment. Roll back a deployment using the previous known-good image digest. If a shared package regression requires a source rollback, restore the previous known-good GitHub Packages version in both `package.json` and `package-lock.json`, then rerun the locked install, build and Cypress checks before publishing a replacement image.
 
 ### In-App Route Table
 
@@ -127,7 +135,7 @@ Mentee collection browsing is hosted on Discovery (`/discovery/`).
 
 API client methods: `api.getProfile(profileId)`, `api.getProfileProperties(profileId)`, `api.getMentee(profileId)`, `api.updateMentee(menteeId, data)`, `api.scheduleEncounters(data)`, `api.startEncounter(id)`, `api.finishEncounter(id)`.
 
-E2E coverage: `cypress/e2e/profile.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/profile.cy.ts` while `npm run api` and `npm run dev` are running).
+E2E coverage: `cypress/e2e/mentee.cy.ts` (run with `npm run cypress:run:spec -- cypress/e2e/mentee.cy.ts` while `npm run api` and `npm run dev` are running).
 
 ## Paths and Resources
 
@@ -215,7 +223,7 @@ src/
 | **nginx (this container)** | `/mentor/` document prefix, SPA history fallback, `/mentor/api/` → `mentor_api`, dual runtime-config paths, cache headers |
 | **Mentor API** | Authorization enforcement and domain mutations; UI gating is not security |
 
-Uses `@mentor-forge/mentorhub_spa_utils` **1.0.6** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
+Uses `@mentor-forge/mentorhub_spa_utils` **1.0.7** `PageFrame` as the navigation shell. Local nav config is disallowed — do not pass `navItems`, URL maps, or ALB origins. The compiled hamburger catalog is Home, Resources, and Paths for any authenticated user; Plans is **mentor**; Notifications, Events, and Settings are **admin-only**. Settings uses `hostingConfigHref()` and lands on this SPA’s `/mentor/config` — it is not a hamburger row this SPA configures locally. Products, Customer, and Customer Members are **not** hamburger rows. Cross-SPA drawer hrefs (except Settings) are absolute welcome/ALB `:8080` URLs from `buildJourneyUrl`, never direct debug ports (`:8392`, etc.). Logout is owned by spa_utils (`logout()` then `redirectToIdpLogin(buildJourneyUrl('discovery'))` → `/discovery/`).
 
 ### Deployment Prefix & Runtime Config Invariants
 
@@ -252,7 +260,7 @@ Uses `@mentor-forge/mentorhub_spa_utils` **1.0.6** `PageFrame` as the navigation
 - Example: `useQuery({ queryKey: ['control', id], queryFn: () => api.getControl(id) })`
 
 ### Reusable Components and Composables
-This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.6`:
+This template uses components and composables from `@mentor-forge/mentorhub_spa_utils@1.0.7`:
 - **Navigation Shell**: `PageFrame` provides the universal navigation shell with compiled, role-gated hamburger catalog; local navigation configuration is disallowed. Catalog rows, role gates, and Discovery collection hrefs are owned by spa_utils. Settings is compiled to this SPA’s `/config` via `hostingConfigHref()`.
 - **Components**: `DataCard`, `MhCard`, `DataCardGrid`, `MarkdownEditor`, typed editors (`WordEditor`,
   `SentenceEditor`, `EnumEditor`, `BreadcrumbDisplay`, and others). Multi-card view/edit pages use
@@ -324,6 +332,22 @@ Do not define `app-bar-title` or host `nav-*` ids in this SPA.
 ## CI
 
 `.github/workflows/docker-push.yml` builds and pushes the container image. Registry credentials and dependency policy for your org live in SRE / standards docs, not in this README.
+
+### Updating the Nginx base
+
+The runtime stage pins the official Nginx 1.30.7 Alpine image by its
+multi-platform digest. When updating the pin, check the official
+[stable release](https://nginx.org/en/download.html) and
+[security advisories](https://nginx.org/en/security_advisories.html), then use
+`docker buildx imagetools inspect` to confirm the tag and index support both
+AMD64 and ARM64.
+
+Build both architectures with a fresh base and verify the packaged Nginx
+binary with `nginx -v`. Scan both images and run the packaged Cypress suite,
+including history fallback, the prefixed API proxy, and runtime configuration.
+After main publishes to GHCR, record the published index and both platform
+manifest digests. Verify the published binaries and promote the same
+application digest through environments.
 
 ## Configuration
 - **Supported browser entry**: `http://<host>:8080/mentor/` via Developer Edition welcome / ALB
