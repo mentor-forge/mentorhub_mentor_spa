@@ -24,7 +24,11 @@ COPY . .
 RUN --mount=type=cache,target=/app/node_modules/.vite \
     npm run build
 
-RUN DATE=$(date "+%Y-%m-%d:%H:%M:%S") && echo "$DATE" > ./dist/patch.txt
+ARG BUILT_AT=LOCAL
+RUN printf '%s\n' "$BUILT_AT" | grep -Eq '^(LOCAL|[0-9]{8}-[0-9]{6})$' && \
+    printf '%s\n' "$BUILT_AT" > ./dist/patch.txt && \
+    sed -i "s/name=\"spa-built-at\" content=\"LOCAL\"/name=\"spa-built-at\" content=\"$BUILT_AT\"/" ./dist/index.html && \
+    grep -Fq "name=\"spa-built-at\" content=\"$BUILT_AT\"" ./dist/index.html
 
 # Deploy stage
 FROM nginx:1.30.7-alpine@sha256:caf4e1e032a20f9c3c5e28fc7f25ffd768ad8677b4975c54193075997b3a97e3
